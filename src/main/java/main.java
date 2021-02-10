@@ -1,5 +1,9 @@
 public class main {
     public static void main(String[] args) {
-        System.out.println("hello 319");
+        Server server = new Server();
+        Client client = new Client();
+        server.run();
+        client.run();
+
     }
 }
