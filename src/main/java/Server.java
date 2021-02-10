@@ -1,7 +1,16 @@
 import java.io.*;
 import java.net.*;
-public class Server {
-    public static void main(String[] args){
+public class Server implements Runnable {
+
+    Thread t;
+    public Server(){
+        t = new Thread(this, "sever");
+        System.out.println("New thread: " + t);
+        t.start();
+    }
+
+    @Override
+    public void run(){
         try{
             ServerSocket ss=new ServerSocket(6666);
             Socket s=ss.accept();//establishes connection
@@ -10,5 +19,6 @@ public class Server {
             System.out.println("message= "+str);
             ss.close();
         }catch(Exception e){System.out.println(e);}
+
     }
 }  
