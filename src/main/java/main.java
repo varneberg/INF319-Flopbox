@@ -1,9 +1,20 @@
+import java.io.IOException;
+
 public class main {
     public static void main(String[] args) {
-        Server server = new Server();
+        int port = 6666;
+        Server server = new Server(port);
+        server.startServer();
         Client client = new Client();
-        server.run();
+
+        /*Client client2 = new Client();
+        client2.name = "Client 2";
+        client2.port = port;
+        client2.message = "sup";
+        */
+
         client.run();
+        server.stopServer();
 
     }
 }
