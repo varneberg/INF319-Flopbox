@@ -6,10 +6,8 @@ public class Client implements Runnable{
     String message;
     int port;
 
-    public Client(){
-        t = new Thread(this, "client");
-        System.out.println("New client on thread: " + t);
-        t.start();
+    public Client(int port) {
+        this.port = port;
     }
 
     @Override
@@ -17,7 +15,7 @@ public class Client implements Runnable{
         try{
             Socket s = new Socket("localhost",port);
             DataOutputStream dout = new DataOutputStream(s.getOutputStream());
-            dout.writeUTF("test");
+            dout.writeUTF("Hello Server");
             dout.flush();
             dout.close();
             s.close();

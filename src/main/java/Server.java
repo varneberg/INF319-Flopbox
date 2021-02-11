@@ -65,6 +65,7 @@ public class Server extends Thread{
     }*/
 }
 
+
 class RequestHandler extends Thread{
     private Socket socket;
     RequestHandler(Socket socket){
@@ -72,25 +73,14 @@ class RequestHandler extends Thread{
     }
 
     @Override
-    public void run(){
+    public void run(){ // What the server does when a client connects
         try{
             System.out.println("Received a connection");
-
-            // Get input and output streams
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter( socket.getOutputStream() );
-
-
-            String line = in.readLine();
-            while( line != null && line.length() > 0 ) {
-                out.println( "Echo: " + line );
-                out.flush();
-                line = in.readLine();
-            }
-
-            // Close our connection
-            in.close();
-            out.close();
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.writeUTF("Hello client!");
+            out.flush();
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            System.out.println(in.readUTF());
             socket.close();
 
             System.out.println( "Connection closed" );
