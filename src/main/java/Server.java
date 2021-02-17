@@ -68,6 +68,9 @@ public class Server extends Thread{
 
 class RequestHandler extends Thread{
     private Socket socket;
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
+
     RequestHandler(Socket socket){
         this.socket = socket;
     }
@@ -76,11 +79,14 @@ class RequestHandler extends Thread{
     public void run(){ // What the server does when a client connects
         try{
             System.out.println("Received a connection");
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF("Hello client!");
-            out.flush();
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            System.out.println(in.readUTF());
+            dataInputStream = new DataInputStream(socket.getInputStream());
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+            receiveFile("/resources/serverStorage/recived1.txt");
+            receiveFile("/resources/serverStorage/recived2.txt");
+
+            dataInputStream.close();
+            dataOutputStream.close();
             socket.close();
 
             System.out.println( "Connection closed" );
@@ -88,5 +94,73 @@ class RequestHandler extends Thread{
         catch( Exception e ) {
             e.printStackTrace();
         }
+    }
+
+    private void receiveFile(String fileName) throws Exception{
+
+
+        File file = new File(fileName);
+        if (file.createNewFile()) {
+            System.out.println("File created: " + file.getName());
+        } else {
+            System.out.println("File already exists.");
+        }
+
+        int bytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+
+        long size = dataInputStream.readLong();     // read file size
+        byte[] buffer = new byte[4*1024];
+        while (size > 0 && (bytes = dataInputStream.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
+            fileOutputStream.write(buffer,0,bytes);
+            size -= bytes;      // read upto file size
+        }
+        fileOutputStream.close();
+
+    }
+
+}
+
+
+
+/*
+
+    //Testkode
+
+public class Server {
+    private static DataOutputStream dataOutputStream = null;
+    private static DataInputStream dataInputStream = null;
+
+    public static void main(String[] args) {
+        try(ServerSocket serverSocket = new ServerSocket(5000)){
+            System.out.println("listening to port:5000");
+            Socket clientSocket = serverSocket.accept();
+            System.out.println(clientSocket+" connected.");
+            dataInputStream = new DataInputStream(clientSocket.getInputStream());
+            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+
+            receiveFile("NewFile1.pdf");
+            receiveFile("NewFile2.pdf");
+
+            dataInputStream.close();
+            dataOutputStream.close();
+            clientSocket.close();
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
+
+    private static void receiveFile(String fileName) throws Exception{
+        int bytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+
+        long size = dataInputStream.readLong();     // read file size
+        byte[] buffer = new byte[4*1024];
+        while (size > 0 && (bytes = dataInputStream.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
+            fileOutputStream.write(buffer,0,bytes);
+            size -= bytes;      // read upto file size
+        }
+        fileOutputStream.close();
+    }
+}
+*/
