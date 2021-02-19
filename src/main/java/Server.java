@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+
 public class Server extends Thread{
 
     private ServerSocket ss;
@@ -27,42 +28,19 @@ public class Server extends Thread{
     @Override
     public void run() {
         running = true;
-        while(running){
-            try{
+        while (running) {
+            try {
                 System.out.println("Listening for a connection");
                 //Call accept() to receive the next connection
                 Socket socket = ss.accept();
                 // Pass the socket to the request handler thread for processing
                 RequestHandler requestHandler = new RequestHandler(socket);
                 requestHandler.start();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    /*
-    public static void main( String[] args ) {
-        if( args.length == 0 ) {
-            System.out.println( "Usage: SimpleSocketServer <port>" );
-            System.exit( 0 );
-        }
-
-        int port = Integer.parseInt( args[ 0 ] );
-        System.out.println( "Start server on port: " + port );
-
-        Server server = new Server(port);
-        server.startServer();
-
-        // Automatically shutdown in 1 minute
-        try {
-            Thread.sleep( 60000 );
-        }
-        catch( Exception e ) {
-            e.printStackTrace();
-        }
-        server.stopServer();
-    }*/
 }
 
 
@@ -82,8 +60,8 @@ class RequestHandler extends Thread{
             dataInputStream = new DataInputStream(socket.getInputStream());
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-            receiveFile("/resources/serverStorage/recived1.txt");
-            receiveFile("/resources/serverStorage/recived2.txt");
+            receiveFile("src/main/resources/serverStorage/recived1.txt");
+            receiveFile("src/main/resources/serverStorage/recived2.txt");
 
             dataInputStream.close();
             dataOutputStream.close();
@@ -105,9 +83,9 @@ class RequestHandler extends Thread{
         } else {
             System.out.println("File already exists.");
         }
-
+        String path = file.getAbsolutePath();
         int bytes = 0;
-        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+        FileOutputStream fileOutputStream = new FileOutputStream(path);
 
         long size = dataInputStream.readLong();     // read file size
         byte[] buffer = new byte[4*1024];
@@ -120,47 +98,3 @@ class RequestHandler extends Thread{
     }
 
 }
-
-
-
-/*
-
-    //Testkode
-
-public class Server {
-    private static DataOutputStream dataOutputStream = null;
-    private static DataInputStream dataInputStream = null;
-
-    public static void main(String[] args) {
-        try(ServerSocket serverSocket = new ServerSocket(5000)){
-            System.out.println("listening to port:5000");
-            Socket clientSocket = serverSocket.accept();
-            System.out.println(clientSocket+" connected.");
-            dataInputStream = new DataInputStream(clientSocket.getInputStream());
-            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
-
-            receiveFile("NewFile1.pdf");
-            receiveFile("NewFile2.pdf");
-
-            dataInputStream.close();
-            dataOutputStream.close();
-            clientSocket.close();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private static void receiveFile(String fileName) throws Exception{
-        int bytes = 0;
-        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
-
-        long size = dataInputStream.readLong();     // read file size
-        byte[] buffer = new byte[4*1024];
-        while (size > 0 && (bytes = dataInputStream.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
-            fileOutputStream.write(buffer,0,bytes);
-            size -= bytes;      // read upto file size
-        }
-        fileOutputStream.close();
-    }
-}
-*/

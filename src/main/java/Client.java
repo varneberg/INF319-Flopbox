@@ -20,8 +20,8 @@ public class Client implements Runnable{
             dataInputStream = new DataInputStream(s.getInputStream());
             dataOutputStream = new DataOutputStream(s.getOutputStream());
 
-            sendFile("/clientStorage/send1.txt");
-            sendFile("/clientStorage/send2.txt");
+            sendFile("src/main/resources/clientStorage/send1.txt");
+            sendFile("src/main/resources/clientStorage/send2.txt");
 
             dataInputStream.close();
             dataInputStream.close();
@@ -31,10 +31,12 @@ public class Client implements Runnable{
         }
     }
 
-    private void sendFile(String path) throws Exception{
+    private void sendFile(String filename) throws Exception{
         int bytes = 0;
-        File file = new File(path);
-        FileInputStream fileInputStream = new FileInputStream(file);
+        File file = new File(filename);
+        String path = file.getAbsolutePath();
+
+        FileInputStream fileInputStream = new FileInputStream(path);
 
         // send file size
         dataOutputStream.writeLong(file.length());
