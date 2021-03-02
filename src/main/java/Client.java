@@ -2,15 +2,20 @@ import java.io.*;
 import java.net.*;
 public class Client implements Runnable{
     String name;
+    String password;
     Thread t;
     String message;
     int port;
     private static DataOutputStream dataOutputStream = null;
     private static DataInputStream dataInputStream = null;
+    private static String storagePath = "src/main/resources/clientStorage/";
 
 
-    public Client(int port) {
+    public Client(int port, String name, String password) {
+
         this.port = port;
+        this.name = name;
+        this.password = password;
     }
 
     @Override
@@ -20,8 +25,8 @@ public class Client implements Runnable{
             dataInputStream = new DataInputStream(s.getInputStream());
             dataOutputStream = new DataOutputStream(s.getOutputStream());
 
-            sendFile("src/main/resources/clientStorage/send1.txt");
-            sendFile("src/main/resources/clientStorage/send2.txt");
+            sendFile("send1.txt");
+            sendFile("send2.txt");
 
             dataInputStream.close();
             dataInputStream.close();
@@ -32,11 +37,14 @@ public class Client implements Runnable{
     }
 
     private void sendFile(String filename) throws Exception{
+        String fullPath = storagePath + filename;
+
+
         int bytes = 0;
-        File file = new File(filename);
+        File file = new File(fullPath);
         String path = file.getAbsolutePath();
 
-        FileInputStream fileInputStream = new FileInputStream(path);
+        FileInputStream fileInputStream = new FileInputStream(fullPath);
 
         // send file size
         dataOutputStream.writeLong(file.length());
@@ -47,7 +55,6 @@ public class Client implements Runnable{
             dataOutputStream.flush();
         }
         fileInputStream.close();
-
     }
 
 
@@ -55,56 +62,10 @@ public class Client implements Runnable{
         return message;
     }
 
+    public String getPassword() { return password; }
+
     public String getName() {
         return name;
     }
 
-    public int getPort() {
-        return port;
-    }
 }
-
-
-
-/*
-
-
-// testkode
-import java.io.*;
-        import java.net.Socket;
-
-public class Client {
-    private static DataOutputStream dataOutputStream = null;
-    private static DataInputStream dataInputStream = null;
-
-    public static void main(String[] args) {
-        try(Socket socket = new Socket("localhost",5000)) {
-            dataInputStream = new DataInputStream(socket.getInputStream());
-            dataOutputStream = new DataOutputStream(socket.getOutputStream());
-
-            sendFile("../../../storage/clientStorage/send1.txt");
-            sendFile("../../../storage/clientStorage/send2.txt");
-
-            dataInputStream.close();
-            dataInputStream.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private static void sendFile(String path) throws Exception{
-        int bytes = 0;
-        File file = new File(path);
-        FileInputStream fileInputStream = new FileInputStream(file);
-
-        // send file size
-        dataOutputStream.writeLong(file.length());
-        // break file into chunks
-        byte[] buffer = new byte[4*1024];
-        while ((bytes=fileInputStream.read(buffer))!=-1){
-            dataOutputStream.write(buffer,0,bytes);
-            dataOutputStream.flush();
-        }
-        fileInputStream.close();
-    }
-}*/
