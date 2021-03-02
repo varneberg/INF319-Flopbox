@@ -1,14 +1,39 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 public class Server extends Thread{
 
     private ServerSocket ss;
     private int port;
     private boolean running = false;
+    private static ArrayList<Client> clients = new ArrayList<Client>();
 
     public Server(int port){
         this.port = port;
+    }
+
+    public void addClient(Client client){
+        clients.add(client);
+    }
+
+    public boolean clientExists(String name){
+        for(int i=0;i<clients.size();i++){
+            Client current = clients.get(i);
+            if(current.getName().equals(name)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Client login(String name, String password){
+        for(Client current: clients){
+            if(current.getName().equals(name) && current.getPassword().equals(password)){
+                return current;
+            }
+        }
+        return null;
     }
 
     public void startServer(){
