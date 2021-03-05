@@ -1,14 +1,20 @@
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import client.Client;
+import server.Server;
+import storage.initDB;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class main {
     private static int port = 5555;
 
-    public static void main(String[] args) {
 
+    public static void main(String[] args) throws SQLException {
+        initDB.createDatabase();
+        initDB.createUserTable();
         Server server = new Server(port);
+
         server.startServer();
 
         clientLoop(server);
@@ -18,6 +24,7 @@ public class main {
     }
 
     public static void clientLoop(Server server){
+
         Scanner sc = new Scanner(System.in);
         Client current = null;
         String input = "init";
