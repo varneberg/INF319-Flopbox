@@ -43,12 +43,39 @@ public class main {
 
             }
 
-            /*
-            while(!current.equals(null)){
 
-                System.out.println("You are logged in as " + current.getName());
+            while(current != null){
+
+                if(input.equals("login")){
+                    System.out.println("Username: ");
+                    String username = sc.nextLine();
+                    System.out.println("Password: ");
+                    String password = sc.nextLine();
+
+                    Client temp = server.login(username, password);
+                    if(temp != null){
+                        current = temp;
+                        System.out.println("You are logged in as " + current.getName());
+                    }
+                    else{
+                        System.out.println("Login failed");
+                    }
+                }
+
+
+                while(current != null){
+                    System.out.println("Command: ");
+                    input = sc.nextLine();
+
+
+                    if(input.equals("logout")){
+                        System.out.println("Logged out of " + current.getName());
+                        current = null;
+                    }
+                }
+
             }
-            */
+
 
         }
 
