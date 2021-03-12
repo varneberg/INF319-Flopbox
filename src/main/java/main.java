@@ -1,8 +1,8 @@
 import client.Client;
 import server.Server;
+import storage.clientStorage;
 import storage.initDB;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -11,8 +11,15 @@ public class main {
 
 
     public static void main(String[] args) throws SQLException {
-        initDB.createDatabase();
-        initDB.createUserTable();
+        // Initialize database and tables
+        initDB.createNewDB();
+        initDB.createClientTable();
+        clientStorage cs = new clientStorage();
+        cs.addClient("dkl921", "lmojkl");
+        cs.addClient("kno019", "test");
+        cs.listAllClients();
+
+        /*
         Server server = new Server(port);
 
         server.startServer();
@@ -20,7 +27,7 @@ public class main {
         clientLoop(server);
 
         server.stopServer();
-
+        */
     }
 
     public static void clientLoop(Server server){
