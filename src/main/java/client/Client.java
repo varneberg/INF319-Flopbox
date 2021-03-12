@@ -1,3 +1,5 @@
+package client;
+
 import java.io.*;
 import java.net.*;
 public class Client implements Runnable{
