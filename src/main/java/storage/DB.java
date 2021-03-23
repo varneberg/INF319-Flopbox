@@ -33,7 +33,7 @@ public class DB {
         try (Connection con = DriverManager.getConnection(url);
             Statement stmt = con.createStatement()) {
             stmt.execute(sql);
-            System.out.println("clients table created");
+            System.out.println("clients table created\n");
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());

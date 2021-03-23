@@ -34,7 +34,10 @@ public class Client implements Runnable{
             dataOutput = new DataOutputStream(s.getOutputStream());
 
             //Send credentials to server
-            sendCredentials(s);
+            String username = askUsername();
+            String password = askPassword();
+            sendServer(username, s);
+            sendServer(password, s);
 
             /*
             sendFile("send1.txt");
@@ -70,19 +73,6 @@ public class Client implements Runnable{
         System.out.println("Password: ");
         String password = sc.nextLine();
         return password;
-    }
-
-    private void sendCredentials(Socket socket) throws Exception{
-        String username = askUsername();
-        String password = askPassword();
-        sendServer(username, socket);
-        sendServer(password, socket);
-        /*
-        dataOutput = new DataOutputStream(s.getOutputStream());
-        dataOutput.writeBytes(username + '\n' );
-        dataOutput.flush();
-        dataOutput.writeBytes(password + '\n' );
-         */
     }
 
 

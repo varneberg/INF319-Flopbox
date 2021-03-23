@@ -14,16 +14,13 @@ public class main {
         // Initialize database and tables
         DB.initDB();
         DB.createClientTable();
-        //ClientStorage cs = new ClientStorage();
         Server server = new Server(port);
-
         server.startServer();
         Client client = new Client(port);
         client.run();
         //clientLoop(server);
 
         server.stopServer();
-
     }
 
     public static void clientLoop(Server server){

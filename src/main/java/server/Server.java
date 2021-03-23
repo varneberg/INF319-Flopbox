@@ -102,9 +102,10 @@ class RequestHandler extends Thread{
             System.out.println(clientCreds);
              */
             String username = receiveClientMessage(s);
+            System.out.println("Client username: " + username);
+
             String password = receiveClientMessage(s);
-            System.out.println(username);
-            System.out.println(password);
+            System.out.println("Client password: " + password);
             if (checkClientExists(username)){
                 System.out.println(username + "exists");
             }
@@ -124,7 +125,6 @@ class RequestHandler extends Thread{
         //dataIn = new DataInputStream(socket.getInputStream());
         BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String clientString = fromClient.readLine();
-
         return clientString;
    }
 

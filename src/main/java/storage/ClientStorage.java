@@ -2,6 +2,8 @@ package storage;
 
 import client.Client;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 
 public class ClientStorage {
@@ -70,6 +72,7 @@ public class ClientStorage {
         }
     }
 
+
     public void addClient(String uname, String password) throws SQLException {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
         String dir = "/" + uname + "/";
@@ -79,6 +82,7 @@ public class ClientStorage {
             pstmt.setString(2, password);
             pstmt.setString(3, dir);
             pstmt.executeUpdate();
+            createClientDir(uname);
         } catch (SQLException e){
             //System.out.println(e.getMessage());
             System.out.println("Client " + uname + " already in database");
@@ -101,6 +105,28 @@ public class ClientStorage {
             System.out.println(e.getMessage());
         }
     }
+
+    public void createClientDir(String clientName) {
+        File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
+        if (!f.exists()) {
+            System.out.println("Directory does not exists, creating new");
+            f.mkdir();
+        }
+    }
+
+    public String[] listClientFiles(String clientName) {
+        String[] fileNames;
+        File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
+        fileNames = f.list();
+        return fileNames;
+    }
+
+    // Add client file
+    public void clientAddFile(String clientName, String file){
+        String dir = "./src/main/resources/clientDirs/" + clientName + "/";
+        File f = new File(dir);
+    }
+
 
     public void deleteAllClients(){
         String sql = "DELETE FROM clients";
