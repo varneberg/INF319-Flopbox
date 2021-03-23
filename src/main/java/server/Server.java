@@ -1,9 +1,10 @@
 package server;
 
 import client.Client;
-
+import storage.ClientStorage;
 import java.io.*;
 import java.net.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Server extends Thread{
@@ -59,7 +60,7 @@ public class Server extends Thread{
         running = true;
         while (running) {
             try {
-                System.out.println("Listening for a connection");
+                System.out.println("Listening for a connection...");
                 //Call accept() to receive the next connection
                 Socket socket = ss.accept();
                 // Pass the socket to the request handler thread for processing
@@ -74,28 +75,44 @@ public class Server extends Thread{
 
 
 class RequestHandler extends Thread{
-    private Socket socket;
-    private static DataOutputStream dataOutputStream = null;
-    private static DataInputStream dataInputStream = null;
+    private Socket s;
+    private static DataOutputStream dataout= null;
+    private static DataInputStream dataIn = null;
+    private ClientStorage cs = new ClientStorage();
+
 
     RequestHandler(Socket socket){
-        this.socket = socket;
+        this.s = socket;
     }
 
     @Override
     public void run(){ // What the server does when a client connects
         try{
-            System.out.println("Received a connection");
-            dataInputStream = new DataInputStream(socket.getInputStream());
-            dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
+            System.out.println("Received a connection\n");
+            /*
             receiveFile("src/main/resources/serverStorage/recived1.txt");
             receiveFile("src/main/resources/serverStorage/recived2.txt");
+            */
+            dataIn = new DataInputStream(s.getInputStream());
+            dataout = new DataOutputStream(s.getOutputStream());
+            /*
+            BufferedReader fromClient = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            String clientCreds = fromClient.readLine();
+            System.out.println(clientCreds);
+             */
+            String username = receiveClientMessage(s);
+            String password = receiveClientMessage(s);
+            System.out.println(username);
+            System.out.println(password);
+            if (checkClientExists(username)){
+                System.out.println(username + "exists");
+            }
+            dataIn.close();
+            dataout.close();
 
-            dataInputStream.close();
-            dataOutputStream.close();
-            socket.close();
-
+            // Close connection
+            s.close();
             System.out.println( "Connection closed" );
         }
         catch( Exception e ) {
@@ -103,8 +120,30 @@ class RequestHandler extends Thread{
         }
     }
 
-    private void receiveFile(String fileName) throws Exception{
+   private String receiveClientMessage(Socket socket) throws IOException {
+        //dataIn = new DataInputStream(socket.getInputStream());
+        BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String clientString = fromClient.readLine();
 
+        return clientString;
+   }
+
+    private boolean checkClientExists(String uname) throws SQLException {
+        boolean exists = cs.clientExists(uname);
+        if (!exists){
+            return false;
+        } else{
+            return true;
+        }
+
+    }
+
+    // List all available files to client
+    private void listFiles(){
+
+    }
+
+    private void receiveFile(String fileName) throws Exception{
 
         File file = new File(fileName);
         if (file.createNewFile()) {
@@ -116,9 +155,9 @@ class RequestHandler extends Thread{
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(path);
 
-        long size = dataInputStream.readLong();     // read file size
+        long size = dataIn.readLong();     // read file size
         byte[] buffer = new byte[4*1024];
-        while (size > 0 && (bytes = dataInputStream.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
+        while (size > 0 && (bytes = dataIn.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
             fileOutputStream.write(buffer,0,bytes);
             size -= bytes;      // read upto file size
         }

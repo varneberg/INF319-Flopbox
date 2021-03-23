@@ -4,18 +4,18 @@ import java.io.File;
 import java.sql.*;
 
 
-public class initDB {
+public class DB {
+
 
 
     //static File dbFile = new File("./flopbox.db");
     static String url = "jdbc:sqlite:./flopbox.db";
 
-    public static void createNewDB(){
+    public static void initDB(){
         try (Connection con = DriverManager.getConnection(url)) {
             if (con != null) {
                 DatabaseMetaData meta = con.getMetaData();
-                System.out.println(meta.getDriverName());
-                System.out.println("Database created");
+                System.out.println("Database created " +"(" + meta.getDriverName() + ")");
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -40,5 +40,8 @@ public class initDB {
 
         }
     }
+
+
+
 
 }
