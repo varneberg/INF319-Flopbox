@@ -14,6 +14,8 @@ public class main {
         // Initialize database and tables
         DB.initDB();
         DB.createClientTable();
+        ClientStorage cs = new ClientStorage();
+        cs.listAllClients();
         Server server = new Server(port);
         server.startServer();
         Client client = new Client(port);

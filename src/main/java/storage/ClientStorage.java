@@ -1,7 +1,6 @@
 package storage;
 
 import client.Client;
-
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -40,14 +39,24 @@ public class ClientStorage {
                + "FROM clients "
                + "WHERE uname = '" + uname
                + "'";
-
        try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)){
            return(rs.next());
 
        }
+    }
 
+    public boolean verifyPassword(String passwd) throws SQLException {
+        String sql = "SELECT *"
+                + "FROM clients "
+                + "WHERE password = '" + passwd
+                + "'";
+        try (Connection con = this.connect();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            return (rs.next());
+        }
     }
 
     // Return client entry from database

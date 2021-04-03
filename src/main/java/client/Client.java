@@ -30,23 +30,10 @@ public class Client implements Runnable{
     public void run(){
         try{
             s = new Socket("localhost",port);
-            dataInput = new DataInputStream(s.getInputStream());
-            dataOutput = new DataOutputStream(s.getOutputStream());
-
-            //Send credentials to server
-            String username = askUsername();
-            String password = askPassword();
-            sendServer(username, s);
-            sendServer(password, s);
-
-            /*
-            sendFile("send1.txt");
-            sendFile("send2.txt");
-            */
-            dataInput.close();
-            dataInput.close();
-
-            //sendCredentials();
+            sendCredentials();
+            String authmsg = receiveServer(s);
+            
+            System.out.println(authmsg);
             //s.close();
             System.out.println("Connection to server closed");
 
@@ -56,10 +43,23 @@ public class Client implements Runnable{
     }
 
     private void sendServer(String message, Socket socket) throws IOException {
-        dataOutput = new DataOutputStream(socket.getOutputStream());
+        DataOutputStream out = new DataOutputStream(s.getOutputStream());
+        out.writeByte(1);
+        out.writeUTF(message);
+        out.writeByte(-1);
+        out.flush();
+        /*dataOutput = new DataOutputStream(socket.getOutputStream());
         dataOutput.writeBytes(message + '\n');
         dataOutput.flush();
+         */
     }
+
+    private String receiveServer(Socket socket) throws IOException {
+        DataInputStream inp = new DataInputStream(socket.getInputStream());
+        byte msgStream = inp.readByte();
+        return inp.readUTF();
+    }
+
 
     private String askUsername(){
         Scanner sc = new Scanner(System.in);
@@ -73,6 +73,13 @@ public class Client implements Runnable{
         System.out.println("Password: ");
         String password = sc.nextLine();
         return password;
+    }
+
+    private void sendCredentials() throws IOException {
+        String uname = askUsername();
+        String passwd = askPassword();
+        String creds = uname +"\n"+ passwd;
+        sendServer(creds, s);
     }
 
 
