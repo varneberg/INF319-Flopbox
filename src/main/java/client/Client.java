@@ -16,6 +16,7 @@ public class Client implements Runnable{
     private static String storagePath = "src/main/resources/clientStorage/";
 
 
+
     public Client(int port, String name, String password) {
 
         this.port = port;
@@ -30,28 +31,50 @@ public class Client implements Runnable{
     public void run(){
         try{
             s = new Socket("localhost",port);
+            BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
+
             boolean auth = false;
+            String uname = "tes123";
+            String password = "test";
+            String creds = uname +"\t"+password;
+
+            // Send to server
+            clientOutput.println(creds);
+            String serverMessage = serverInput.readLine();
+            System.out.println(serverMessage);
+            /*
             while(true) {
                 sendCredentials();
-                String authmsg = receiveServer(s);
-                System.out.println(authmsg);
-                if(authmsg.equals("You are now logged in as ")){
+                String authmsg = receiveServer();
+                if(authmsg.equals("1")){
+                    System.out.println("[Server]: Valid credentials");
                     break;
-                }
-                else{
-                    continue;
-                }
-                //s.close();
+                } if(authmsg.equals("-1")){
+                    System.out.println("[Server]: Incorrect password");
+                } if(authmsg.equals("0")){
+                    System.out.println("[Server]: No user was found with given name");
+                } else { continue; }
             }
-            System.out.println("Connection to server closed");
+             */
+
+            //s.close();
+            //closeConnection();
 
         }catch(Exception e){
             System.out.println(e);
         }
     }
 
-    private void sendServer(String message, Socket socket) throws IOException {
-        DataOutputStream out = new DataOutputStream(s.getOutputStream());
+    // Send data to server
+    private void sendServer(String message) throws IOException {
+        //DataOutputStream out = new DataOutputStream(s.getOutputStream());
+        dataOutput = new DataOutputStream(s.getOutputStream());
+        dataOutput.writeByte(1);
+        dataOutput.writeUTF(message);
+        dataOutput.writeByte(-1);
+        dataOutput.flush();
+        /*
         out.writeByte(1);
         out.writeUTF(message);
         out.writeByte(-1);
@@ -62,38 +85,53 @@ public class Client implements Runnable{
          */
     }
 
-    private String receiveServer(Socket socket) throws IOException {
-        DataInputStream inp = new DataInputStream(socket.getInputStream());
-        byte msgStream = inp.readByte();
-        return inp.readUTF();
+    // Receive data from server
+    private String receiveServer() throws IOException {
+        //DataInputStream inp = new DataInputStream(s.getInputStream());
+        //byte msgStream = inp.readByte();
+        //return inp.readUTF();
+        dataInput = new DataInputStream(s.getInputStream());
+        byte msgStream = dataInput.readByte();
+        String inp = dataInput.readUTF();
+        return inp;
     }
 
-
-    private String askUsername(){
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Username: ");
-        String uname = sc.nextLine();
-        return uname;
+    // Receive names for files stored on server
+    private String receiveFileNames() throws IOException {
+        String[] filename;
+        String nameString = "";
+        String inp = receiveServer();
+        //System.out.println(inp);
+        return inp;
     }
 
-    private String askPassword(){
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Password: ");
-        String password = sc.nextLine();
-        return password;
+    // Closes current connection to server
+    private void closeConnection() throws IOException{
+        sendServer("exit()");
+        System.out.println("[Client]: Connection to server closed");
+        s.close();
     }
+
 
     private void sendCredentials() throws IOException {
-        String uname = askUsername();
-        String passwd = askPassword();
+        System.out.println("[Client]: Please enter your credentials\n");
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Username:");
+        String uname = sc.nextLine();
+        System.out.println("Password:");
+        String passwd= sc.nextLine();
+
         String creds = uname +"\n"+ passwd;
-        sendServer(creds, s);
+        sendServer(creds);
     }
 
+    private boolean authenticate() {
+        return false;
+    }
 
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
-
 
         int bytes = 0;
         File file = new File(fullPath);
@@ -113,14 +151,10 @@ public class Client implements Runnable{
     }
 
 
-    public String getMessage() {
-        return message;
-    }
+    public String getMessage() { return message; }
 
     public String getPassword() { return password; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
 }
