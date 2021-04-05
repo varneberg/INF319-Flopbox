@@ -16,6 +16,8 @@ public class main {
         DB.createClientTable();
         ClientStorage cs = new ClientStorage();
         cs.listAllClients();
+        cs.clientAddDummyFiles("tes123", 10);
+
         Server server = new Server(port);
         server.startServer();
         Client client = new Client(port);

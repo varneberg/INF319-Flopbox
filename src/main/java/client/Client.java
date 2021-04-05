@@ -30,11 +30,19 @@ public class Client implements Runnable{
     public void run(){
         try{
             s = new Socket("localhost",port);
-            sendCredentials();
-            String authmsg = receiveServer(s);
-            
-            System.out.println(authmsg);
-            //s.close();
+            boolean auth = false;
+            while(true) {
+                sendCredentials();
+                String authmsg = receiveServer(s);
+                System.out.println(authmsg);
+                if(authmsg.equals("You are now logged in as ")){
+                    break;
+                }
+                else{
+                    continue;
+                }
+                //s.close();
+            }
             System.out.println("Connection to server closed");
 
         }catch(Exception e){
