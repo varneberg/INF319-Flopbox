@@ -7,7 +7,7 @@ import java.net.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class Server extends Thread{
+public class Server extends Thread {
 
     private ServerSocket ss;
     private int port;
@@ -58,9 +58,9 @@ public class Server extends Thread{
     @Override
     public void run() {
         running = true;
+        System.out.println("[Server]: Listening for a connection...");
         while (running) {
             try {
-                System.out.println("Listening for a connection...");
                 //Call accept() to receive the next connection
                 Socket socket = ss.accept();
                 // Pass the socket to the request handler thread for processing
@@ -76,9 +76,11 @@ public class Server extends Thread{
 
 class RequestHandler extends Thread{
     private Socket s;
-    private static DataOutputStream dataout= null;
-    private static DataInputStream dataIn = null;
+    private static DataOutputStream dataOutput = null;
+    private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
+
+    private PrintWriter serverOutput;
 
 
     RequestHandler(Socket socket){
@@ -88,60 +90,115 @@ class RequestHandler extends Thread{
     @Override
     public void run(){ // What the server does when a client connects
         try{
+            System.out.println("[Server]: Received a connection\n");
+            String username = "";
 
-            System.out.println("Received a connection\n");
-            /*
-            receiveFile("src/main/resources/serverStorage/recived1.txt");
-            receiveFile("src/main/resources/serverStorage/recived2.txt");
-            */
-            dataIn = new DataInputStream(s.getInputStream());
-            dataout = new DataOutputStream(s.getOutputStream());
-            /*
-            BufferedReader fromClient = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            String clientCreds = fromClient.readLine();
-            System.out.println(clientCreds);
-             */
-            String username = receiveClientMessage(s);
-            System.out.println("Client username: " + username);
-
-            String password = receiveClientMessage(s);
-            System.out.println("Client password: " + password);
-            if (checkClientExists(username)){
-                System.out.println(username + "exists");
+            while (true) {
+                BufferedReader clientInput = new BufferedReader(new InputStreamReader((s.getInputStream())));
+                serverOutput = new PrintWriter(s.getOutputStream(), true);
+                String[] creds = clientInput.readLine().split("\t");
+                username = creds[0];
+                String password = creds[1];
+                boolean uath = authenticateClient(serverOutput, username, password);
+                if (uath) {
+                    break;
+                }
             }
-            dataIn.close();
-            dataout.close();
+            serverOutput.flush();
+            String files = getAvailableFileNames(username);
+            serverOutput.printf(files);
 
-            // Close connection
-            s.close();
-            System.out.println( "Connection closed" );
+
+
+            closeConnection();
+
         }
         catch( Exception e ) {
             e.printStackTrace();
         }
     }
 
-   private String receiveClientMessage(Socket socket) throws IOException {
+   private String receiveClient() throws IOException {
         //dataIn = new DataInputStream(socket.getInputStream());
-        BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String clientString = fromClient.readLine();
-        return clientString;
+        //DataInputStream inp = new DataInputStream(socket.getInputStream());
+        dataInput = new DataInputStream(s.getInputStream());
+        byte msgStream = dataInput.readByte();
+        String inp = dataInput.readUTF();
+        return inp;
+        //BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        //String clientString = fromClient.readLine();
+        //return clientString;
    }
 
-    private boolean checkClientExists(String uname) throws SQLException {
-        boolean exists = cs.clientExists(uname);
-        if (!exists){
-            return false;
-        } else{
-            return true;
+   private void nsendClient(String message){
+
+   }
+
+   private String nreceiveClient(BufferedReader input) throws IOException {
+       input = new BufferedReader(new InputStreamReader((s.getInputStream())));
+       return "0";
+   }
+
+   private void sendClient(String message) {
+        try {
+            //DataOutputStream dataout = new DataOutputStream(s.getOutputStream());
+            dataOutput = new DataOutputStream(s.getOutputStream());
+            dataOutput.writeByte(1);
+            dataOutput.writeUTF(message);
+            dataOutput.writeByte(-1);
+            dataOutput.flush();
+        } catch(IOException e){
+            System.out.println(e.getStackTrace());
         }
-
     }
 
-    // List all available files to client
-    private void listFiles(){
 
+    // Check if provided username and password is correct
+    private boolean authenticateClient(PrintWriter output, String uname, String passwd) throws SQLException {
+        if (checkClient(uname)) {
+            if (cs.verifyPassword(passwd)) {
+                //sendClient("1");
+                output.println("1");
+                return true;
+            } else {
+                //sendClient("-1");
+                output.println("1");
+                return false;
+            }
+        } else {
+            //sendClient("0");
+            output.println("0");
+            return false;
+            //return 0;
+        }
     }
+
+    private String getAvailableFileNames(String clientName){
+        String[] files = cs.listClientFiles(clientName);
+        String msg = "";
+        for(String file : files){
+            //System.out.println(file);
+            msg += file + "\n";
+        }
+        return msg;
+    }
+
+    // Closes current connection to client
+    private void closeConnection() throws IOException{
+        System.out.println("[Server]: Connection to client closed");
+        s.close();
+    }
+
+    // From username, check is corresponding entry exists in database
+    private boolean checkClient(String uname) throws SQLException {
+        boolean exists = cs.clientExists(uname);
+        if (exists){
+            return true;
+        } else{
+            return false;
+        }
+    }
+
 
     private void receiveFile(String fileName) throws Exception{
         File file = new File(fileName);
@@ -154,9 +211,9 @@ class RequestHandler extends Thread{
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(path);
 
-        long size = dataIn.readLong();     // read file size
+        long size = dataInput.readLong();     // read file size
         byte[] buffer = new byte[4*1024];
-        while (size > 0 && (bytes = dataIn.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
+        while (size > 0 && (bytes = dataInput.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
             fileOutputStream.write(buffer,0,bytes);
             size -= bytes;      // read upto file size
         }

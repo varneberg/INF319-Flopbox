@@ -1,7 +1,6 @@
 package storage;
 
 import client.Client;
-
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -40,14 +39,24 @@ public class ClientStorage {
                + "FROM clients "
                + "WHERE uname = '" + uname
                + "'";
-
        try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)){
            return(rs.next());
 
        }
+    }
 
+    public boolean verifyPassword(String passwd) throws SQLException {
+        String sql = "SELECT *"
+                + "FROM clients "
+                + "WHERE password = '" + passwd
+                + "'";
+        try (Connection con = this.connect();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            return (rs.next());
+        }
     }
 
     // Return client entry from database
@@ -106,6 +115,7 @@ public class ClientStorage {
         }
     }
 
+    static String storagePath = "./src/main/resources/clientDirs/";
     public void createClientDir(String clientName) {
         File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
         if (!f.exists()) {
@@ -114,6 +124,7 @@ public class ClientStorage {
         }
     }
 
+    // List all files client has in directory
     public String[] listClientFiles(String clientName) {
         String[] fileNames;
         File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
@@ -127,6 +138,22 @@ public class ClientStorage {
         File f = new File(dir);
     }
 
+    // Adds 10 dummy files
+    public void clientAddDummyFiles(String clientName, int numFiles) {
+        String dir = "./src/main/resources/clientDirs/" + clientName + "/";
+        for(int i = 0; i <= numFiles; i++){
+            String fileName = "dummy"+i+".txt";
+            try {
+                File f = new File(dir + fileName);
+                if(!f.exists()){
+                    f.createNewFile();
+                }
+            } catch (IOException e){
+                System.out.println(e.getStackTrace());
+            }
+
+        }
+    }
 
     public void deleteAllClients(){
         String sql = "DELETE FROM clients";
