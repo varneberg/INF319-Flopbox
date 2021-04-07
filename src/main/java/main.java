@@ -22,6 +22,8 @@ public class main extends Application{
     private Stage primaryStage = null;
     private Server server = null;
 
+    public static void main(String[] args) {
+
         DB.initDB();
         DB.createClientTable();
         launch(args);
