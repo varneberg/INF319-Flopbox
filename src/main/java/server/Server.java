@@ -90,47 +90,28 @@ class RequestHandler extends Thread{
     @Override
     public void run(){ // What the server does when a client connects
         try{
-            BufferedReader clientInput = new BufferedReader(new InputStreamReader((s.getInputStream())));
-            serverOutput = new PrintWriter(s.getOutputStream(), true);
             System.out.println("[Server]: Received a connection\n");
-            String[] creds = clientInput.readLine().split("\t");
-            String username = creds[0];
-            String password = creds[1];
-            closeConnection();
+            String username = "";
 
-            int resp = authenticateClient(username, password);
-            serverOutput.println(resp);
-
-            /*
-            String clientString = clientInput.readLine();
-                if (clientString.equals("exit()")) { break; }
-                System.out.println(clientString);
-                //String uname =
-                //authenticateClient(clientString, serverOutput, )
-
-                receiveFile("src/main/resources/serverStorage/recived1.txt");
-                receiveFile("src/main/resources/serverStorage/recived2.txt");
-                //dataIn = new DataInputStream(s.getInputStream());
-                //dataout = new DataOutputStream(s.getOutputStream());
-                */
-                /*
-                boolean authenticated = false;
-                String uname = "";
-                String passwd = "";
-                while (!authenticated) {
-                    String creds = receiveClient();
-                    String[] credsArr = creds.split("\n");
-                    uname = credsArr[0];
-                    passwd = credsArr[1];
-                    if (authenticateClient(uname, passwd)) {
-                        System.out.println("Authenticated!");
-                        authenticated = true;
-                    } else { authenticated = false}}
-                // Close connection
-                //s.close();
+            while (true) {
+                BufferedReader clientInput = new BufferedReader(new InputStreamReader((s.getInputStream())));
+                serverOutput = new PrintWriter(s.getOutputStream(), true);
+                String[] creds = clientInput.readLine().split("\t");
+                username = creds[0];
+                String password = creds[1];
+                boolean uath = authenticateClient(serverOutput, username, password);
+                if (uath) {
+                    break;
+                }
             }
-            */
+            serverOutput.flush();
+            String files = getAvailableFileNames(username);
+            serverOutput.printf(files);
+
+
+
             closeConnection();
+
         }
         catch( Exception e ) {
             e.printStackTrace();
@@ -149,7 +130,16 @@ class RequestHandler extends Thread{
         //return clientString;
    }
 
-    private void sendClient(String message) {
+   private void nsendClient(String message){
+
+   }
+
+   private String nreceiveClient(BufferedReader input) throws IOException {
+       input = new BufferedReader(new InputStreamReader((s.getInputStream())));
+       return "0";
+   }
+
+   private void sendClient(String message) {
         try {
             //DataOutputStream dataout = new DataOutputStream(s.getOutputStream());
             dataOutput = new DataOutputStream(s.getOutputStream());
@@ -164,18 +154,22 @@ class RequestHandler extends Thread{
 
 
     // Check if provided username and password is correct
-    private int authenticateClient(String uname, String passwd) throws IOException, SQLException {
+    private boolean authenticateClient(PrintWriter output, String uname, String passwd) throws SQLException {
         if (checkClient(uname)) {
             if (cs.verifyPassword(passwd)) {
                 //sendClient("1");
-                return 1;
+                output.println("1");
+                return true;
             } else {
                 //sendClient("-1");
-                return -1;
+                output.println("1");
+                return false;
             }
         } else {
             //sendClient("0");
-            return 0;
+            output.println("0");
+            return false;
+            //return 0;
         }
     }
 
@@ -186,7 +180,6 @@ class RequestHandler extends Thread{
             //System.out.println(file);
             msg += file + "\n";
         }
-        msg += "END";
         return msg;
     }
 

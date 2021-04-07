@@ -35,14 +35,22 @@ public class Client implements Runnable{
             PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
 
             boolean auth = false;
-            String uname = "tes123";
-            String password = "test";
-            String creds = uname +"\t"+password;
+            while (true) {
+                // Update to gui credentials
+                String uname = "tes123";
+                String password = "test";
+                String creds = uname + "\t" + password;
+                //
 
-            // Send to server
-            clientOutput.println(creds);
-            String serverMessage = serverInput.readLine();
-            System.out.println(serverMessage);
+                clientOutput.println(creds);
+                String serverMessage = serverInput.readLine();
+                System.out.println("[Server]: " + serverMessage);
+                if (serverMessage.equals(1)){
+                    break;
+                }
+                serverInput.read();
+
+            }
             /*
             while(true) {
                 sendCredentials();
@@ -74,15 +82,6 @@ public class Client implements Runnable{
         dataOutput.writeUTF(message);
         dataOutput.writeByte(-1);
         dataOutput.flush();
-        /*
-        out.writeByte(1);
-        out.writeUTF(message);
-        out.writeByte(-1);
-        out.flush();
-        /*dataOutput = new DataOutputStream(socket.getOutputStream());
-        dataOutput.writeBytes(message + '\n');
-        dataOutput.flush();
-         */
     }
 
     // Receive data from server
