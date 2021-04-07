@@ -1,19 +1,12 @@
 import client.Client;
 import server.Server;
-import storage.ClientStorage;
 import storage.DB;
 
-import java.sql.SQLException;
-import java.util.Scanner;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.scene.text.*;
 
@@ -22,6 +15,7 @@ public class main extends Application{
     private Stage primaryStage = null;
     private Server server = null;
 
+    public static void main(String[] args) {
         DB.initDB();
         DB.createClientTable();
         launch(args);
