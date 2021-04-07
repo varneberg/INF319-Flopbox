@@ -144,7 +144,6 @@ class RequestHandler extends Thread{
     }
 
     private void receiveFile(String fileName) throws Exception{
-
         File file = new File(fileName);
         if (file.createNewFile()) {
             System.out.println("File created: " + file.getName());
