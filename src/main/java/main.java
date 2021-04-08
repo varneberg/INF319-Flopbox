@@ -8,6 +8,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.scene.text.*;
+import javafx.scene.control.ScrollPane;
 import server.Server;
 import storage.DB;
 
@@ -32,7 +34,6 @@ public class main extends Application{
         server.startServer();
 
         login();
-
     }
 
     public void login(){
@@ -84,8 +85,8 @@ public class main extends Application{
         // e.g. by clicking it or pressing enter while it's focused
         login_button.setOnAction(e -> {
             if(!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
-                 Client current = server.login(username_field.getText(), password_field.getText());
-                 if(current != null){
+                 Client current = new Client(port);
+                 if(current.authenticateClient(username_field.getText(), password_field.getText())) {
                      logged_in(current);
                  }
                  else{
@@ -99,9 +100,9 @@ public class main extends Application{
 
         register_button.setOnAction(e -> {
             if(!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
-                Client current = new Client(port, username_field.getText(), password_field.getText());
-                if(!server.clientExists(current.getName())){
-                    server.addClient(current);
+                Client current = new Client(port);
+
+                if(current.registerClient(username_field.getText(), password_field.getText())) {
                     logged_in(current);
                 }
                 else{

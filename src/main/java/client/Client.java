@@ -109,6 +109,11 @@ public class Client implements Runnable{
         sendServer(creds);
     }
 
+    public boolean authenticateClient(String name, String password) {
+        return false;
+    }
+
+    public boolean registerClient(String name, String password) { return false; }
 
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
