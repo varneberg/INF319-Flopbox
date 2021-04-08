@@ -22,6 +22,7 @@ public class Server extends Thread {
         clients.add(client);
     }
 
+    /*
     public boolean clientExists(String name){
         for(int i=0;i<clients.size();i++){
             Client current = clients.get(i);
@@ -40,6 +41,7 @@ public class Server extends Thread {
         }
         return null;
     }
+     */
 
     public void startServer(){
         try {

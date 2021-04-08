@@ -1,19 +1,21 @@
 import client.Client;
-import server.Server;
-import storage.DB;
-
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.scene.text.*;
+import server.Server;
+import storage.DB;
 
 public class main extends Application{
     private static int port = 5555;
     private Stage primaryStage = null;
     private Server server = null;
+
 
     public static void main(String[] args) {
         DB.initDB();

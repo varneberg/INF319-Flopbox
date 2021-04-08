@@ -4,33 +4,28 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
+
 public class Client implements Runnable{
-    String name;
-    String password;
     Thread t;
-    String message;
     int port;
-    private Socket s;
+    Socket s;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
+    BufferedReader serverInput;
+    PrintWriter clientOutput;
 
 
-
-    public Client(int port, String name, String password) {
-
+    public Client(int port, Socket socket) {
         this.port = port;
-        this.name = name;
-        this.password = password;
+        this.s = socket;
     }
-    public Client(int port) {
-        this.port = port;
-    }
+
 
     @Override
     public void run(){
         try{
-            s = new Socket("localhost",port);
+            //s = new Socket("localhost",port);
             BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
 
@@ -75,59 +70,45 @@ public class Client implements Runnable{
     }
 
     // Send data to server
-    private void sendServer(String message) throws IOException {
-        //DataOutputStream out = new DataOutputStream(s.getOutputStream());
-        dataOutput = new DataOutputStream(s.getOutputStream());
-        dataOutput.writeByte(1);
-        dataOutput.writeUTF(message);
-        dataOutput.writeByte(-1);
-        dataOutput.flush();
+    public void sendServer(String message) throws IOException {
+        clientOutput = new PrintWriter(s.getOutputStream(), true);
+        clientOutput.println(message);
     }
 
     // Receive data from server
-    private String receiveServer() throws IOException {
-        //DataInputStream inp = new DataInputStream(s.getInputStream());
-        //byte msgStream = inp.readByte();
-        //return inp.readUTF();
-        dataInput = new DataInputStream(s.getInputStream());
-        byte msgStream = dataInput.readByte();
-        String inp = dataInput.readUTF();
-        return inp;
+    public String receiveServer() throws IOException {
+        serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        return serverInput.readLine();
+    }
+
+
+    public void sendAuthentication(String username, String password) throws IOException {
+        String credentials = username + "\t" + password;
+        sendServer(credentials);
     }
 
     // Receive names for files stored on server
-    private String receiveFileNames() throws IOException {
-        String[] filename;
-        String nameString = "";
-        String inp = receiveServer();
-        //System.out.println(inp);
-        return inp;
+    public String[] receiveFileNames() {
+        return null;
     }
 
     // Closes current connection to server
     private void closeConnection() throws IOException{
         sendServer("exit()");
-        System.out.println("[Client]: Connection to server closed");
         s.close();
     }
 
 
     private void sendCredentials() throws IOException {
-        System.out.println("[Client]: Please enter your credentials\n");
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Username:");
         String uname = sc.nextLine();
-        System.out.println("Password:");
         String passwd= sc.nextLine();
 
         String creds = uname +"\n"+ passwd;
         sendServer(creds);
     }
 
-    private boolean authenticate() {
-        return false;
-    }
 
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
@@ -148,12 +129,5 @@ public class Client implements Runnable{
         }
         fileInputStream.close();
     }
-
-
-    public String getMessage() { return message; }
-
-    public String getPassword() { return password; }
-
-    public String getName() { return name; }
 
 }
