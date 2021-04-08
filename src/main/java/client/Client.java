@@ -9,6 +9,7 @@ public class Client implements Runnable{
     String password;
     Thread t;
     String message;
+    private String token = null;
     int port;
     private Socket s;
     private static DataOutputStream dataOutput = null;
@@ -16,13 +17,6 @@ public class Client implements Runnable{
     private static String storagePath = "src/main/resources/clientStorage/";
 
 
-
-    public Client(int port, String name, String password) {
-
-        this.port = port;
-        this.name = name;
-        this.password = password;
-    }
     public Client(int port) {
         this.port = port;
     }
@@ -96,7 +90,7 @@ public class Client implements Runnable{
     }
 
     // Receive names for files stored on server
-    private String receiveFileNames() throws IOException {
+    public String receiveFileNames() throws IOException {
         String[] filename;
         String nameString = "";
         String inp = receiveServer();
@@ -125,9 +119,11 @@ public class Client implements Runnable{
         sendServer(creds);
     }
 
-    private boolean authenticate() {
+    public boolean authenticateClient(String name, String password) {
         return false;
     }
+
+    public boolean registerClient(String name, String password) { return false; }
 
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
