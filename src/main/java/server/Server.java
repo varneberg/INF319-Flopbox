@@ -82,13 +82,31 @@ class RequestHandler extends Thread{
     private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
 
-    private PrintWriter serverOutput;
+    BufferedReader clientInput;
+    PrintWriter serverOutput;
 
 
     RequestHandler(Socket socket){
         this.s = socket;
     }
 
+
+    @Override
+    public void run(){
+        try {
+            System.out.println("[Server]: Received a connection\n");
+            BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter serverOutput = new PrintWriter(s.getOutputStream(), true);
+            String input = serverInput.readLine();
+            System.out.println("[Client] -> [Server]: "+ input);
+            closeConnection();
+
+        } catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /*
     @Override
     public void run(){ // What the server does when a client connects
         try{
@@ -119,39 +137,30 @@ class RequestHandler extends Thread{
             e.printStackTrace();
         }
     }
+    */
 
-   private String receiveClient() throws IOException {
-        //dataIn = new DataInputStream(socket.getInputStream());
-        //DataInputStream inp = new DataInputStream(socket.getInputStream());
-        dataInput = new DataInputStream(s.getInputStream());
-        byte msgStream = dataInput.readByte();
-        String inp = dataInput.readUTF();
-        return inp;
-        //BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        //String clientString = fromClient.readLine();
-        //return clientString;
+
+   public String receiveClient(){
+       try{
+           clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+           String input = clientInput.readLine();
+           return input;
+       }catch (IOException e){
+           return e.getMessage();
+       }
    }
 
    private void nsendClient(String message){
 
    }
 
-   private String nreceiveClient(BufferedReader input) throws IOException {
-       input = new BufferedReader(new InputStreamReader((s.getInputStream())));
-       return "0";
-   }
-
-   private void sendClient(String message) {
-        try {
-            //DataOutputStream dataout = new DataOutputStream(s.getOutputStream());
-            dataOutput = new DataOutputStream(s.getOutputStream());
-            dataOutput.writeByte(1);
-            dataOutput.writeUTF(message);
-            dataOutput.writeByte(-1);
-            dataOutput.flush();
-        } catch(IOException e){
-            System.out.println(e.getStackTrace());
-        }
+   public void sendClient(String message){
+       try{
+           serverOutput = new PrintWriter(s.getOutputStream(), true);
+           serverOutput.println(message);
+       } catch (IOException e){
+           System.out.println(e.getMessage());
+       }
     }
 
 

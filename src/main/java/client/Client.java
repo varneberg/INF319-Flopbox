@@ -6,19 +6,31 @@ import java.util.Scanner;
 
 
 public class Client implements Runnable{
+
+    String name;
     Thread t;
     int port;
-    Socket s;
+    private Socket s = null;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
-    BufferedReader serverInput;
-    PrintWriter clientOutput;
+    //BufferedReader serverInput = null;
+    //PrintWriter clientOutput = null;
 
 
-    public Client(int port, Socket socket) {
+    public Client(int port){
         this.port = port;
-        this.s = socket;
+    }
+
+    public Client(String address, int port) {
+        try{
+            this.port = port;
+            s = new Socket(address, port);
+
+
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
 
@@ -69,22 +81,39 @@ public class Client implements Runnable{
         }
     }
 
+
+    public void connect(){
+    try{
+
+        s = new Socket("localhost", port);
+
+    } catch (IOException e){
+        System.out.println(e.getMessage());
+    }
+    }
+
+
     // Send data to server
-    public void sendServer(String message) throws IOException {
-        clientOutput = new PrintWriter(s.getOutputStream(), true);
-        clientOutput.println(message);
+    public void sendServer(String message) {
+        try{
+            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
+            clientOutput.println(message);
+
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     // Receive data from server
-    public String receiveServer() throws IOException {
-        serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        return serverInput.readLine();
+    public String receiveServer(BufferedReader input) throws IOException {
+        input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        return input.readLine();
     }
 
 
     public void sendAuthentication(String username, String password) throws IOException {
         String credentials = username + "\t" + password;
-        sendServer(credentials);
+        //sendServer(credentials);
     }
 
     // Receive names for files stored on server
@@ -94,7 +123,7 @@ public class Client implements Runnable{
 
     // Closes current connection to server
     private void closeConnection() throws IOException{
-        sendServer("exit()");
+        //sendServer("exit()");
         s.close();
     }
 
@@ -106,7 +135,7 @@ public class Client implements Runnable{
         String passwd= sc.nextLine();
 
         String creds = uname +"\n"+ passwd;
-        sendServer(creds);
+        //sendServer(creds);
     }
 
     public boolean authenticateClient(String name, String password) {
@@ -135,4 +164,19 @@ public class Client implements Runnable{
         fileInputStream.close();
     }
 
+    public Socket getSocket() {
+        return s;
+    }
+
+    public void setSocket(Socket s) {
+        this.s = s;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
