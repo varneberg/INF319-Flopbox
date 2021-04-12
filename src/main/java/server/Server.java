@@ -110,8 +110,8 @@ class RequestHandler extends Thread{
                     String password= creds[1];
                     int status = validateClient(username, password);
                     if(status==1) {
-                        //sendClient(genUUID());
-                        sendFileNames(username);
+                        sendClient(genUUID());
+                        //sendFileNames(username);
                     }
                 }
                 else if(input.equals("CREATEUSER()")){
