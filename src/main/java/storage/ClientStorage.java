@@ -1,6 +1,5 @@
 package storage;
 
-import client.Client;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -82,7 +81,7 @@ public class ClientStorage {
     }
 
 
-    public void addClient(String uname, String password) throws SQLException {
+    public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
         String dir = "/" + uname + "/";
         try(Connection con = this.connect();
@@ -125,11 +124,14 @@ public class ClientStorage {
     }
 
     // List all files client has in directory
-    public String[] listClientFiles(String clientName) {
+    public String[] listClientFiles(String clientName) throws IOException {
         String[] fileNames;
         File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
-        fileNames = f.list();
-        return fileNames;
+
+
+        return f.list();
+
+
     }
 
     // Add client file

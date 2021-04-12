@@ -1,6 +1,5 @@
 package storage;
 
-import java.io.File;
 import java.sql.*;
 
 
@@ -25,7 +24,7 @@ public class DB {
     public static void createClientTable(){
         String sql = "CREATE TABLE IF NOT EXISTS clients (\n"
                 + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
-                + "     uname varchar(6) UNIQUE NOT NULL,\n"
+                + "     uname varchar(10) UNIQUE NOT NULL,\n"
                 + "     password varchar(256),\n"
                 + "     directory varchar(100)\n"
                 + ");";

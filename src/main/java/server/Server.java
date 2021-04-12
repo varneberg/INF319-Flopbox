@@ -2,10 +2,13 @@ package server;
 
 import client.Client;
 import storage.ClientStorage;
+
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Server extends Thread {
 
@@ -82,107 +85,84 @@ class RequestHandler extends Thread{
     private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
 
-    private PrintWriter serverOutput;
+    BufferedReader serverInput;
+    PrintWriter serverOutput;
 
 
     RequestHandler(Socket socket){
         this.s = socket;
     }
 
-    @Override
-    public void run(){ // What the server does when a client connects
-        try{
-            System.out.println("[Server]: Received a connection\n");
-            String username = "";
 
-            while (true) {
-                BufferedReader clientInput = new BufferedReader(new InputStreamReader((s.getInputStream())));
-                serverOutput = new PrintWriter(s.getOutputStream(), true);
-                String[] creds = clientInput.readLine().split("\t");
-                username = creds[0];
-                String password = creds[1];
-                boolean uath = authenticateClient(serverOutput, username, password);
-                if (uath) {
+    @Override
+    public void run(){
+        try {
+            System.out.println("[Server]: Received a connection\n");
+            while(true) {
+                String input = receiveClient();
+                if(input.equals("EXIT()")){
                     break;
                 }
+                else if(input.equals("LOGIN()")){
+                    input = receiveClient();
+                    String[] creds = input.split(":");
+                    String username = creds[0];
+                    String password= creds[1];
+                    int status = validateClient(username, password);
+                    if(status==1) {
+                        sendClient(genUUID());
+                        //sendFileNames(username);
+                    }
+                }
+                else if(input.equals("CREATEUSER()")){
+                }
             }
-            serverOutput.flush();
-            String files = getAvailableFileNames(username);
-            serverOutput.printf(files);
-
-
-
             closeConnection();
-
-        }
-        catch( Exception e ) {
-            e.printStackTrace();
+        } catch (IOException e){
+            System.out.println(e.getMessage());
         }
     }
 
-   private String receiveClient() throws IOException {
-        //dataIn = new DataInputStream(socket.getInputStream());
-        //DataInputStream inp = new DataInputStream(socket.getInputStream());
-        dataInput = new DataInputStream(s.getInputStream());
-        byte msgStream = dataInput.readByte();
-        String inp = dataInput.readUTF();
-        return inp;
-        //BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        //String clientString = fromClient.readLine();
-        //return clientString;
+
+   public String receiveClient(){
+       try{
+           serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+           return serverInput.readLine();
+       }catch (IOException e){
+           return e.getMessage();
+       }
    }
 
-   private void nsendClient(String message){
 
-   }
+   public void sendClient(String message){
+       try{
+           serverOutput = new PrintWriter(s.getOutputStream(), true);
+           serverOutput.println(message);
+       } catch (IOException e){
+           System.out.println(e.getMessage());
+       }
+    }
 
-   private String nreceiveClient(BufferedReader input) throws IOException {
-       input = new BufferedReader(new InputStreamReader((s.getInputStream())));
-       return "0";
-   }
+    private String genUUID(){
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
 
-   private void sendClient(String message) {
-        try {
-            //DataOutputStream dataout = new DataOutputStream(s.getOutputStream());
-            dataOutput = new DataOutputStream(s.getOutputStream());
-            dataOutput.writeByte(1);
-            dataOutput.writeUTF(message);
-            dataOutput.writeByte(-1);
-            dataOutput.flush();
+
+    private String[] getAvailableFileNames(String clientName) throws IOException {
+        return cs.listClientFiles(clientName);
+    }
+
+    public void sendFileNames(String username){
+        try{
+            //serverOutput = new PrintWriter(s.getOutputStream(), true);
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            String files[] = getAvailableFileNames(username);
+            out.writeObject(files);
+
         } catch(IOException e){
-            System.out.println(e.getStackTrace());
+            System.out.println(e.getMessage());
         }
-    }
-
-
-    // Check if provided username and password is correct
-    private boolean authenticateClient(PrintWriter output, String uname, String passwd) throws SQLException {
-        if (checkClient(uname)) {
-            if (cs.verifyPassword(passwd)) {
-                //sendClient("1");
-                output.println("1");
-                return true;
-            } else {
-                //sendClient("-1");
-                output.println("1");
-                return false;
-            }
-        } else {
-            //sendClient("0");
-            output.println("0");
-            return false;
-            //return 0;
-        }
-    }
-
-    private String getAvailableFileNames(String clientName){
-        String[] files = cs.listClientFiles(clientName);
-        String msg = "";
-        for(String file : files){
-            //System.out.println(file);
-            msg += file + "\n";
-        }
-        return msg;
     }
 
     // Closes current connection to client
@@ -190,6 +170,31 @@ class RequestHandler extends Thread{
         System.out.println("[Server]: Connection to client closed");
         s.close();
     }
+
+   /*
+    Status codes:
+    -1: Username not found
+    0: Password and username incorrect
+    1: Validated client
+    2:
+   */
+
+    private int validateClient(String username, String password){
+        try {
+            if (cs.clientExists(username)) {
+                if(cs.verifyPassword(password)){
+                    return 1; }
+                else{
+                    return 0; }
+
+            }
+            else {
+                return -1; }
+
+        } catch (SQLException e){ System.out.println(e.getMessage()); }
+        return 0;
+    }
+
 
     // From username, check is corresponding entry exists in database
     private boolean checkClient(String uname) throws SQLException {
