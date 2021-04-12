@@ -1,8 +1,7 @@
 package client;
 
 import java.io.*;
-import java.net.*;
-import java.util.Scanner;
+import java.net.Socket;
 
 
 public class Client implements Runnable{
@@ -14,8 +13,8 @@ public class Client implements Runnable{
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
-    //BufferedReader serverInput = null;
-    //PrintWriter clientOutput = null;
+    BufferedReader clientInput = null;
+    PrintWriter clientOutput = null;
 
 
     public Client(int port){
@@ -26,8 +25,6 @@ public class Client implements Runnable{
         try{
             this.port = port;
             s = new Socket(address, port);
-
-
         }catch (IOException e){
             System.out.println(e.getMessage());
         }
@@ -83,13 +80,12 @@ public class Client implements Runnable{
 
 
     public void connect(){
-    try{
+        try{
+            s = new Socket("localhost", port);
 
-        s = new Socket("localhost", port);
-
-    } catch (IOException e){
-        System.out.println(e.getMessage());
-    }
+        } catch (IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
 
@@ -99,21 +95,28 @@ public class Client implements Runnable{
             PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
             clientOutput.println(message);
 
+
         }catch (IOException e){
             System.out.println(e.getMessage());
         }
     }
 
     // Receive data from server
-    public String receiveServer(BufferedReader input) throws IOException {
-        input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        return input.readLine();
+    public String receiveServer() {
+        try{
+            clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            return clientInput.readLine();
+
+        } catch (IOException e){
+            return e.getMessage();
+        }
+
     }
 
 
-    public void sendAuthentication(String username, String password) throws IOException {
-        String credentials = username + "\t" + password;
-        //sendServer(credentials);
+    public void sendAuthentication(String username, String password) {
+        String credentials = username + ":" + password;
+        sendServer(credentials);
     }
 
     // Receive names for files stored on server
@@ -128,21 +131,6 @@ public class Client implements Runnable{
     }
 
 
-    private void sendCredentials() throws IOException {
-        Scanner sc = new Scanner(System.in);
-
-        String uname = sc.nextLine();
-        String passwd= sc.nextLine();
-
-        String creds = uname +"\n"+ passwd;
-        //sendServer(creds);
-    }
-
-    public boolean authenticateClient(String name, String password) {
-        return false;
-    }
-
-    public boolean registerClient(String name, String password) { return false; }
 
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;

@@ -1,6 +1,5 @@
 package storage;
 
-import client.Client;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -82,7 +81,7 @@ public class ClientStorage {
     }
 
 
-    public void addClient(String uname, String password) throws SQLException {
+    public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
         String dir = "/" + uname + "/";
         try(Connection con = this.connect();

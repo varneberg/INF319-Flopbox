@@ -2,10 +2,13 @@ package server;
 
 import client.Client;
 import storage.ClientStorage;
+
 import java.io.*;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Server extends Thread {
 
@@ -82,7 +85,7 @@ class RequestHandler extends Thread{
     private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
 
-    BufferedReader clientInput;
+    BufferedReader serverInput;
     PrintWriter serverOutput;
 
 
@@ -94,65 +97,42 @@ class RequestHandler extends Thread{
     @Override
     public void run(){
         try {
-            System.out.println("[Server]: Received a connection\n");
-            BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            PrintWriter serverOutput = new PrintWriter(s.getOutputStream(), true);
-            String input = serverInput.readLine();
-            System.out.println("[Client] -> [Server]: "+ input);
+            while(true) {
+                System.out.println("[Server]: Received a connection\n");
+                String input = receiveClient();
+                if(input.equals("EXIT()")){
+                    break;
+                }
+                else if(input.equals("LOGIN()")){
+
+                }
+                else if(input.equals("CREATEUSER()")){
+
+                }
+
+                System.out.println(input);
+                //BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                //PrintWriter serverOutput = new PrintWriter(s.getOutputStream(), true);
+                //String input = serverInput.readLine();
+            }
             closeConnection();
+
 
         } catch (IOException e){
             System.out.println(e.getMessage());
         }
     }
 
-    /*
-    @Override
-    public void run(){ // What the server does when a client connects
-        try{
-            System.out.println("[Server]: Received a connection\n");
-            String username = "";
-
-            while (true) {
-                BufferedReader clientInput = new BufferedReader(new InputStreamReader((s.getInputStream())));
-                serverOutput = new PrintWriter(s.getOutputStream(), true);
-                String[] creds = clientInput.readLine().split("\t");
-                username = creds[0];
-                String password = creds[1];
-                boolean uath = authenticateClient(serverOutput, username, password);
-                if (uath) {
-                    break;
-                }
-            }
-            serverOutput.flush();
-            String files = getAvailableFileNames(username);
-            serverOutput.printf(files);
-
-
-
-            closeConnection();
-
-        }
-        catch( Exception e ) {
-            e.printStackTrace();
-        }
-    }
-    */
-
 
    public String receiveClient(){
        try{
-           clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-           String input = clientInput.readLine();
-           return input;
+           serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+           return serverInput.readLine();
        }catch (IOException e){
            return e.getMessage();
        }
    }
 
-   private void nsendClient(String message){
-
-   }
 
    public void sendClient(String message){
        try{
@@ -165,6 +145,7 @@ class RequestHandler extends Thread{
 
 
     // Check if provided username and password is correct
+    /*
     private boolean authenticateClient(PrintWriter output, String uname, String passwd) throws SQLException {
         if (checkClient(uname)) {
             if (cs.verifyPassword(passwd)) {
@@ -184,6 +165,12 @@ class RequestHandler extends Thread{
         }
     }
 
+     */
+
+    private String genUUID(){
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
     private String getAvailableFileNames(String clientName){
         String[] files = cs.listClientFiles(clientName);
         String msg = "";
@@ -199,6 +186,26 @@ class RequestHandler extends Thread{
         System.out.println("[Server]: Connection to client closed");
         s.close();
     }
+
+   /*
+    Status codes:
+    -1: Username not found
+    0: Password and username incorrect
+    1: Validated client
+    2:
+   */
+
+    private int validateClient(String username, String password){
+        try {
+            if (cs.clientExists(username)) {
+                if(cs.verifyPassword(password)){ return 1; }
+            } else{
+                return -1;
+            }
+        } catch (SQLException e){ System.out.println(e.getMessage()); }
+        return 0;
+    }
+
 
     // From username, check is corresponding entry exists in database
     private boolean checkClient(String uname) throws SQLException {
