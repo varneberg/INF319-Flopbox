@@ -121,10 +121,10 @@ public class Client implements Runnable{
 
 
     // Receive names for files stored on server
-    public String[] receiveFileNames() throws IOException, ClassNotFoundException {
-        ObjectInputStream in = new ObjectInputStream(s.getInputStream());
-        String files[] = (String[]) in.readObject();
-        return files;
+    public void receiveFileNames() throws IOException, ClassNotFoundException {
+        clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+
     }
 
     // Closes current connection to server

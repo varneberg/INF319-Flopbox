@@ -3,6 +3,7 @@ package storage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class ClientStorage {
     private Connection connect() {
@@ -123,14 +124,26 @@ public class ClientStorage {
         }
     }
 
+
+
     // List all files client has in directory
-    public String[] listClientFiles(String clientName) throws IOException {
-        String[] fileNames;
-        File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
+    public String[] listClientFiles(String path) {
+        //File root = new File("./src/main/resources/clientDirs/" + clientName+"/");
+        File root = new File(path);
+        File[] list = root.listFiles();
 
 
-        return f.list();
+        ArrayList<String> fileList = new ArrayList<String>();
+        for (File f : list){
+            if(f.isDirectory()){
+                fileList.add(f.getName()+"/");
+            }
+            else {
+                fileList.add(f.getName());
+            }
 
+        }
+        return fileList.toArray(new String[fileList.size()]);
 
     }
 

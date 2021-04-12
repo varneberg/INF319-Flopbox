@@ -21,7 +21,7 @@ public class cli_main {
         String username = "test123";
         String password = "test";
         client.sendAuthentication(username, password);
-        client.receiveFileNames();
+        System.out.println(client.receiveServer());
 
         server.stopServer();
 

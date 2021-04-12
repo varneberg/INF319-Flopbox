@@ -110,8 +110,10 @@ class RequestHandler extends Thread{
                     String password= creds[1];
                     int status = validateClient(username, password);
                     if(status==1) {
+                        //getAvailableFileNames(username);
                         //sendClient(genUUID());
-                        sendFileNames(username);
+                        //sendFileNames(username);
+                        sendClient(getAvailableFileNames(username));
                     }
                 }
                 else if(input.equals("CREATEUSER()")){
@@ -149,16 +151,21 @@ class RequestHandler extends Thread{
     }
 
 
-    private String[] getAvailableFileNames(String clientName) throws IOException {
-        return cs.listClientFiles(clientName);
+    private String getAvailableFileNames(String clientName) throws IOException {
+        String path = "./src/main/resources/clientDirs/"+clientName+"/";
+        String[] files = cs.listClientFiles(path);
+        String output = "";
+        for (int i = 0; i < files.length; i++) {
+            output += files[i] + ":";
+        }
+        return output;
     }
 
     public void sendFileNames(String username){
         try{
-            //serverOutput = new PrintWriter(s.getOutputStream(), true);
             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-            String files[] = getAvailableFileNames(username);
-            out.writeObject(files);
+            //out.writeObject(files);
+            //out.close();
 
         } catch(IOException e){
             System.out.println(e.getMessage());
