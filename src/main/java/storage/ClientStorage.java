@@ -124,11 +124,14 @@ public class ClientStorage {
     }
 
     // List all files client has in directory
-    public String[] listClientFiles(String clientName) {
+    public String[] listClientFiles(String clientName) throws IOException {
         String[] fileNames;
         File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
-        fileNames = f.list();
-        return fileNames;
+
+
+        return f.list();
+
+
     }
 
     // Add client file

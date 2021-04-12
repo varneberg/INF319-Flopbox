@@ -97,27 +97,27 @@ class RequestHandler extends Thread{
     @Override
     public void run(){
         try {
+            System.out.println("[Server]: Received a connection\n");
             while(true) {
-                System.out.println("[Server]: Received a connection\n");
                 String input = receiveClient();
                 if(input.equals("EXIT()")){
                     break;
                 }
                 else if(input.equals("LOGIN()")){
-
+                    input = receiveClient();
+                    String[] creds = input.split(":");
+                    String username = creds[0];
+                    String password= creds[1];
+                    int status = validateClient(username, password);
+                    if(status==1) {
+                        //sendClient(genUUID());
+                        sendFileNames(username);
+                    }
                 }
                 else if(input.equals("CREATEUSER()")){
-
                 }
-
-                System.out.println(input);
-                //BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                //PrintWriter serverOutput = new PrintWriter(s.getOutputStream(), true);
-                //String input = serverInput.readLine();
             }
             closeConnection();
-
-
         } catch (IOException e){
             System.out.println(e.getMessage());
         }
@@ -143,42 +143,26 @@ class RequestHandler extends Thread{
        }
     }
 
-
-    // Check if provided username and password is correct
-    /*
-    private boolean authenticateClient(PrintWriter output, String uname, String passwd) throws SQLException {
-        if (checkClient(uname)) {
-            if (cs.verifyPassword(passwd)) {
-                //sendClient("1");
-                output.println("1");
-                return true;
-            } else {
-                //sendClient("-1");
-                output.println("1");
-                return false;
-            }
-        } else {
-            //sendClient("0");
-            output.println("0");
-            return false;
-            //return 0;
-        }
-    }
-
-     */
-
     private String genUUID(){
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
-    private String getAvailableFileNames(String clientName){
-        String[] files = cs.listClientFiles(clientName);
-        String msg = "";
-        for(String file : files){
-            //System.out.println(file);
-            msg += file + "\n";
+
+
+    private String[] getAvailableFileNames(String clientName) throws IOException {
+        return cs.listClientFiles(clientName);
+    }
+
+    public void sendFileNames(String username){
+        try{
+            //serverOutput = new PrintWriter(s.getOutputStream(), true);
+            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
+            String files[] = getAvailableFileNames(username);
+            out.writeObject(files);
+
+        } catch(IOException e){
+            System.out.println(e.getMessage());
         }
-        return msg;
     }
 
     // Closes current connection to client
@@ -198,10 +182,15 @@ class RequestHandler extends Thread{
     private int validateClient(String username, String password){
         try {
             if (cs.clientExists(username)) {
-                if(cs.verifyPassword(password)){ return 1; }
-            } else{
-                return -1;
+                if(cs.verifyPassword(password)){
+                    return 1; }
+                else{
+                    return 0; }
+
             }
+            else {
+                return -1; }
+
         } catch (SQLException e){ System.out.println(e.getMessage()); }
         return 0;
     }

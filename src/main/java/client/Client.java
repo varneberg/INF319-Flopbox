@@ -7,6 +7,7 @@ import java.net.Socket;
 public class Client implements Runnable{
 
     String name;
+    String uuid;
     Thread t;
     int port;
     private Socket s = null;
@@ -106,22 +107,24 @@ public class Client implements Runnable{
         try{
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             return clientInput.readLine();
-
         } catch (IOException e){
             return e.getMessage();
         }
-
     }
 
 
     public void sendAuthentication(String username, String password) {
+        sendServer("LOGIN()");
         String credentials = username + ":" + password;
         sendServer(credentials);
     }
 
+
     // Receive names for files stored on server
-    public String[] receiveFileNames() {
-        return null;
+    public String[] receiveFileNames() throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+        String files[] = (String[]) in.readObject();
+        return files;
     }
 
     // Closes current connection to server
@@ -130,6 +133,9 @@ public class Client implements Runnable{
         s.close();
     }
 
+    public boolean authenticateClient(String username, String password){
+        return true;
+    }
 
 
     private void sendFile(String filename) throws Exception{
@@ -166,5 +172,9 @@ public class Client implements Runnable{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean registerClient(String text, String text1) {
+        return true;
     }
 }
