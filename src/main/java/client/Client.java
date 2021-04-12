@@ -1,24 +1,34 @@
 package client;
 
 import java.io.*;
-import java.net.*;
-import java.util.Scanner;
+import java.net.Socket;
 
 
 public class Client implements Runnable{
+
+    String name;
+    String uuid;
     Thread t;
     int port;
-    Socket s;
+    private Socket s = null;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
-    BufferedReader serverInput;
-    PrintWriter clientOutput;
+    BufferedReader clientInput = null;
+    PrintWriter clientOutput = null;
 
 
-    public Client(int port, Socket socket) {
+    public Client(int port){
         this.port = port;
-        this.s = socket;
+    }
+
+    public Client(String address, int port) {
+        try{
+            this.port = port;
+            s = new Socket(address, port);
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
 
@@ -69,51 +79,64 @@ public class Client implements Runnable{
         }
     }
 
+
+    public void connect(){
+        try{
+            s = new Socket("localhost", port);
+
+        } catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+
     // Send data to server
-    public void sendServer(String message) throws IOException {
-        clientOutput = new PrintWriter(s.getOutputStream(), true);
-        clientOutput.println(message);
+    public void sendServer(String message) {
+        try{
+            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
+            clientOutput.println(message);
+
+
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     // Receive data from server
-    public String receiveServer() throws IOException {
-        serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        return serverInput.readLine();
+    public String receiveServer() {
+        try{
+            clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            return clientInput.readLine();
+        } catch (IOException e){
+            return e.getMessage();
+        }
     }
 
 
-    public void sendAuthentication(String username, String password) throws IOException {
-        String credentials = username + "\t" + password;
+    public void sendAuthentication(String username, String password) {
+        sendServer("LOGIN()");
+        String credentials = username + ":" + password;
         sendServer(credentials);
     }
 
+
     // Receive names for files stored on server
-    public String[] receiveFileNames() {
-        return null;
+    public String[] receiveFileNames() throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+        String files[] = (String[]) in.readObject();
+        return files;
     }
 
     // Closes current connection to server
     private void closeConnection() throws IOException{
-        sendServer("exit()");
+        //sendServer("exit()");
         s.close();
     }
 
-
-    private void sendCredentials() throws IOException {
-        Scanner sc = new Scanner(System.in);
-
-        String uname = sc.nextLine();
-        String passwd= sc.nextLine();
-
-        String creds = uname +"\n"+ passwd;
-        sendServer(creds);
+    public boolean authenticateClient(String username, String password){
+        return true;
     }
 
-    public boolean authenticateClient(String name, String password) {
-        return false;
-    }
-
-    public boolean registerClient(String name, String password) { return false; }
 
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
@@ -135,4 +158,23 @@ public class Client implements Runnable{
         fileInputStream.close();
     }
 
+    public Socket getSocket() {
+        return s;
+    }
+
+    public void setSocket(Socket s) {
+        this.s = s;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean registerClient(String text, String text1) {
+        return true;
+    }
 }
