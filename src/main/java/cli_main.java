@@ -20,12 +20,8 @@ public class cli_main {
         Client client = new Client(address, port);
         String username = "test123";
         String password = "test";
-        client.createUser("hurdigurdi", "test");
-        System.out.println(client.receiveServer());
-        //client.sendAuthentication(username, password);
-        //System.out.println(client.receiveServer());
-        //client.receiveFileNames();
-
+        client.attemptLogin(username, password);
+        client.sendServer("GETFILES()");
         server.stopServer();
 
     }

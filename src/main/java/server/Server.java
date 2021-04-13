@@ -1,6 +1,5 @@
 package server;
 
-import client.Client;
 import storage.ClientStorage;
 
 import java.io.*;
@@ -15,15 +14,11 @@ public class Server extends Thread {
     private ServerSocket ss;
     private int port;
     private boolean running = false;
-    private static ArrayList<Client> clients = new ArrayList<Client>();
 
     public Server(int port){
         this.port = port;
     }
 
-    public void addClient(Client client){
-        clients.add(client);
-    }
 
     /*
     public boolean clientExists(String name){
@@ -84,15 +79,16 @@ class RequestHandler extends Thread{
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
+    private static ArrayList<String> authClients = new ArrayList<String>();
 
     BufferedReader serverInput;
     PrintWriter serverOutput;
 
 
+
     RequestHandler(Socket socket){
         this.s = socket;
     }
-
 
     @Override
     public void run(){
@@ -101,11 +97,16 @@ class RequestHandler extends Thread{
             while(true) {
                 String input = receiveClient();
                 if(input.equals("EXIT()")){ break; }
-                else if(input.equals("LOGIN()")){
-                    int status = validateClient();
-                }
+
                 else if(input.equals("CREATEUSER()")){
                     createNewClient();
+                }
+
+                else if(input.equals("LOGIN()")){
+                    int status = validateClient();
+                    if(status == 1){
+                        startFileHandler();
+                    }
                 }
             }
             closeConnection();
@@ -185,16 +186,16 @@ class RequestHandler extends Thread{
         s.close();
     }
 
-   /*
-    Status codes:
-    -2: Client with username exists
-    -1: Username not found
-    0: Password and username incorrect
-    1: Validated client
-    2:
-   */
 
     private int validateClient(){
+        /*
+        Status codes:
+        -2: Client with username exists
+        -1: Username not found
+        0 : Password and username incorrect
+        1 : Validated client
+         */
+
         String input = receiveClient();
         String[] creds = input.split(":");
         String username = creds[0];
@@ -207,6 +208,7 @@ class RequestHandler extends Thread{
                 }
                 else{ // Password is wrong
                     sendClient("0");
+
                     return 0;
                 }
             }
@@ -220,7 +222,14 @@ class RequestHandler extends Thread{
     }
 
 
-
+    private void startFileHandler(){
+        FileHandler handler = new FileHandler();
+        String input = receiveClient();
+        if (input.equals("GETFILES()")){
+            handler.listClientFiles("test123");
+        }
+        System.out.println(input);
+    }
 
     private void receiveFile(String fileName) throws Exception{
         File file = new File(fileName);
@@ -242,5 +251,6 @@ class RequestHandler extends Thread{
         fileOutputStream.close();
 
     }
+
 
 }

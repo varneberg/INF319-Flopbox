@@ -4,10 +4,11 @@ import java.io.*;
 import java.net.Socket;
 
 
-public class Client implements Runnable{
+public class Client {
+    //public class Client implements Runnable{
 
     String name;
-    String uuid;
+    String uuid=null;
     Thread t;
     int port;
     private Socket s = null;
@@ -26,12 +27,13 @@ public class Client implements Runnable{
         try{
             this.port = port;
             s = new Socket(address, port);
+            this.uuid = uuid;
         }catch (IOException e){
             System.out.println(e.getMessage());
         }
     }
 
-
+    /*
     @Override
     public void run(){
         try{
@@ -56,7 +58,6 @@ public class Client implements Runnable{
                 serverInput.read();
 
             }
-            /*
             while(true) {
                 sendCredentials();
                 String authmsg = receiveServer();
@@ -69,7 +70,6 @@ public class Client implements Runnable{
                     System.out.println("[Server]: No user was found with given name");
                 } else { continue; }
             }
-             */
 
             //s.close();
             //closeConnection();
@@ -79,6 +79,7 @@ public class Client implements Runnable{
         }
     }
 
+    */
 
     public void connect(){
         try{
@@ -139,7 +140,23 @@ public class Client implements Runnable{
     }
 
     public boolean authenticateClient(String username, String password){
-        return true;
+        if(getUuid().equals(null)){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+    public String attemptLogin(String username, String password){
+        sendAuthentication(username, password);
+        String input = receiveServer();
+        if(input.length() > 2) {
+            //System.out.println(input);
+            setUuid(input);
+        }
+
+        return input;
     }
 
 
@@ -181,5 +198,13 @@ public class Client implements Runnable{
 
     public boolean registerClient(String text, String text1) {
         return false;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }
