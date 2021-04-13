@@ -113,6 +113,12 @@ public class Client implements Runnable{
     }
 
 
+    public void createUser(String username, String password){
+        sendServer("CREATEUSER()");
+        String credentials = username + ":" + password;
+        sendServer(credentials);
+    }
+
     public void sendAuthentication(String username, String password) {
         sendServer("LOGIN()");
         String credentials = username + ":" + password;
@@ -124,13 +130,11 @@ public class Client implements Runnable{
     public void receiveFileNames() throws IOException, ClassNotFoundException {
         String input = receiveServer();
         System.out.println("[Server -> Client]: " + input);
-
-
     }
 
     // Closes current connection to server
     private void closeConnection() throws IOException{
-        //sendServer("exit()");
+        sendServer("EXIT()");
         s.close();
     }
 
@@ -176,6 +180,6 @@ public class Client implements Runnable{
     }
 
     public boolean registerClient(String text, String text1) {
-        return true;
+        return false;
     }
 }

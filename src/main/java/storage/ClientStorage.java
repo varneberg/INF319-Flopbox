@@ -85,6 +85,7 @@ public class ClientStorage {
     public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
         String dir = "/" + uname + "/";
+        System.out.println("[Server]: Creating user "+ uname);
         try(Connection con = this.connect();
             PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setString(1, uname);
@@ -93,8 +94,7 @@ public class ClientStorage {
             pstmt.executeUpdate();
             createClientDir(uname);
         } catch (SQLException e){
-            //System.out.println(e.getMessage());
-            System.out.println("Client " + uname + " already in database");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -119,7 +119,7 @@ public class ClientStorage {
     public void createClientDir(String clientName) {
         File f = new File("./src/main/resources/clientDirs/" + clientName + '/');
         if (!f.exists()) {
-            System.out.println("Directory does not exists, creating new");
+            System.out.println("[Server]: Creating client directory for "+ clientName);
             f.mkdir();
         }
     }

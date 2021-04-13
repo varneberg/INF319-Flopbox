@@ -100,23 +100,12 @@ class RequestHandler extends Thread{
             System.out.println("[Server]: Received a connection\n");
             while(true) {
                 String input = receiveClient();
-                if(input.equals("EXIT()")){
-                    break;
-                }
+                if(input.equals("EXIT()")){ break; }
                 else if(input.equals("LOGIN()")){
-                    input = receiveClient();
-                    String[] creds = input.split(":");
-                    String username = creds[0];
-                    String password= creds[1];
-                    int status = validateClient(username, password);
-                    if(status==1) {
-                        //getAvailableFileNames(username);
-                        //sendClient(genUUID());
-                        //sendFileNames(username);
-                        sendClient(getAvailableFileNames(username));
-                    }
+                    int status = validateClient();
                 }
                 else if(input.equals("CREATEUSER()")){
+                    createNewClient();
                 }
             }
             closeConnection();
@@ -150,6 +139,24 @@ class RequestHandler extends Thread{
         return uuid.toString();
     }
 
+    private void createNewClient(){
+        String input = receiveClient();
+        String[] creds = input.split(":");
+        String uname = creds[0];
+        String passwd = creds[1];
+        try {
+            if(cs.clientExists(uname)){
+                sendClient("-1");
+            }else{
+                cs.addClient(uname, passwd);
+                sendClient("1");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+       //cs.addClient();
+    }
 
     private String getAvailableFileNames(String clientName) throws IOException {
         String path = "./src/main/resources/clientDirs/"+clientName+"/";
@@ -180,38 +187,39 @@ class RequestHandler extends Thread{
 
    /*
     Status codes:
+    -2: Client with username exists
     -1: Username not found
     0: Password and username incorrect
     1: Validated client
     2:
    */
 
-    private int validateClient(String username, String password){
+    private int validateClient(){
+        String input = receiveClient();
+        String[] creds = input.split(":");
+        String username = creds[0];
+        String password= creds[1];
         try {
             if (cs.clientExists(username)) {
-                if(cs.verifyPassword(password)){
-                    return 1; }
-                else{
-                    return 0; }
-
+                if(cs.verifyPassword(password)){ // Client is authenticated
+                    sendClient(genUUID());
+                    return 1;
+                }
+                else{ // Password is wrong
+                    sendClient("0");
+                    return 0;
+                }
             }
-            else {
-                return -1; }
+            else { // No user was found with given name
+                sendClient("-1");
+                return -1;
+            }
 
         } catch (SQLException e){ System.out.println(e.getMessage()); }
         return 0;
     }
 
 
-    // From username, check is corresponding entry exists in database
-    private boolean checkClient(String uname) throws SQLException {
-        boolean exists = cs.clientExists(uname);
-        if (exists){
-            return true;
-        } else{
-            return false;
-        }
-    }
 
 
     private void receiveFile(String fileName) throws Exception{
