@@ -1,5 +1,7 @@
 package client;
 
+import message.Message;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -92,9 +94,11 @@ public class Client {
 
 
     // Send data to server
-    public void sendServer(String message) {
+    public void sendServer(String requestType, String content) {
         try{
-            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
+            String uuid = getUuid();
+            clientOutput = new PrintWriter(s.getOutputStream(), true);
+            String message = s.getLocalAddress() + ":" + uuid + ":" + requestType + ":" + content;
             clientOutput.println(message);
 
 
@@ -113,17 +117,30 @@ public class Client {
         }
     }
 
+    public void sendMessage(String requestType, String contents){
+        try {
+            ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
+            clientOutput = new PrintWriter(s.getOutputStream(),true);
+            Message message = new Message(s.getInetAddress().toString(), getUuid(),requestType, contents);
+            clientOutput.println(message.createMessage());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void createUser(String username, String password){
-        sendServer("CREATEUSER()");
-        String credentials = username + ":" + password;
-        sendServer(credentials);
+        //sendServer("CREATEUSER()");
+        String credentials = username + "/" + password;
+        //sendServer("CREATEUSER()",credentials);
+        sendMessage("CREATEUSER()", credentials);
     }
 
     public void sendAuthentication(String username, String password) {
-        sendServer("LOGIN()");
-        String credentials = username + ":" + password;
-        sendServer(credentials);
+        //sendServer("LOGIN()", );
+        String credentials = username + "/" + password;
+        sendMessage("LOGIN()", credentials);
+        //sendServer("LOGIN()", credentials);
     }
 
 
@@ -135,7 +152,7 @@ public class Client {
 
     // Closes current connection to server
     private void closeConnection() throws IOException{
-        sendServer("EXIT()");
+        sendServer("EXIT()", null);
         s.close();
     }
 

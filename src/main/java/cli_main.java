@@ -21,7 +21,8 @@ public class cli_main {
         String username = "test123";
         String password = "test";
         client.attemptLogin(username, password);
-        client.sendServer("GETFILES()");
+        //client.sendAuthentication(username, password);
+        //client.sendMessage("LOGIN()", "flurp" +"/" +"test");
         server.stopServer();
 
     }

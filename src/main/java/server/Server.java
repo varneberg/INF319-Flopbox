@@ -1,5 +1,6 @@
 package server;
 
+import message.Message;
 import storage.ClientStorage;
 
 import java.io.*;
@@ -80,6 +81,8 @@ class RequestHandler extends Thread{
     private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
     private static ArrayList<String> authClients = new ArrayList<String>();
+    private String currClientUUID = null;
+    private String currClientAddress = null;
 
     BufferedReader serverInput;
     PrintWriter serverOutput;
@@ -95,7 +98,18 @@ class RequestHandler extends Thread{
         try {
             System.out.println("[Server]: Received a connection\n");
             while(true) {
-                String input = receiveClient();
+                //String input = receiveClient();
+                Message clientMsg = receiveMessage();
+                if(clientMsg.getRequestType().equals("EXIT()")){
+                    break;
+                }
+                if(clientMsg.getRequestType().equals("LOGIN()")){
+                    int status = validateClient(clientMsg.getMessageContents());
+                    if(status == 1){
+                        System.out.println("Client authenticated");
+                    }
+                }
+                /*
                 if(input.equals("EXIT()")){ break; }
 
                 else if(input.equals("CREATEUSER()")){
@@ -105,9 +119,12 @@ class RequestHandler extends Thread{
                 else if(input.equals("LOGIN()")){
                     int status = validateClient();
                     if(status == 1){
+                        System.out.println("Authenticated client");
                         startFileHandler();
                     }
                 }
+
+                 */
             }
             closeConnection();
         } catch (IOException e){
@@ -115,11 +132,27 @@ class RequestHandler extends Thread{
         }
     }
 
+    public Message receiveMessage(){
+        Message msg = null;
+        try {
+            serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            msg = new Message();
+            msg.receiveMessage(serverInput.readLine());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return msg;
+    }
 
    public String receiveClient(){
        try{
            serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-           return serverInput.readLine();
+           String[] clientMessage = serverInput.readLine().split(":");
+           currClientAddress = clientMessage[0];
+           currClientUUID = clientMessage[1];
+           String requestType = clientMessage[2];
+           String contents = clientMessage[3];
+           return contents;
        }catch (IOException e){
            return e.getMessage();
        }
@@ -142,7 +175,7 @@ class RequestHandler extends Thread{
 
     private void createNewClient(){
         String input = receiveClient();
-        String[] creds = input.split(":");
+        String[] creds = input.split("|");
         String uname = creds[0];
         String passwd = creds[1];
         try {
@@ -164,7 +197,7 @@ class RequestHandler extends Thread{
         String[] files = cs.listClientFiles(path);
         String output = "";
         for (int i = 0; i < files.length; i++) {
-            output += files[i] + ":";
+            output += files[i] + "|";
         }
         return output;
     }
@@ -187,7 +220,7 @@ class RequestHandler extends Thread{
     }
 
 
-    private int validateClient(){
+    private int validateClient(String input){
         /*
         Status codes:
         -2: Client with username exists
@@ -196,10 +229,10 @@ class RequestHandler extends Thread{
         1 : Validated client
          */
 
-        String input = receiveClient();
-        String[] creds = input.split(":");
+        //String input = receiveClient();
+        String[] creds = input.split("/");
         String username = creds[0];
-        String password= creds[1];
+        String password = creds[1];
         try {
             if (cs.clientExists(username)) {
                 if(cs.verifyPassword(password)){ // Client is authenticated
