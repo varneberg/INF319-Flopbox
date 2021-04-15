@@ -1,6 +1,7 @@
 package server;
 
 import message.clientMessage;
+import message.serverMessage;
 import storage.ClientStorage;
 
 import java.io.*;
@@ -100,33 +101,20 @@ class RequestHandler extends Thread{
             while(true) {
                 //String input = receiveClient();
                 clientMessage clientMsg = receiveMessage();
-                if(clientMsg.getRequestType().equals("EXIT()")){
-                    break;
-                }
-                if(clientMsg.getRequestType().equals("LOGIN()")){
-                    int status = validateClient(clientMsg.getMessageContents());
-                    if(status == 1){
-                        System.out.println("Client authenticated");
+                String requestType = clientMsg.getRequestType();
+                String contents = clientMsg.getMessageContents();
+                if(requestType.equals("EXIT()")){closeConnection();}
+                else if(requestType.equals("CREATEUSER()")){
+                    createNewClient(contents);}
+                else if(requestType.equals("LOGIN()")){
+                    if(validateClient(contents)==1){
+                        System.out.println("[Server]: Client Authenticated");
                     }
-                }
-                /*
-                if(input.equals("EXIT()")){ break; }
 
-                else if(input.equals("CREATEUSER()")){
-                    createNewClient();
                 }
-
-                else if(input.equals("LOGIN()")){
-                    int status = validateClient();
-                    if(status == 1){
-                        System.out.println("Authenticated client");
-                        startFileHandler();
-                    }
-                }
-
-                 */
             }
-            closeConnection();
+
+
         } catch (IOException e){
             System.out.println(e.getMessage());
         }
@@ -144,6 +132,7 @@ class RequestHandler extends Thread{
         return msg;
     }
 
+    /*
    public String receiveClient(){
        try{
            serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -158,11 +147,14 @@ class RequestHandler extends Thread{
        }
    }
 
+     */
 
-   public void sendMessage(String requestType, String contents){
+
+   public void sendMessage(String requestType, String requestStatus, String contents){
         try {
             serverOutput = new PrintWriter(s.getOutputStream(), true);
-            clientMessage msg = new clientMessage(); // Change to server message
+            serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType,requestStatus, contents); // Change to server message
+            serverOutput.println(msg.createMessage());
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -183,17 +175,20 @@ class RequestHandler extends Thread{
         return uuid.toString();
     }
 
-    private void createNewClient(){
-        String input = receiveClient();
-        String[] creds = input.split("|");
+    private void createNewClient(String input){
+        //clientMessage input = receiveMessage();
+        //String[] creds = input.getMessageContents().split("|");
+        String[] creds = input.split("/");
         String uname = creds[0];
         String passwd = creds[1];
         try {
             if(cs.clientExists(uname)){
-                sendClient("-1");
+                //sendClient("-1");
+                sendMessage("CREATEUSER()", "-2", "Client with username "+ uname + " already exists");
             }else{
                 cs.addClient(uname, passwd);
-                sendClient("1");
+                sendMessage("CREATEUSER()", "2", "User "+ uname + " successfully added");
+                //sendClient("1");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -235,7 +230,7 @@ class RequestHandler extends Thread{
         Status codes:
         -2: Client with username exists
         -1: Username not found
-        0 : Password and username incorrect
+        0 : Password incorrect
         1 : Validated client
          */
 
@@ -246,17 +241,20 @@ class RequestHandler extends Thread{
         try {
             if (cs.clientExists(username)) {
                 if(cs.verifyPassword(password)){ // Client is authenticated
-                    sendClient(genUUID());
+                    //sendClient(genUUID());
+                    sendMessage("LOGIN()", "1", genUUID());
                     return 1;
                 }
                 else{ // Password is wrong
-                    sendClient("0");
+                    //sendClient("0");
+                    sendMessage("LOGIN()", "0", "Incorrect password");
 
                     return 0;
                 }
             }
             else { // No user was found with given name
                 sendClient("-1");
+                sendMessage("LOGIN()", "-1", "No user was found");
                 return -1;
             }
 
@@ -267,11 +265,8 @@ class RequestHandler extends Thread{
 
     private void startFileHandler(){
         FileHandler handler = new FileHandler();
-        String input = receiveClient();
-        if (input.equals("GETFILES()")){
-            handler.listClientFiles("test123");
-        }
-        System.out.println(input);
+        //String input = receiveClient();
+
     }
 
     private void receiveFile(String fileName) throws Exception{

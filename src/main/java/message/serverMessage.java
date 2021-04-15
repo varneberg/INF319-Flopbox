@@ -10,7 +10,7 @@ public class serverMessage {
 
     public serverMessage(String serverAddress, String requestType, String requestStatus, String messageContents){
         this.serverAddress = serverAddress;
-        this.requestType = requestStatus;
+        this.requestType = requestType;
         this.requestStatus = requestStatus;
         this.messageContents = messageContents;
     }
@@ -24,8 +24,14 @@ public class serverMessage {
                 + getMessageContents();
         return message;
     }
+    public void receiveMessage(String input){
+        String[] msg = input.split(":");
+        setServerAddress(msg[0]);
+        setRequestType(msg[1]);
+        setRequestStatus(msg[2]);
+        setMessageContents(msg[3]);
+    }
 
-    public void receiveMessage(String readLine) { }
 
     public void setServerAddress(String serverAddress) {
         this.serverAddress = serverAddress;
