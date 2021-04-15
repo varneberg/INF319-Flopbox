@@ -1,10 +1,13 @@
 package client;
 
+import message.Message;
+
 import java.io.*;
 import java.net.Socket;
 
 
-public class Client implements Runnable{
+public class Client {
+    //public class Client implements Runnable{
 
 
     String uuid;
@@ -27,12 +30,13 @@ public class Client implements Runnable{
         try{
             this.port = port;
             s = new Socket(address, port);
+            this.uuid = uuid;
         }catch (IOException e){
             System.out.println(e.getMessage());
         }
     }
 
-
+    /*
     @Override
     public void run(){
         try{
@@ -57,7 +61,6 @@ public class Client implements Runnable{
                 serverInput.read();
 
             }
-            /*
             while(true) {
                 sendCredentials();
                 String authmsg = receiveServer();
@@ -70,7 +73,6 @@ public class Client implements Runnable{
                     System.out.println("[Server]: No user was found with given name");
                 } else { continue; }
             }
-             */
 
             //s.close();
             //closeConnection();
@@ -80,6 +82,7 @@ public class Client implements Runnable{
         }
     }
 
+    */
 
     public void connect(){
         try{
@@ -92,9 +95,11 @@ public class Client implements Runnable{
 
 
     // Send data to server
-    public void sendServer(String message) {
+    public void sendServer(String requestType, String content) {
         try{
-            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
+            String uuid = getUuid();
+            clientOutput = new PrintWriter(s.getOutputStream(), true);
+            String message = s.getLocalAddress() + ":" + uuid + ":" + requestType + ":" + content;
             clientOutput.println(message);
 
 
@@ -113,17 +118,30 @@ public class Client implements Runnable{
         }
     }
 
+    public void sendMessage(String requestType, String contents){
+        try {
+            ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
+            clientOutput = new PrintWriter(s.getOutputStream(),true);
+            Message message = new Message(s.getInetAddress().toString(), getUuid(),requestType, contents);
+            clientOutput.println(message.createMessage());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void createUser(String username, String password){
-        sendServer("CREATEUSER()");
-        String credentials = username + ":" + password;
-        sendServer(credentials);
+        //sendServer("CREATEUSER()");
+        String credentials = username + "/" + password;
+        //sendServer("CREATEUSER()",credentials);
+        sendMessage("CREATEUSER()", credentials);
     }
 
     public void sendAuthentication(String username, String password) {
-        sendServer("LOGIN()");
-        String credentials = username + ":" + password;
-        sendServer(credentials);
+        //sendServer("LOGIN()", );
+        String credentials = username + "/" + password;
+        sendMessage("LOGIN()", credentials);
+        //sendServer("LOGIN()", credentials);
     }
 
 
@@ -135,12 +153,28 @@ public class Client implements Runnable{
 
     // Closes current connection to server
     private void closeConnection() throws IOException{
-        sendServer("EXIT()");
+        sendServer("EXIT()", null);
         s.close();
     }
 
     public boolean authenticateClient(String username, String password){
-        return true;
+        if(getUuid().equals(null)){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+    public String attemptLogin(String username, String password){
+        sendAuthentication(username, password);
+        String input = receiveServer();
+        if(input.length() > 2) {
+            //System.out.println(input);
+            setUuid(input);
+        }
+
+        return input;
     }
 
 
@@ -186,5 +220,13 @@ public class Client implements Runnable{
 
     public boolean registerClient(String text, String text1) {
         return false;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

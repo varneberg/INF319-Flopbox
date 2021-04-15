@@ -1,6 +1,6 @@
 package server;
 
-import client.Client;
+import message.Message;
 import storage.ClientStorage;
 
 import java.io.*;
@@ -15,15 +15,11 @@ public class Server extends Thread {
     private ServerSocket ss;
     private int port;
     private boolean running = false;
-    private static ArrayList<Client> clients = new ArrayList<Client>();
 
     public Server(int port){
         this.port = port;
     }
 
-    public void addClient(Client client){
-        clients.add(client);
-    }
 
     /*
     public boolean clientExists(String name){
@@ -84,29 +80,51 @@ class RequestHandler extends Thread{
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
+    private static ArrayList<String> authClients = new ArrayList<String>();
+    private String currClientUUID = null;
+    private String currClientAddress = null;
 
     BufferedReader serverInput;
     PrintWriter serverOutput;
+
 
 
     RequestHandler(Socket socket){
         this.s = socket;
     }
 
-
     @Override
     public void run(){
         try {
             System.out.println("[Server]: Received a connection\n");
             while(true) {
-                String input = receiveClient();
-                if(input.equals("EXIT()")){ break; }
-                else if(input.equals("LOGIN()")){
-                    int status = validateClient();
+                //String input = receiveClient();
+                Message clientMsg = receiveMessage();
+                if(clientMsg.getRequestType().equals("EXIT()")){
+                    break;
                 }
+                if(clientMsg.getRequestType().equals("LOGIN()")){
+                    int status = validateClient(clientMsg.getMessageContents());
+                    if(status == 1){
+                        System.out.println("Client authenticated");
+                    }
+                }
+                /*
+                if(input.equals("EXIT()")){ break; }
+
                 else if(input.equals("CREATEUSER()")){
                     createNewClient();
                 }
+
+                else if(input.equals("LOGIN()")){
+                    int status = validateClient();
+                    if(status == 1){
+                        System.out.println("Authenticated client");
+                        startFileHandler();
+                    }
+                }
+
+                 */
             }
             closeConnection();
         } catch (IOException e){
@@ -114,11 +132,27 @@ class RequestHandler extends Thread{
         }
     }
 
+    public Message receiveMessage(){
+        Message msg = null;
+        try {
+            serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            msg = new Message();
+            msg.receiveMessage(serverInput.readLine());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return msg;
+    }
 
    public String receiveClient(){
        try{
            serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-           return serverInput.readLine();
+           String[] clientMessage = serverInput.readLine().split(":");
+           currClientAddress = clientMessage[0];
+           currClientUUID = clientMessage[1];
+           String requestType = clientMessage[2];
+           String contents = clientMessage[3];
+           return contents;
        }catch (IOException e){
            return e.getMessage();
        }
@@ -141,7 +175,7 @@ class RequestHandler extends Thread{
 
     private void createNewClient(){
         String input = receiveClient();
-        String[] creds = input.split(":");
+        String[] creds = input.split("|");
         String uname = creds[0];
         String passwd = creds[1];
         try {
@@ -163,7 +197,7 @@ class RequestHandler extends Thread{
         String[] files = cs.listClientFiles(path);
         String output = "";
         for (int i = 0; i < files.length; i++) {
-            output += files[i] + ":";
+            output += files[i] + "|";
         }
         return output;
     }
@@ -185,20 +219,20 @@ class RequestHandler extends Thread{
         s.close();
     }
 
-   /*
-    Status codes:
-    -2: Client with username exists
-    -1: Username not found
-    0: Password and username incorrect
-    1: Validated client
-    2:
-   */
 
-    private int validateClient(){
-        String input = receiveClient();
-        String[] creds = input.split(":");
+    private int validateClient(String input){
+        /*
+        Status codes:
+        -2: Client with username exists
+        -1: Username not found
+        0 : Password and username incorrect
+        1 : Validated client
+         */
+
+        //String input = receiveClient();
+        String[] creds = input.split("/");
         String username = creds[0];
-        String password= creds[1];
+        String password = creds[1];
         try {
             if (cs.clientExists(username)) {
                 if(cs.verifyPassword(password)){ // Client is authenticated
@@ -207,6 +241,7 @@ class RequestHandler extends Thread{
                 }
                 else{ // Password is wrong
                     sendClient("0");
+
                     return 0;
                 }
             }
@@ -220,7 +255,14 @@ class RequestHandler extends Thread{
     }
 
 
-
+    private void startFileHandler(){
+        FileHandler handler = new FileHandler();
+        String input = receiveClient();
+        if (input.equals("GETFILES()")){
+            handler.listClientFiles("test123");
+        }
+        System.out.println(input);
+    }
 
     private void receiveFile(String fileName) throws Exception{
         File file = new File(fileName);
@@ -242,5 +284,6 @@ class RequestHandler extends Thread{
         fileOutputStream.close();
 
     }
+
 
 }
