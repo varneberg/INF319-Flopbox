@@ -1,6 +1,6 @@
 package server;
 
-import message.Message;
+import message.clientMessage;
 import storage.ClientStorage;
 
 import java.io.*;
@@ -99,7 +99,7 @@ class RequestHandler extends Thread{
             System.out.println("[Server]: Received a connection\n");
             while(true) {
                 //String input = receiveClient();
-                Message clientMsg = receiveMessage();
+                clientMessage clientMsg = receiveMessage();
                 if(clientMsg.getRequestType().equals("EXIT()")){
                     break;
                 }
@@ -132,11 +132,11 @@ class RequestHandler extends Thread{
         }
     }
 
-    public Message receiveMessage(){
-        Message msg = null;
+    public clientMessage receiveMessage(){
+        clientMessage msg = null;
         try {
             serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            msg = new Message();
+            msg = new clientMessage();
             msg.receiveMessage(serverInput.readLine());
         } catch (IOException e) {
             e.printStackTrace();
@@ -158,6 +158,16 @@ class RequestHandler extends Thread{
        }
    }
 
+
+   public void sendMessage(String requestType, String contents){
+        try {
+            serverOutput = new PrintWriter(s.getOutputStream(), true);
+            clientMessage msg = new clientMessage(); // Change to server message
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+   }
 
    public void sendClient(String message){
        try{

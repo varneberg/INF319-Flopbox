@@ -1,6 +1,8 @@
 package client;
 
-import message.Message;
+
+import message.clientMessage;
+import message.serverMessage;
 
 import java.io.*;
 import java.net.Socket;
@@ -9,11 +11,11 @@ import java.net.Socket;
 public class Client {
     //public class Client implements Runnable{
 
-    String uuid;
+    private String name; // TODO setName on validated login
+    String uuid=null;
     Thread t;
     int port;
     Socket s;
-    private String name;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
@@ -81,7 +83,6 @@ public class Client {
         }
     }
 
-    */
 
     public void connect(){
         try{
@@ -91,6 +92,7 @@ public class Client {
             System.out.println(e.getMessage());
         }
     }
+    */
 
 
     // Send data to server
@@ -117,11 +119,24 @@ public class Client {
         }
     }
 
+
+    public serverMessage receiveMessage(){
+        serverMessage msg = null;
+        try{
+            clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            msg = new serverMessage();
+            msg.receiveMessage(clientInput.readLine());
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return msg;
+    }
+
     public void sendMessage(String requestType, String contents){
         try {
-            ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
+            //ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
             clientOutput = new PrintWriter(s.getOutputStream(),true);
-            Message message = new Message(s.getInetAddress().toString(), getUuid(),requestType, contents);
+            clientMessage message = new clientMessage(s.getInetAddress().toString(), getUuid(),requestType, contents);
             clientOutput.println(message.createMessage());
 
         } catch (IOException e) {
@@ -129,11 +144,15 @@ public class Client {
         }
     }
 
-    public void createUser(String username, String password){
+
+    // TODO add server response as return
+    public String createUser(String username, String password){
+        String serverResponse = null;
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
+        return serverResponse;
     }
 
     public void sendAuthentication(String username, String password) {
@@ -150,30 +169,35 @@ public class Client {
         System.out.println("[Server -> Client]: " + input);
     }
 
+
     // Closes current connection to server
     private void closeConnection() throws IOException{
         sendServer("EXIT()", null);
         s.close();
     }
 
+
     public boolean authenticateClient(String username, String password){
         if(getUuid().equals(null)){
             return false;
-        }
-        else{
+        } else {
             return true;
         }
     }
 
+
     public String attemptLogin(String username, String password){
         sendAuthentication(username, password);
-        String input = receiveServer();
-        if(input.length() > 2) {
+        //String input = receiveServer();
+        serverMessage serverResponse = receiveMessage();
+        String contents = serverResponse.getMessageContents();
+
+        if(contents.length() > 2) {
             //System.out.println(input);
-            setUuid(input);
+            //setUuid(serverResponse.getUuid());
         }
 
-        return input;
+        return contents;
     }
 
 

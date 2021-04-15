@@ -1,20 +1,19 @@
 package message;
 
-public class Message {
+public class clientMessage {
     private String localaddress=null;
     private String uuid = null;
     private String requestType=null;
     private String messageContents=null;
 
-    public Message(String localaddress, String uuid, String requestType, String messageContent){
+    public clientMessage(String localaddress, String uuid, String requestType, String messageContent){
         this.localaddress = localaddress;
         this.uuid = uuid;
         this.requestType = requestType;
         this.messageContents = messageContent;
-
     }
 
-    public Message(){}
+    public clientMessage(){}
 
     public String createMessage(){
         String message = getLocaladdress() + ":"
