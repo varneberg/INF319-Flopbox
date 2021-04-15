@@ -9,7 +9,6 @@ import java.net.Socket;
 public class Client {
     //public class Client implements Runnable{
 
-
     String uuid;
     Thread t;
     int port;
@@ -210,16 +209,8 @@ public class Client {
         this.s = s;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean registerClient(String text, String text1) {
-        return false;
     }
 
     public void setUuid(String uuid) {

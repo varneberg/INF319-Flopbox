@@ -103,7 +103,7 @@ public class main extends Application {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
 
                 Client current = new Client("localhost", port);
-                if (current.registerClient(username_field.getText(), password_field.getText())) {
+                if (current.createUser(username_field.getText(), password_field.getText())) {
                     logged_in(current);
                 } else {
                     info_text.setText("User already exists");
@@ -156,9 +156,9 @@ public class main extends Application {
             login();
         });
 
-        String[] s = {"a", "b", "c", "d"};
+        String[] s = {"a", "b", "c", "d", "e"};
         FileList userFiles = new FileList(grid, "center", s);
-        FileList serverFiles = new FileList(grid, "right", new String[0]);
+        FileList serverFiles = new FileList(grid, "right", s);
         grid.setLeft(general);
 
 
