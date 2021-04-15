@@ -3,18 +3,17 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.scene.text.*;
+import javafx.util.Callback;
 import server.Server;
 import storage.DB;
-import javafx.util.Callback;
-
-import java.io.File;
 
 
 public class main extends Application {
@@ -89,7 +88,7 @@ public class main extends Application {
         login_button.setOnAction(e -> {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
                 Client current = new Client("localhost", port);
-                if (current.authenticateClient(username_field.getText(), password_field.getText())) {
+                if (current.isAuthenticated(username_field.getText(), password_field.getText())) {
                     logged_in(current);
                 } else {
                     info_text.setText("Wrong login information");

@@ -147,14 +147,21 @@ public class Client {
 
     // TODO add server response as return
     public String createUser(String username, String password){
-        String serverResponse = null;
+
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
-        return serverResponse;
+        serverMessage servermsg = receiveMessage();
+
+        return servermsg.getMessageContents();
+
+
+        //return serverResponse;
+
     }
 
+    /*
     public void sendAuthentication(String username, String password) {
         //sendServer("LOGIN()", );
         String credentials = username + "/" + password;
@@ -162,6 +169,7 @@ public class Client {
         //sendServer("LOGIN()", credentials);
     }
 
+     */
 
     // Receive names for files stored on server
     public void receiveFileNames() throws IOException, ClassNotFoundException {
@@ -177,7 +185,7 @@ public class Client {
     }
 
 
-    public boolean authenticateClient(String username, String password){
+    public boolean isAuthenticated(String username, String password){
         if(getUuid().equals(null)){
             return false;
         } else {
@@ -186,18 +194,20 @@ public class Client {
     }
 
 
-    public String attemptLogin(String username, String password){
-        sendAuthentication(username, password);
+    public String login(String username, String password){
+        //sendAuthentication(username, password);
         //String input = receiveServer();
-        serverMessage serverResponse = receiveMessage();
-        String contents = serverResponse.getMessageContents();
-
-        if(contents.length() > 2) {
-            //System.out.println(input);
-            //setUuid(serverResponse.getUuid());
+        sendMessage("LOGIN()", username +"/" + password);
+        serverMessage servermsg = receiveMessage();
+        String status = servermsg.getRequestStatus();
+        String contents = servermsg.getMessageContents();
+        if(status.equals("1")){
+            setUuid(contents);
         }
+        //System.out.println(status + " " + contents);
 
-        return contents;
+
+        return status;
     }
 
 
