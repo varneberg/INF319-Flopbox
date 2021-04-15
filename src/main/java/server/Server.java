@@ -184,10 +184,10 @@ class RequestHandler extends Thread{
         try {
             if(cs.clientExists(uname)){
                 //sendClient("-1");
-                sendMessage("CREATEUSER()", "-2", "Client with username "+ uname + " already exists");
+                sendMessage("CREATEUSER()", "-1", "Client with username "+ uname + " already exists");
             }else{
                 cs.addClient(uname, passwd);
-                sendMessage("CREATEUSER()", "2", "User "+ uname + " successfully added");
+                sendMessage("CREATEUSER()", "1", "User "+ uname + " successfully added");
                 //sendClient("1");
             }
         } catch (SQLException e) {
