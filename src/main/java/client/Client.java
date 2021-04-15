@@ -11,12 +11,11 @@ import java.net.Socket;
 public class Client {
     //public class Client implements Runnable{
 
-    String name; // TODO setName on validated login
+    private String name; // TODO setName on validated login
     String uuid=null;
     Thread t;
     int port;
     Socket s;
-    private String name;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
