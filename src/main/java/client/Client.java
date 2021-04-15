@@ -147,15 +147,12 @@ public class Client {
 
     // TODO add server response as return
     public String createUser(String username, String password){
-
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
         serverMessage servermsg = receiveMessage();
-
-        return servermsg.getMessageContents();
-
+        return servermsg.getRequestStatus();
 
         //return serverResponse;
 
@@ -205,8 +202,6 @@ public class Client {
             setUuid(contents);
         }
         //System.out.println(status + " " + contents);
-
-
         return status;
     }
 
