@@ -118,7 +118,7 @@ class RequestHandler extends Thread{
             System.out.println(e.getMessage()); }
     }
 
-    private void startFileHandler(String clientName, String contents) {
+    private void startFileHandler(String clientName, String contents) throws IOException {
         FileHandler handler = new FileHandler();
         switch(contents){
             case "LIST()":
