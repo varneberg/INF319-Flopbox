@@ -103,7 +103,7 @@ public class main extends Application {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
 
                 Client current = new Client("localhost", port);
-                if (current.createUser(username_field.getText(), password_field.getText())) {
+                if (current.createUser(username_field.getText(), password_field.getText()) == "1") {
                     logged_in(current);
                 } else {
                     info_text.setText("User already exists");
