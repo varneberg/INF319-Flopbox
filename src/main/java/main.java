@@ -88,7 +88,7 @@ public class main extends Application {
         login_button.setOnAction(e -> {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
                 Client current = new Client("localhost", port);
-                if (current.isAuthenticated(username_field.getText(), password_field.getText())) {
+                if (current.login(username_field.getText(), password_field.getText()).equals("1")) {
                     logged_in(current);
                 } else {
                     info_text.setText("Wrong login information");
@@ -102,7 +102,7 @@ public class main extends Application {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
 
                 Client current = new Client("localhost", port);
-                if (current.createUser(username_field.getText(), password_field.getText())) {
+                if (current.createUser(username_field.getText(), password_field.getText()) == "1") {
                     logged_in(current);
                 } else {
                     info_text.setText("User already exists");
