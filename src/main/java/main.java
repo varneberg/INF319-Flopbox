@@ -3,18 +3,18 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.text.*;
 import server.Server;
 import storage.DB;
 import javafx.util.Callback;
+
+import java.io.File;
 
 
 public class main extends Application {
@@ -88,7 +88,7 @@ public class main extends Application {
         // e.g. by clicking it or pressing enter while it's focused
         login_button.setOnAction(e -> {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
-                Client current = new Client(port);
+                Client current = new Client("localhost", port);
                 if (current.authenticateClient(username_field.getText(), password_field.getText())) {
                     logged_in(current);
                 } else {
@@ -102,7 +102,7 @@ public class main extends Application {
         register_button.setOnAction(e -> {
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
 
-                Client current = new Client(port);
+                Client current = new Client("localhost", port);
                 if (current.registerClient(username_field.getText(), password_field.getText())) {
                     logged_in(current);
                 } else {
@@ -115,7 +115,7 @@ public class main extends Application {
         });
 
         // create a scene specifying the root and the size
-        Scene scene = new Scene(grid, 500, 300);
+        Scene scene = new Scene(grid, 750,500);
 
         // add scene to the stage
         primaryStage.setScene(scene);
@@ -127,7 +127,7 @@ public class main extends Application {
 
     public void logged_in(Client current) {
         //Creating a GridPane container
-        StackPane grid = new StackPane();
+        BorderPane grid = new BorderPane();
         GridPane general = new GridPane();
         general.setPadding(new Insets(10, 10, 10, 10));
         general.setVgap(10);
@@ -156,14 +156,17 @@ public class main extends Application {
             login();
         });
 
+        String[] s = {"a", "b", "c", "d"};
+        FileList userFiles = new FileList(grid, "center", s);
+        FileList serverFiles = new FileList(grid, "right", new String[0]);
+        grid.setLeft(general);
 
-        create_list(grid);
 
 
-        grid.getChildren().addAll(general);
+        //grid.getChildren().addAll(general);
 
         // create a scene specifying the root and the size
-        Scene stage = new Scene(grid, 500, 300);
+        Scene stage = new Scene(grid, 750, 500);
 
         // add scene to the stage
         primaryStage.setScene(stage);
@@ -173,134 +176,82 @@ public class main extends Application {
 
     }
 
-    private static class Cell {
-        private String name;
-        private int price;
-        public String getName() {
-            return name;
-        }
-        public int getPrice() {
-            return price;
-        }
-        public Cell(String name, int price) {
-            super();
-            this.name = name;
-            this.price = price;
-        }
-    }
+    private static class FileList {
+        private ListView<FileList.Cell> listView;
 
-    public void create_list(StackPane root) {
-        ObservableList<main.Cell> data = FXCollections.observableArrayList();
-        data.addAll(new main.Cell("Cheese", 123), new main.Cell("Horse", 456), new main.Cell("Jam", 789));
-        final ListView<main.Cell> listView = new ListView<main.Cell>(data);
-        listView.setCellFactory(new Callback<ListView<main.Cell>, ListCell<main.Cell>>() {
-            @Override
-            public ListCell<main.Cell> call(ListView<main.Cell> listView) {
-                return new main.CustomListCell();
+        public FileList(BorderPane root, String orientation, String[] paths) {
+            ObservableList<FileList.Cell> data = FXCollections.observableArrayList();
+            addItems(data, paths);
+            final ListView<FileList.Cell> listView = new ListView<FileList.Cell>(data);
+            listView.setCellFactory(new Callback<ListView<FileList.Cell>, ListCell<FileList.Cell>>() {
+                @Override
+                public ListCell<FileList.Cell> call(ListView<FileList.Cell> listView) {
+                    return new FileList.CustomListCell();
+                }
+            });
+
+            this.listView = listView;
+            setOrientation(root, orientation);
+        }
+
+        private void addItems(ObservableList<FileList.Cell> data, String[] paths){
+            for (String item : paths){
+                data.add(new FileList.Cell(item));
             }
-        });
-
-
-
-        root.getChildren().add(listView);
-        primaryStage.setScene(new Scene(root, 200, 250));
-        primaryStage.show();
-    }
-    private class CustomListCell extends ListCell<main.Cell> {
-        private HBox content;
-        private Text name;
-        private Text price;
-        public CustomListCell() {
-            super();
-            name = new Text();
-            price = new Text();
-            VBox vBox = new VBox(name, price);
-            content = new HBox(new Label("[Graphic]"), vBox);
-            content.setSpacing(10);
         }
-        @Override
-        protected void updateItem(main.Cell item, boolean empty) {
-            super.updateItem(item, empty);
-            if (item != null && !empty) { // <== test for null item and empty parameter
-                name.setText(item.getName());
-                price.setText(String.format("%d $", item.getPrice()));
-                setGraphic(content);
-            } else {
-                setGraphic(null);
+
+        private void setOrientation(BorderPane root, String orientation){
+            if (orientation == "right"){
+                root.setRight(listView);
+            }
+            else if(orientation == "center"){
+                root.setCenter(listView);
+            }
+
+        }
+
+        public ListView<FileList.Cell> getListView(){
+            return listView;
+        }
+        private static class Cell {
+            private String name;
+
+            public String getName() {
+                return name;
+            }
+
+            public Cell(String name) {
+                super();
+                this.name = name;
+
+            }
+        }
+
+        private class CustomListCell extends ListCell<FileList.Cell> {
+            private HBox content;
+            private Text name;
+            private Text price;
+
+            public CustomListCell() {
+                super();
+                name = new Text();
+                price = new Text();
+                VBox vBox = new VBox(name, price);
+                content = new HBox(new Label("[Graphic]"), vBox);
+                content.setSpacing(10);
+            }
+
+            @Override
+            protected void updateItem(FileList.Cell item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) { // <== test for null item and empty parameter
+                    name.setText(item.getName());
+                    setGraphic(content);
+                } else {
+                    setGraphic(null);
+                }
             }
         }
     }
 
 }
-/*
-class CustomListView extends Application {
-    private static class Cell {
-        private String name;
-        private int price;
-        public String getName() {
-            return name;
-        }
-        public int getPrice() {
-            return price;
-        }
-        public Cell(String name, int price) {
-            super();
-            this.name = name;
-            this.price = price;
-        }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    @Override
-    public void start(Stage primaryStage) {
-        ObservableList<Cell> data = FXCollections.observableArrayList();
-        data.addAll(new Cell("Cheese", 123), new Cell("Horse", 456), new Cell("Jam", 789));
-
-        final ListView<Cell> listView = new ListView<Cell>(data);
-        listView.setCellFactory(new Callback<ListView<Cell>, ListCell<Cell>>() {
-            @Override
-            public ListCell<Cell> call(ListView<Cell> listView) {
-                return new CustomListCell();
-            }
-        });
-
-        StackPane root = new StackPane();
-        root.getChildren().add(listView);
-        primaryStage.setScene(new Scene(root, 200, 250));
-        primaryStage.show();
-    }
-
-    private class CustomListCell extends ListCell<Cell> {
-        private HBox content;
-        private Text name;
-        private Text price;
-
-        public CustomListCell() {
-            super();
-            name = new Text();
-            price = new Text();
-            VBox vBox = new VBox(name, price);
-            content = new HBox(new Label("[Graphic]"), vBox);
-            content.setSpacing(10);
-        }
-
-        @Override
-        protected void updateItem(Cell item, boolean empty) {
-            super.updateItem(item, empty);
-            if (item != null && !empty) { // <== test for null item and empty parameter
-                name.setText(item.getName());
-                price.setText(String.format("%d $", item.getPrice()));
-                setGraphic(content);
-            } else {
-                setGraphic(null);
-            }
-        }
-    }
-
-}
-
-
- */

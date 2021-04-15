@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class Client implements Runnable{
 
-    String name;
+
     String uuid;
     Thread t;
     int port;
