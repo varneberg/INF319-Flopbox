@@ -158,20 +158,10 @@ public class Client {
 
     }
 
-    /*
-    public void sendAuthentication(String username, String password) {
-        //sendServer("LOGIN()", );
-        String credentials = username + "/" + password;
-        sendMessage("LOGIN()", credentials);
-        //sendServer("LOGIN()", credentials);
-    }
-
-     */
 
     // Receive names for files stored on server
-    public void receiveFileNames() throws IOException, ClassNotFoundException {
-        String input = receiveServer();
-        System.out.println("[Server -> Client]: " + input);
+    public String receiveFileNames() {
+        return "null";
     }
 
 
@@ -200,6 +190,7 @@ public class Client {
         String contents = servermsg.getMessageContents();
         if(status.equals("1")){
             setUuid(contents);
+            setName(username);
         }
         //System.out.println(status + " " + contents);
         return status;
