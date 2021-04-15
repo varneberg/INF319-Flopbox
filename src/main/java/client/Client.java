@@ -15,7 +15,8 @@ public class Client {
     String uuid=null;
     Thread t;
     int port;
-    private Socket s = null;
+    Socket s;
+    private String name;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
@@ -23,7 +24,7 @@ public class Client {
     PrintWriter clientOutput = null;
 
 
-    public Client(int port){
+    public Client(int port) {
         this.port = port;
     }
 
@@ -201,6 +202,10 @@ public class Client {
     }
 
 
+    public boolean registerClient(String name, String password) {
+        return false;
+    }
+
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
 
@@ -221,24 +226,16 @@ public class Client {
         fileInputStream.close();
     }
 
-    public Socket getSocket() {
-        return s;
+    public String getName(){
+        return this.name;
     }
 
     public void setSocket(Socket s) {
         this.s = s;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean registerClient(String text, String text1) {
-        return false;
     }
 
     public void setUuid(String uuid) {
