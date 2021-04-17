@@ -20,8 +20,8 @@ public class FileHandler {
                     .filter(Files::isRegularFile)
                     .collect(Collectors.toList());
         }
-
         String[] fileString = result.toString().split(",");
         return fileString;
     }
+    
 }
