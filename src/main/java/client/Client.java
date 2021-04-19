@@ -112,7 +112,7 @@ public class Client {
     }
 
 
-    public String login(String username, String password){
+    public void login(String username, String password){
         //sendAuthentication(username, password);
         //String input = receiveServer();
         sendMessage("LOGIN()", username +"/" + password);
@@ -124,7 +124,7 @@ public class Client {
             setName(username);
         }
         //System.out.println(status + " " + contents);
-        return status;
+        //return status;
     }
 
 
@@ -132,8 +132,7 @@ public class Client {
         return false;
     }
 
-    // TODO convert to File filename
-    private void sendFile(String filename) throws Exception{
+    public void sendFile(File filename) throws Exception{
         String fullPath = storagePath + filename;
 
         int bytes = 0;
