@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class FileHandler {
 
-    public String[] listFiles(String clientname) throws IOException {
+    public String listFiles(String clientname) throws IOException {
         String dir = "./src/main/resources/clientDirs/" + clientname + "/";
         Path path = Paths.get(dir);
         List<Path> result;
@@ -20,7 +20,21 @@ public class FileHandler {
                     .filter(Files::isRegularFile)
                     .collect(Collectors.toList());
         }
-        String[] fileString = result.toString().split(",");
+        //String[] fileArr = result.toString().split(",");
+        String fileArr = result.toString();
+        return fileArr;
+        //return fileArr.replace("[","").replace("]","").replace("," , ":").replace(" ","");
+
+        //return arrToString(fileArr);
+    }
+
+    public String arrToString(String[] arr){
+        String fileString = "";
+
+        for (String i: arr) {
+            fileString += i + ":";
+        }
+        fileString.strip();
         return fileString;
     }
     

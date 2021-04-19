@@ -122,7 +122,12 @@ class RequestHandler extends Thread{
         FileHandler handler = new FileHandler();
         switch(contents){
             case "LIST()":
-                handler.listFiles(clientName);
+                //String userFiles = handler.listFiles(clientName);
+                String fileString = handler.listFiles(clientName);
+                //System.out.println(fileString);
+                //sendMessage("LIST()", "1", fileString);
+                sendMessage("LIST()", "1", fileString);
+
                 break;
             case "GET()":
                 break;
@@ -150,10 +155,10 @@ class RequestHandler extends Thread{
             serverOutput = new PrintWriter(s.getOutputStream(), true);
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType,requestStatus, contents); // Change to server message
             serverOutput.println(msg.createMessage());
+            //serverOutput.write("1\n");
         }catch (IOException e){
             e.printStackTrace();
         }
-
    }
 
     private String genUUID(){
