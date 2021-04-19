@@ -10,7 +10,8 @@ public class cli_main {
         ClientStorage cs = new ClientStorage();
         DB.initDB();
         DB.createClientTable();
-        cs.listAllClients();
+        //cs.listAllClients();
+
 
         int port = 6666;
         String address = "localhost";
@@ -20,9 +21,9 @@ public class cli_main {
         Client client = new Client(address, port);
         String username = "test123";
         String password = "test";
-        //client.sendMessage("EXIT", null);
-        //client.login(username, password);
-        client.createUser("Bobby", "Brown");
+        client.login(username, password);
+        client.sendMessage("FILES()", "LIST()");
+        client.receiveFileNames();
         //System.out.println(client.getUuid());
         //client.sendAuthentication(username, password);
         //client.sendMessage("LOGIN()", "flurp" +"/" +"test");
