@@ -22,6 +22,7 @@ public class Client {
     private static String storagePath = "src/main/resources/clientStorage/";
     BufferedReader clientInput = null;
     PrintWriter clientOutput = null;
+    serverMessage serverMsg = null;
 
 
     public Client(int port) {
@@ -47,6 +48,7 @@ public class Client {
         }catch (IOException e){
             e.printStackTrace();
         }
+        serverMsg = msg;
         return msg;
     }
 
@@ -63,13 +65,14 @@ public class Client {
         }
     }
 
-    public String getServerMessageStatus(serverMessage msg){
-        return msg.getRequestStatus();
+    public String getServerMessageStatus(){
 
+        return serverMsg.getRequestStatus();
     }
 
-    public String getServerMessageContents(serverMessage msg){
-        return msg.getMessageContents();
+    public String getServerMessageContents(){
+
+        return serverMsg.getMessageContents();
     }
 
     // TODO add server response as return
