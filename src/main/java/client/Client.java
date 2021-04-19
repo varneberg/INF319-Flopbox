@@ -12,15 +12,17 @@ public class Client {
     //public class Client implements Runnable{
 
     private String name; // TODO setName on validated login
-    String uuid=null;
+    String uuid= "null";
     Thread t;
     int port;
     Socket s;
+    String clientPath = null;
     private static DataOutputStream dataOutput = null;
     private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
     BufferedReader clientInput = null;
     PrintWriter clientOutput = null;
+    serverMessage serverMsg = null;
 
 
     public Client(int port) {
@@ -37,89 +39,6 @@ public class Client {
         }
     }
 
-    /*
-    @Override
-    public void run(){
-        try{
-            //s = new Socket("localhost",port);
-            BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
-
-            boolean auth = false;
-            while (true) {
-                // Update to gui credentials
-                String uname = "tes123";
-                String password = "test";
-                String creds = uname + "\t" + password;
-                //
-
-                clientOutput.println(creds);
-                String serverMessage = serverInput.readLine();
-                System.out.println("[Server]: " + serverMessage);
-                if (serverMessage.equals(1)){
-                    break;
-                }
-                serverInput.read();
-
-            }
-            while(true) {
-                sendCredentials();
-                String authmsg = receiveServer();
-                if(authmsg.equals("1")){
-                    System.out.println("[Server]: Valid credentials");
-                    break;
-                } if(authmsg.equals("-1")){
-                    System.out.println("[Server]: Incorrect password");
-                } if(authmsg.equals("0")){
-                    System.out.println("[Server]: No user was found with given name");
-                } else { continue; }
-            }
-
-            //s.close();
-            //closeConnection();
-
-        }catch(Exception e){
-            System.out.println(e);
-        }
-    }
-
-
-    public void connect(){
-        try{
-            s = new Socket("localhost", port);
-
-        } catch (IOException e){
-            System.out.println(e.getMessage());
-        }
-    }
-    */
-
-
-    // Send data to server
-    public void sendServer(String requestType, String content) {
-        try{
-            String uuid = getUuid();
-            clientOutput = new PrintWriter(s.getOutputStream(), true);
-            String message = s.getLocalAddress() + ":" + uuid + ":" + requestType + ":" + content;
-            clientOutput.println(message);
-
-
-        }catch (IOException e){
-            System.out.println(e.getMessage());
-        }
-    }
-
-    // Receive data from server
-    public String receiveServer() {
-        try{
-            clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            return clientInput.readLine();
-        } catch (IOException e){
-            return e.getMessage();
-        }
-    }
-
-
     public serverMessage receiveMessage(){
         serverMessage msg = null;
         try{
@@ -129,8 +48,10 @@ public class Client {
         }catch (IOException e){
             e.printStackTrace();
         }
+        serverMsg = msg;
         return msg;
     }
+
 
     public void sendMessage(String requestType, String contents){
         try {
@@ -144,49 +65,46 @@ public class Client {
         }
     }
 
+    public String getServerMessageStatus(){
+
+        return serverMsg.getRequestStatus();
+    }
+
+    public String getServerMessageContents(){
+
+        return serverMsg.getMessageContents();
+    }
 
     // TODO add server response as return
     public String createUser(String username, String password){
-
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
         serverMessage servermsg = receiveMessage();
-
-        return servermsg.getMessageContents();
-
+        return servermsg.getRequestStatus();
 
         //return serverResponse;
 
     }
 
-    /*
-    public void sendAuthentication(String username, String password) {
-        //sendServer("LOGIN()", );
-        String credentials = username + "/" + password;
-        sendMessage("LOGIN()", credentials);
-        //sendServer("LOGIN()", credentials);
-    }
-
-     */
 
     // Receive names for files stored on server
-    public void receiveFileNames() throws IOException, ClassNotFoundException {
-        String input = receiveServer();
-        System.out.println("[Server -> Client]: " + input);
-    }
+    public String[] receiveFileNames() {
+        serverMessage msg = receiveMessage();
+        String rawFilenames = msg.getMessageContents().replace("[", "").replace("]", "").replace(", ", ":");
+        String[] fileNames = rawFilenames.split(":");
+        for (int i = 0; i<fileNames.length; i++) {
+            int pathLoc = fileNames[i].indexOf(getName());
+            fileNames[i] = fileNames[i].substring(pathLoc);
 
-
-    // Closes current connection to server
-    private void closeConnection() throws IOException{
-        sendServer("EXIT()", null);
-        s.close();
+            }
+        return fileNames;
     }
 
 
     public boolean isAuthenticated(String username, String password){
-        if(getUuid().equals(null)){
+        if(getUuid().equals("null")){
             return false;
         } else {
             return true;
@@ -203,10 +121,9 @@ public class Client {
         String contents = servermsg.getMessageContents();
         if(status.equals("1")){
             setUuid(contents);
+            setName(username);
         }
         //System.out.println(status + " " + contents);
-
-
         return status;
     }
 
@@ -215,6 +132,7 @@ public class Client {
         return false;
     }
 
+    // TODO convert to File filename
     private void sendFile(String filename) throws Exception{
         String fullPath = storagePath + filename;
 
