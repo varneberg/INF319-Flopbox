@@ -24,6 +24,7 @@ public class cli_main {
         client.login(username, password);
         client.sendMessage("FILES()", "LIST()");
         client.receiveFileNames();
+
         //System.out.println(client.getUuid());
         //client.sendAuthentication(username, password);
         //client.sendMessage("LOGIN()", "flurp" +"/" +"test");
