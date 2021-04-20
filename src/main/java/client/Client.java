@@ -66,7 +66,6 @@ public class Client {
     }
 
     public String getServerMessageStatus(){
-
         return serverMsg.getRequestStatus();
     }
 
