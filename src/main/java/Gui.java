@@ -183,6 +183,7 @@ public class Gui extends Application{
         GridPane.setConstraints(error_text, 0, 4);
         general.getChildren().add(error_text);
 
+
         //Defining the Logout button
         Button logout_button = new Button("Log out");
         GridPane.setConstraints(logout_button, 0, 5);
@@ -192,6 +193,8 @@ public class Gui extends Application{
         logout_button.setOnAction(e -> {
             login();
         });
+
+
 
         upload_file_button.setOnAction(e -> {
             final FileChooser fileChooser = new FileChooser();
@@ -230,53 +233,106 @@ public class Gui extends Application{
         private ListView<Gui.FileList.Cell> listView;
         private String[] paths;
         private String currentDir;
+        private BorderPane root;
+        private String orientation;
 
         public FileList(BorderPane root, String orientation, String[] paths) {
             this.paths = paths;
+            this.root = root;
+            this.orientation = orientation;
             currentDir = paths[0].split("/")[0];
-            showDirectory(currentDir);
-            ObservableList<Gui.FileList.Cell> data = FXCollections.observableArrayList();
-            addItems(data, paths);
-            final ListView<Gui.FileList.Cell> listView = new ListView<Gui.FileList.Cell>(data);
-            listView.setCellFactory(new Callback<ListView<Gui.FileList.Cell>, ListCell<Gui.FileList.Cell>>() {
+            currentDir += "/";
+            fillList();
+            //System.out.println(Arrays.toString(showDirectory("kriss/Dir1/")));
+            //System.out.println(Arrays.toString(paths));
+        }
+
+        private void fillList() {
+            String[] rootDir = showDirectory(currentDir);
+            ObservableList<Cell> data = FXCollections.observableArrayList();
+            addItems(data, rootDir);
+            final ListView<Cell> listView = new ListView<Cell>(data);
+            listView.setCellFactory(new Callback<ListView<Cell>, ListCell<Cell>>() {
                 @Override
-                public ListCell<Gui.FileList.Cell> call(ListView<Gui.FileList.Cell> listView) {
-                    return new Gui.FileList.CustomListCell();
+                public ListCell<Cell> call(ListView<Cell> listView) {
+                    return new CustomListCell();
                 }
             });
 
             this.listView = listView;
-            setOrientation(root, orientation);
+            setOrientation(this.root, this.orientation);
         }
 
         private String[] showDirectory(String currentPath){
             String[] currentPathSplit = currentPath.split("/");
-            System.out.println(Arrays.toString(currentPathSplit));
-            ArrayList<String> currentDir = new ArrayList<>();
+            ArrayList<String> newDir = new ArrayList<>();
+            skipPath:
             for (String path : paths){
-                String[] temp = path.split("/");
-                ArrayList<String> temp2 = new ArrayList<String>(Arrays.asList(temp));
-                for(int i=0; i<currentPathSplit.length;i++){
+                ArrayList<String> temp = new ArrayList<String>(Arrays.asList(path.split("/"))); // arraylist of split current path
+                for(int i=0; i<currentPathSplit.length;i++) {
                     try {
-                        if (!temp2.get(i).equals(currentPathSplit[i])) {
-                            break;
+                        System.out.println(temp.get(i) + currentPathSplit[i] + temp.get(i).equals(currentPathSplit[i]) + path + currentPath);
+                        if (!temp.get(i).equals(currentPathSplit[i])) {
+                            continue skipPath;
                         }
-                    }
+                     }
                     catch (Exception e){
-                        break;
+                        continue skipPath;
                     }
-                    while(temp2.size() > currentPathSplit.length + 1){ temp2.remove(temp2.size() - 1); }
-                    String newPath = "";
-                    for(String a : temp2){ newPath += a + "/"; }
-                    newPath = newPath.substring(0, newPath.length() - 1);
-                    currentDir.add(newPath);
                 }
+                while(temp.size() > currentPathSplit.length + 1){
+                    temp.remove(temp.size() - 1);
+                }
+                String newPath = "";
+                for(String a : temp){
+                    newPath += a + "/";
+                }
+                newPath = newPath.substring(0, newPath.length() - 1);
+                newDir.add(newPath);
+
 
             }
             ArrayList<String> noDuplicates = new ArrayList<>();
-            for (String s : currentDir){ if (!noDuplicates.contains(s)) { noDuplicates.add(s); } }
-            System.out.println(Arrays.toString(noDuplicates.toArray()));
-            return null;
+            for (String s : newDir){
+                if (!noDuplicates.contains(s)) {
+                    noDuplicates.add(s);
+                }
+            }
+
+
+            for (int i = 0; i<noDuplicates.size(); i++) {
+                //gets last element of noduplicates list
+                String temp = noDuplicates.get(i).split("/")[noDuplicates.get(i).split("/").length - 1];
+                noDuplicates.set(i,temp);
+            }
+
+            return noDuplicates.toArray(new String[0]);
+        }
+
+        private void handleClick(String newDirectory){
+            if(newDirectory == "-1"){
+                backDirectory();
+            }
+            else{
+                nextDirectory(newDirectory);
+            }
+
+
+            fillList();
+
+        }
+
+        private void nextDirectory(String directory) {
+            this.currentDir += directory + "/";
+        }
+
+        private void backDirectory() {
+            String[] temp = currentDir.split("/");
+            String newCurrent = "";
+            for(int i=0;i<temp.length;i++){
+                newCurrent += temp + "/";
+            }
+            this.currentDir = newCurrent;
         }
 
         private void addItems(ObservableList<Gui.FileList.Cell> data, String[] paths){
@@ -323,6 +379,12 @@ public class Gui extends Application{
                 price = new Text();
                 VBox vBox = new VBox(name, price);
                 content = new HBox(new Label("[Graphic]"), vBox);
+
+                content.setOnMouseClicked((mouseEvent -> {
+                    handleClick(name.getText());
+                }));
+
+
                 content.setSpacing(10);
             }
 
@@ -336,6 +398,7 @@ public class Gui extends Application{
                     setGraphic(null);
                 }
             }
+
         }
     }
 
