@@ -91,6 +91,7 @@ public class Client {
 
     // Receive names for files stored on server
     public String[] receiveFileNames() {
+        sendMessage("FILES()", "LIST()");
         serverMessage msg = receiveMessage();
         String rawFilenames = msg.getMessageContents().replace("[", "").replace("]", "").replace(", ", ":");
         String[] fileNames = rawFilenames.split(":");

@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import server.Server;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Gui extends Application{
     private static int port;
@@ -141,7 +143,7 @@ public class Gui extends Application{
     }
 
     private void logged_in(Client current) {
-        current.receiveFileNames();
+        String[] files = current.receiveFileNames();
 
         //Creating a GridPane container
         BorderPane grid = new BorderPane();
@@ -205,7 +207,7 @@ public class Gui extends Application{
         });
 
         String[] s = {"a", "b", "c", "d", "e"};
-        Gui.FileList serverFiles = new Gui.FileList(grid, "center", s);
+        Gui.FileList serverFiles = new Gui.FileList(grid, "center", files);
 
         grid.setLeft(general);
 
@@ -226,8 +228,13 @@ public class Gui extends Application{
 
     private static class FileList {
         private ListView<Gui.FileList.Cell> listView;
+        private String[] paths;
+        private String currentDir;
 
         public FileList(BorderPane root, String orientation, String[] paths) {
+            this.paths = paths;
+            currentDir = paths[0].split("/")[0];
+            showDirectory(currentDir);
             ObservableList<Gui.FileList.Cell> data = FXCollections.observableArrayList();
             addItems(data, paths);
             final ListView<Gui.FileList.Cell> listView = new ListView<Gui.FileList.Cell>(data);
@@ -240,6 +247,36 @@ public class Gui extends Application{
 
             this.listView = listView;
             setOrientation(root, orientation);
+        }
+
+        private String[] showDirectory(String currentPath){
+            String[] currentPathSplit = currentPath.split("/");
+            System.out.println(Arrays.toString(currentPathSplit));
+            ArrayList<String> currentDir = new ArrayList<>();
+            for (String path : paths){
+                String[] temp = path.split("/");
+                ArrayList<String> temp2 = new ArrayList<String>(Arrays.asList(temp));
+                for(int i=0; i<currentPathSplit.length;i++){
+                    try {
+                        if (!temp2.get(i).equals(currentPathSplit[i])) {
+                            break;
+                        }
+                    }
+                    catch (Exception e){
+                        break;
+                    }
+                    while(temp2.size() > currentPathSplit.length + 1){ temp2.remove(temp2.size() - 1); }
+                    String newPath = "";
+                    for(String a : temp2){ newPath += a + "/"; }
+                    newPath = newPath.substring(0, newPath.length() - 1);
+                    currentDir.add(newPath);
+                }
+
+            }
+            ArrayList<String> noDuplicates = new ArrayList<>();
+            for (String s : currentDir){ if (!noDuplicates.contains(s)) { noDuplicates.add(s); } }
+            System.out.println(Arrays.toString(noDuplicates.toArray()));
+            return null;
         }
 
         private void addItems(ObservableList<Gui.FileList.Cell> data, String[] paths){
