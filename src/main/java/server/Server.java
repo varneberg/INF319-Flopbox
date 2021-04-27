@@ -2,6 +2,7 @@ package server;
 
 import message.clientMessage;
 import message.serverMessage;
+import org.apache.commons.io.IOUtils;
 import storage.ClientStorage;
 
 import java.io.*;
@@ -18,20 +19,20 @@ public class Server extends Thread {
     final int port;
     private boolean running = false;
 
-    public Server(int port){
+    public Server(int port) {
         this.port = port;
     }
 
-    public void startServer(){
+    public void startServer() {
         try {
             ss = new ServerSocket(port);
             this.start();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void stopServer(){
+    public void stopServer() {
         running = false;
         this.interrupt();
     }
@@ -55,55 +56,48 @@ public class Server extends Thread {
 }
 
 
-class RequestHandler extends Thread{
+class RequestHandler extends Thread {
     private Socket s;
-    private static DataOutputStream dataOutput = null;
-    private static DataInputStream dataInput = null;
+    //private static DataOutputStream dataOutput = null;
+    //private static DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
     private static ArrayList<String> authClients = new ArrayList<String>();
     private String currClientUUID = null;
     private String currClientAddress = null;
     private String clientName;
 
+    private String sep = ";;";
+    private BufferedReader serverInput;
+    private PrintWriter serverOutput;
 
-    BufferedReader serverInput;
-    PrintWriter serverOutput;
 
-
-
-    RequestHandler(Socket socket){
+    RequestHandler(Socket socket) {
         this.s = socket;
     }
 
     @Override
-    public void run(){
+    public void run() {
         try {
             System.out.println("[Server]: Received a connection\n");
-            while(true) {
-                //String input = receiveClient();
+            while (true) {
                 clientMessage clientMsg = receiveMessage();
                 String requestType = clientMsg.getRequestType();
                 String contents = clientMsg.getMessageContents();
                 String clientUUID = clientMsg.getUuid();
-                /*
-                if(requestType.equals("EXIT()")){closeConnection();}
-                else if(requestType.equals("CREATEUSER()")){
-                    createNewClient(contents);}
-                else if(requestType.equals("LOGIN()")){
-                    if(validateClient(contents)==1){
-                        System.out.println("[Server]: Client Authenticated"); } }
-                 */
-                switch (requestType){
-                    case "EXIT()": closeConnection();
+                switch (requestType) {
+                    case "EXIT()":
+                        closeConnection();
                     case "CREATEUSER()":
-                        createNewClient(contents); break;
+                        createNewClient(contents);
+                        break;
                     case "LOGIN()":
-                        validateClient(contents);break;
+                        validateClient(contents);
+                        break;
                     case "FILES()":
-                        if(!clientUUID.equals("null")){
+                        if (!clientUUID.equals("null")) {
                             startFileHandler(getClientName(), contents);
                             break;
-                        }else{
+                        } else {
                             System.out.println("Unauthorized");
                             break;
                         }
@@ -114,22 +108,25 @@ class RequestHandler extends Thread{
             }
 
 
-        } catch (IOException e){
-            System.out.println(e.getMessage()); }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void startFileHandler(String clientName, String contents) throws IOException {
         FileHandler handler = new FileHandler();
-        switch(contents){
-            case "LIST()":
-                //String userFiles = handler.listFiles(clientName);
-                String fileString = handler.listFiles(clientName);
-                //System.out.println(fileString);
-                //sendMessage("LIST()", "1", fileString);
-                sendMessage("LIST()", "1", fileString);
+        String[] cmd = contents.split(";;");
+        String reqType = cmd[0];
 
+        switch (reqType) {
+            case "LIST()":
+                String clientFiles = handler.listFiles(clientName);
+                sendMessage("LIST()", "1", clientFiles);
                 break;
             case "GET()":
+                String filePath = cmd[1];
+                File clientFile = handler.getFile(clientName, filePath);
+                sendFile(clientFile);
                 break;
             case "PUT()":
                 break;
@@ -138,7 +135,7 @@ class RequestHandler extends Thread{
         }
     }
 
-    public clientMessage receiveMessage(){
+    public clientMessage receiveMessage() {
         clientMessage msg = null;
         try {
             serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -150,56 +147,50 @@ class RequestHandler extends Thread{
         return msg;
     }
 
-   public void sendMessage(String requestType, String requestStatus, String contents){
+    public void sendMessage(String requestType, String requestStatus, String contents) {
         try {
             serverOutput = new PrintWriter(s.getOutputStream(), true);
-            serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType,requestStatus, contents); // Change to server message
+            serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType, requestStatus, contents); // Change to server message
             serverOutput.println(msg.createMessage());
+            //serverOutput.close();
+
             //serverOutput.write("1\n");
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
-   }
+    }
 
-    private String genUUID(){
+    public void sendFile(File clientFile) throws IOException {
+        long length = clientFile.length();
+        byte[] bytes = new byte[8*1024];
+        InputStream in = new FileInputStream(clientFile);
+        OutputStream out = s.getOutputStream();
+        int count;
+        while ((count = in.read(bytes)) > 0){
+            out.write(bytes,0,count);
+        }
+
+
+    }
+
+    private String genUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
 
-    private void createNewClient(String input){
+    private void createNewClient(String input) {
         String[] creds = input.split("/");
         String uname = creds[0];
         String passwd = creds[1];
         try {
-            if(cs.clientExists(uname)){
-                sendMessage("CREATEUSER()", "-1", "Client with username "+ uname + " already exists");
-            }else{
+            if (cs.clientExists(uname)) {
+                sendMessage("CREATEUSER()", "-1", "Client with username " + uname + " already exists");
+            } else {
                 cs.addClient(uname, passwd);
-                sendMessage("CREATEUSER()", "1", "User "+ uname + " successfully added");
+                sendMessage("CREATEUSER()", "1", "User " + uname + " successfully added");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-    private String getAvailableFileNames(String clientName) throws IOException {
-        String path = "./src/main/resources/clientDirs/"+clientName+"/";
-        String[] files = cs.listClientFiles(path);
-        String output = "";
-        for (int i = 0; i < files.length; i++) {
-            output += files[i] + "|";
-        }
-        return output;
-    }
-
-    public void sendFileNames(String username){
-        try{
-            ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-            //out.writeObject(files);
-            //out.close();
-
-        } catch(IOException e){
-            System.out.println(e.getMessage());
         }
     }
 
@@ -209,8 +200,7 @@ class RequestHandler extends Thread{
         s.close();
     }
 
-
-    private boolean validateClient(String input){
+    private boolean validateClient(String input) {
         /*
         Status codes:
         -2: Client with username exists
@@ -223,25 +213,28 @@ class RequestHandler extends Thread{
         String password = creds[1];
         try {
             if (cs.clientExists(username)) {
-                if(cs.verifyPassword(password)){ // Client is authenticated
+                if (cs.verifyPassword(password)) { // Client is authenticated
                     sendMessage("LOGIN()", "1", genUUID());
                     setClientName(username);
+                    System.out.println("[Server]: "+username+" authenticated");
                     return true;
-                }
-                else{ // Password is wrong
+                } else { // Password is wrong
                     sendMessage("LOGIN()", "0", "Incorrect password");
                     return false;
                 }
-            }
-            else { // No user was found with given name
+            } else { // No user was found with given name
                 sendMessage("LOGIN()", "-1", "No user was found");
                 return false;
             }
-        } catch (SQLException e){ System.out.println(e.getMessage()); }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            sendMessage("ERROR()", "-1", e.getMessage());
+        }
         return false;
     }
 
-    private void receiveFile(String fileName) throws Exception{
+    /*
+    private void receiveFile(String fileName) throws Exception {
         File file = new File(fileName);
         if (file.createNewFile()) {
             System.out.println("File created: " + file.getName());
@@ -253,15 +246,16 @@ class RequestHandler extends Thread{
         FileOutputStream fileOutputStream = new FileOutputStream(path);
 
         long size = dataInput.readLong();     // read file size
-        byte[] buffer = new byte[4*1024];
-        while (size > 0 && (bytes = dataInput.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
-            fileOutputStream.write(buffer,0,bytes);
+        byte[] buffer = new byte[4 * 1024];
+        while (size > 0 && (bytes = dataInput.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
+            fileOutputStream.write(buffer, 0, bytes);
             size -= bytes;      // read upto file size
         }
         fileOutputStream.close();
 
     }
 
+     */
     public void setClientName(String clientName) {
         this.clientName = clientName;
     }
