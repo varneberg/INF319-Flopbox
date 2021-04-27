@@ -15,8 +15,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import server.Server;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class Gui extends Application{
     private static int port;
@@ -174,9 +173,9 @@ public class Gui extends Application{
         general.getChildren().add(upload_file_button);
 
         //Defining the upload folder button
-        Button upload_folder_button = new Button("Upload Folder");
-        GridPane.setConstraints(upload_folder_button, 0, 3);
-        general.getChildren().add(upload_folder_button);
+        Button download_file_button = new Button("Upload Folder");
+        GridPane.setConstraints(download_file_button, 0, 3);
+        general.getChildren().add(download_file_button);
 
         //info text
         final Text error_text = new Text();
@@ -209,7 +208,18 @@ public class Gui extends Application{
             }
         });
 
-        String[] s = {"a", "b", "c", "d", "e"};
+        download_file_button.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+
+            //Set extension filter for text files
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+            fileChooser.getExtensionFilters().add(extFilter);
+
+            //Show save file dialog
+            File file = fileChooser.showSaveDialog(primaryStage);
+
+        });
+
         Gui.FileList serverFiles = new Gui.FileList(grid, "center", files);
 
         grid.setLeft(general);
@@ -233,6 +243,7 @@ public class Gui extends Application{
         private ListView<Gui.FileList.Cell> listView;
         private String[] paths;
         private String currentDir;
+        private String rootDir;
         private BorderPane root;
         private String orientation;
 
@@ -242,15 +253,32 @@ public class Gui extends Application{
             this.orientation = orientation;
             currentDir = paths[0].split("/")[0];
             currentDir += "/";
+            rootDir = currentDir;
             fillList();
             //System.out.println(Arrays.toString(showDirectory("kriss/Dir1/")));
             //System.out.println(Arrays.toString(paths));
         }
 
         private void fillList() {
-            String[] rootDir = showDirectory(currentDir);
+            String[] dir = showDirectory(currentDir);
+            System.out.println(Arrays.toString(dir));
+            String[] dirWithBack = new String[dir.length +1];
             ObservableList<Cell> data = FXCollections.observableArrayList();
-            addItems(data, rootDir);
+            String[] sorted;
+            if(!currentDir.equals(rootDir)){
+                for (int i=0;i<dir.length;i++){
+                    dirWithBack[i] = dir[i];
+                }
+                dirWithBack[dirWithBack.length -1] = "..";
+                sorted = sortDirectory(dirWithBack);
+
+            }
+            else {
+                sorted = sortDirectory(dir);
+            }
+            addItems(data, sorted);
+
+
             final ListView<Cell> listView = new ListView<Cell>(data);
             listView.setCellFactory(new Callback<ListView<Cell>, ListCell<Cell>>() {
                 @Override
@@ -271,7 +299,6 @@ public class Gui extends Application{
                 ArrayList<String> temp = new ArrayList<String>(Arrays.asList(path.split("/"))); // arraylist of split current path
                 for(int i=0; i<currentPathSplit.length;i++) {
                     try {
-                        System.out.println(temp.get(i) + currentPathSplit[i] + temp.get(i).equals(currentPathSplit[i]) + path + currentPath);
                         if (!temp.get(i).equals(currentPathSplit[i])) {
                             continue skipPath;
                         }
@@ -309,11 +336,38 @@ public class Gui extends Application{
             return noDuplicates.toArray(new String[0]);
         }
 
+        private String[] sortDirectory(String[] directory){
+            ArrayList<String> sorted = new ArrayList<>();
+            boolean back = false;
+
+            for (String s : directory){
+                String type = determineType(s);
+
+                if(type == "directory"){
+                    sorted.add(0, s);
+                }
+                else if (type == "file"){
+                    sorted.add(s);
+                }
+                if (type == "back"){
+                    back = true;
+                }
+
+
+            }
+            if(back){
+                sorted.add(0, "..");
+            }
+            return sorted.toArray(new String[0]);
+        }
+
         private void handleClick(String newDirectory){
-            if(newDirectory == "-1"){
+            String type = determineType(newDirectory);
+
+            if(type == "back"){
                 backDirectory();
             }
-            else{
+            else if (type == "directory"){
                 nextDirectory(newDirectory);
             }
 
@@ -323,14 +377,26 @@ public class Gui extends Application{
         }
 
         private void nextDirectory(String directory) {
+
             this.currentDir += directory + "/";
+        }
+
+        private String determineType(String element){
+            if(element.equals("..")){
+                return "back";
+            }
+            String temp = currentDir + element;
+            if (new ArrayList<String>(Arrays.asList(paths)).contains(temp)){
+                return "file";
+            }
+            return "directory";
         }
 
         private void backDirectory() {
             String[] temp = currentDir.split("/");
             String newCurrent = "";
-            for(int i=0;i<temp.length;i++){
-                newCurrent += temp + "/";
+            for(int i=0;i<temp.length - 1;i++){
+                newCurrent += temp[i] + "/";
             }
             this.currentDir = newCurrent;
         }
