@@ -13,8 +13,7 @@ public class main {
         Server server = new Server(port);
         server.startServer();
 
-        Gui gui = new Gui();
-        gui.startGui(args, server, port, "localhost");
+        Gui gui = new Gui(args, server, port, "localhost");
 
     }
 }

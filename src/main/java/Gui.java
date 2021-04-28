@@ -15,8 +15,6 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import server.Server;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 public class Gui extends Application{
@@ -35,7 +33,7 @@ public class Gui extends Application{
         launch(args);
     }
 
-    /*
+
     public Gui(String[] args, Server server, int port, String address){
         this.port = port;
         this.address = address;
@@ -44,7 +42,7 @@ public class Gui extends Application{
     }
 
 
-     */
+     
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
