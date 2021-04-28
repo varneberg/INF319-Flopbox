@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import server.Server;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 public class Gui extends Application{
@@ -173,7 +175,7 @@ public class Gui extends Application{
         general.getChildren().add(upload_file_button);
 
         //Defining the upload folder button
-        Button download_file_button = new Button("Upload Folder");
+        Button download_file_button = new Button("Download File");
         GridPane.setConstraints(download_file_button, 0, 3);
         general.getChildren().add(download_file_button);
 
@@ -189,6 +191,11 @@ public class Gui extends Application{
         general.getChildren().add(logout_button);
 
 
+
+        Gui.FileList serverFiles = new Gui.FileList(grid, "center", files);
+        grid.setLeft(general);
+
+
         logout_button.setOnAction(e -> {
             login();
         });
@@ -198,31 +205,34 @@ public class Gui extends Application{
         upload_file_button.setOnAction(e -> {
             final FileChooser fileChooser = new FileChooser();
             File file = fileChooser.showOpenDialog(primaryStage);
+            System.out.println(serverFiles.getCurrentDir());
             if (file != null) {
                 try {
                     current.sendFile(file);
                 } catch (Exception exception) {
                     error_text.setText("Cant upload file");
-
                 }
+                serverFiles.refresh(current.receiveFileNames());
             }
         });
 
+        /*
         download_file_button.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-
-            //Set extension filter for text files
-            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-            fileChooser.getExtensionFilters().add(extFilter);
-
-            //Show save file dialog
-            File file = fileChooser.showSaveDialog(primaryStage);
+            final FileChooser fileChooser = new FileChooser();
+            File dest = fileChooser.showSaveDialog(primaryStage);
+            if (dest != null) {
+                try {
+                    File file = current.getFile(serverFiles.getSelectedFile());
+                    Files.copy(file.toPath(), dest.toPath());
+                } catch (IOException ex) {
+                    // handle exception...
+                }
+                serverFiles.refresh(current.receiveFileNames());
+            }
 
         });
 
-        Gui.FileList serverFiles = new Gui.FileList(grid, "center", files);
-
-        grid.setLeft(general);
+         */
 
 
 
@@ -239,6 +249,7 @@ public class Gui extends Application{
 
     }
 
+
     private static class FileList {
         private ListView<Gui.FileList.Cell> listView;
         private String[] paths;
@@ -246,8 +257,10 @@ public class Gui extends Application{
         private String rootDir;
         private BorderPane root;
         private String orientation;
+        private String selectedFile = null;
 
         public FileList(BorderPane root, String orientation, String[] paths) {
+
             this.paths = paths;
             this.root = root;
             this.orientation = orientation;
@@ -259,9 +272,13 @@ public class Gui extends Application{
             //System.out.println(Arrays.toString(paths));
         }
 
+        public void refresh(String[] paths){
+            this.paths = paths;
+            fillList();
+        }
+
         private void fillList() {
             String[] dir = showDirectory(currentDir);
-            System.out.println(Arrays.toString(dir));
             String[] dirWithBack = new String[dir.length +1];
             ObservableList<Cell> data = FXCollections.observableArrayList();
             String[] sorted;
@@ -366,13 +383,16 @@ public class Gui extends Application{
 
             if(type == "back"){
                 backDirectory();
+                fillList();
             }
             else if (type == "directory"){
                 nextDirectory(newDirectory);
+                fillList();
+            }
+            else if (type == "file"){
+                selectedFile = currentDir + newDirectory;
             }
 
-
-            fillList();
 
         }
 
@@ -401,6 +421,14 @@ public class Gui extends Application{
             this.currentDir = newCurrent;
         }
 
+        protected String getSelectedFile(){
+            return selectedFile;
+        }
+
+        protected String getCurrentDir(){
+            return currentDir;
+        }
+
         private void addItems(ObservableList<Gui.FileList.Cell> data, String[] paths){
             for (String item : paths){
                 data.add(new Gui.FileList.Cell(item));
@@ -414,6 +442,7 @@ public class Gui extends Application{
             else if(orientation == "center"){
                 root.setCenter(listView);
             }
+
 
         }
 
@@ -437,14 +466,15 @@ public class Gui extends Application{
         private class CustomListCell extends ListCell<Gui.FileList.Cell> {
             private HBox content;
             private Text name;
-            private Text price;
+            private Text description;
 
             public CustomListCell() {
                 super();
                 name = new Text();
-                price = new Text();
-                VBox vBox = new VBox(name, price);
+                description = new Text();
+                VBox vBox = new VBox(name, description);
                 content = new HBox(new Label("[Graphic]"), vBox);
+
 
                 content.setOnMouseClicked((mouseEvent -> {
                     handleClick(name.getText());
@@ -453,6 +483,7 @@ public class Gui extends Application{
 
                 content.setSpacing(10);
             }
+
 
             @Override
             protected void updateItem(Gui.FileList.Cell item, boolean empty) {
@@ -464,6 +495,8 @@ public class Gui extends Application{
                     setGraphic(null);
                 }
             }
+
+
 
         }
     }
