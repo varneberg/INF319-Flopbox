@@ -205,7 +205,6 @@ public class Gui extends Application{
         upload_file_button.setOnAction(e -> {
             final FileChooser fileChooser = new FileChooser();
             File file = fileChooser.showOpenDialog(primaryStage);
-            System.out.println(serverFiles.getCurrentDir());
             if (file != null) {
                 try {
                     current.sendFile(file);
@@ -231,12 +230,7 @@ public class Gui extends Application{
             }
 
         });
-
          */
-
-
-
-        //grid.getChildren().addAll(general);
 
         // create a scene specifying the root and the size
         Scene stage = new Scene(grid, 750, 500);
@@ -248,7 +242,6 @@ public class Gui extends Application{
         primaryStage.show();
 
     }
-
 
     private static class FileList {
         private ListView<Gui.FileList.Cell> listView;
@@ -268,8 +261,6 @@ public class Gui extends Application{
             currentDir += "/";
             rootDir = currentDir;
             fillList();
-            //System.out.println(Arrays.toString(showDirectory("kriss/Dir1/")));
-            //System.out.println(Arrays.toString(paths));
         }
 
         public void refresh(String[] paths){
@@ -294,7 +285,6 @@ public class Gui extends Application{
                 sorted = sortDirectory(dir);
             }
             addItems(data, sorted);
-
 
             final ListView<Cell> listView = new ListView<Cell>(data);
             listView.setCellFactory(new Callback<ListView<Cell>, ListCell<Cell>>() {
@@ -370,7 +360,6 @@ public class Gui extends Application{
                     back = true;
                 }
 
-
             }
             if(back){
                 sorted.add(0, "..");
@@ -392,12 +381,9 @@ public class Gui extends Application{
             else if (type == "file"){
                 selectedFile = currentDir + newDirectory;
             }
-
-
         }
 
         private void nextDirectory(String directory) {
-
             this.currentDir += directory + "/";
         }
 
@@ -442,8 +428,6 @@ public class Gui extends Application{
             else if(orientation == "center"){
                 root.setCenter(listView);
             }
-
-
         }
 
         public ListView<Gui.FileList.Cell> getListView(){
@@ -459,7 +443,6 @@ public class Gui extends Application{
             public Cell(String name) {
                 super();
                 this.name = name;
-
             }
         }
 
@@ -475,11 +458,9 @@ public class Gui extends Application{
                 VBox vBox = new VBox(name, description);
                 content = new HBox(new Label("[Graphic]"), vBox);
 
-
                 content.setOnMouseClicked((mouseEvent -> {
                     handleClick(name.getText());
                 }));
-
 
                 content.setSpacing(10);
             }
@@ -495,10 +476,6 @@ public class Gui extends Application{
                     setGraphic(null);
                 }
             }
-
-
-
         }
     }
-
 }
