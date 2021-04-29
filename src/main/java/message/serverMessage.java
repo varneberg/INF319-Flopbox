@@ -5,9 +5,8 @@ public class serverMessage {
     private String requestType = null;
     private String requestStatus = null;
     private String messageContents = null;
-    private char[] messageContentsChar = null;
 
-
+    String sep = ";;";
 
     public serverMessage(String serverAddress, String requestType, String requestStatus, String messageContents){
         this.serverAddress = serverAddress;
@@ -16,26 +15,20 @@ public class serverMessage {
         this.messageContents = messageContents;
     }
 
-    public serverMessage(String serverAddress, String requestType, String requestStatus, char[] messageContentsChar){
-        this.serverAddress = serverAddress;
-        this.requestType = requestType;
-        this.requestStatus = requestStatus;
-        this.messageContentsChar = messageContentsChar;
-    }
 
     public serverMessage(){}
 
     public String createMessage(){
-        String message = getServerAddress() + ":"
-                + getRequestType() + ":"
-                + getRequestStatus() + ":"
+        String message = getServerAddress() + sep
+                + getRequestType() + sep
+                + getRequestStatus() + sep
                 + getMessageContents();
         return message;
     }
 
 
     public void receiveMessage(String input){
-        String[] msg = input.split(":");
+        String[] msg = input.split(sep);
         setServerAddress(msg[0]);
         setRequestType(msg[1]);
         setRequestStatus(msg[2]);
@@ -79,7 +72,7 @@ public class serverMessage {
         return serverAddress;
     }
 
-    public char[] getMessageContentsChar() {
-        return messageContentsChar;
+    public String getSep() {
+        return sep;
     }
 }

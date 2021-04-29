@@ -5,6 +5,7 @@ public class clientMessage {
     private String uuid = null;
     private String requestType=null;
     private String messageContents=null;
+    private String sep = ";;";
 
     public clientMessage(String localaddress, String uuid, String requestType, String messageContent){
         this.localaddress = localaddress;
@@ -16,15 +17,15 @@ public class clientMessage {
     public clientMessage(){}
 
     public String createMessage(){
-        String message = getLocaladdress() + ":"
-                + getUuid() + ":"
-                + getRequestType() + ":"
+        String message = getLocaladdress() + sep
+                + getUuid() + sep
+                + getRequestType() + sep
                 + getMessageContents();
         return message;
     }
 
     public void receiveMessage(String input){
-        String[] msg = input.split(":");
+        String[] msg = input.split(sep);
         setLocaladdress(msg[0]);
         setUuid(msg[1]);
         setRequestType(msg[2]);

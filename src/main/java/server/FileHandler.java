@@ -1,5 +1,6 @@
 package server;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,6 +10,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileHandler {
+    private String sep = "\t";
+
+    private static String storagePath = "./src/main/resources/clientDirs/";
 
     public String listFiles(String clientname) throws IOException {
         String dir = "./src/main/resources/clientDirs/" + clientname + "/";
@@ -21,21 +25,24 @@ public class FileHandler {
                     .collect(Collectors.toList());
         }
         //String[] fileArr = result.toString().split(",");
-        String fileArr = result.toString();
-        return fileArr;
-        //return fileArr.replace("[","").replace("]","").replace("," , ":").replace(" ","");
+        StringBuilder fileString = new StringBuilder();
 
-        //return arrToString(fileArr);
-    }
-
-    public String arrToString(String[] arr){
-        String fileString = "";
-
-        for (String i: arr) {
-            fileString += i + ":";
+        for (String s :result.toString().split(",")){
+            fileString.append(s.substring(s.indexOf(clientname + "/") + clientname.length() + 1)).append(sep);
         }
-        fileString.strip();
-        return fileString;
+        fileString = new StringBuilder(fileString.toString().replace("]", ""));
+        return fileString.toString();
     }
-    
+
+    public File getFile(String clientName, String filePath){
+        String clientPath = getClientPath(clientName);
+        String pathToFile = clientPath+filePath;
+        //System.out.println(pathToFile);
+        return new File(pathToFile);
+
+    }
+
+    public String getClientPath(String clientName){
+        return storagePath+clientName+"/";
+    }
 }
