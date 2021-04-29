@@ -137,8 +137,6 @@ public class Gui extends Application{
     }
 
     private void logged_in(Client current) {
-        String[] files = current.receiveFileNames(current.getName());
-
         //Creating a GridPane container
         BorderPane grid = new BorderPane();
         GridPane general = new GridPane();
@@ -184,7 +182,7 @@ public class Gui extends Application{
 
 
 
-        Gui.FileList serverFiles = new Gui.FileList(grid, "center", files);
+        Gui.FileList serverFiles = new Gui.FileList(grid, "center", current);
         grid.setLeft(general);
 
 
@@ -203,7 +201,7 @@ public class Gui extends Application{
                 } catch (Exception exception) {
                     error_text.setText(current.getServerMessageContents());
                 }
-                serverFiles.refresh(current.receiveFileNames(current.getName()));
+                serverFiles.refresh(current.receiveFileNames(serverFiles.getCurrentDir()));
             }
         });
 
@@ -218,7 +216,6 @@ public class Gui extends Application{
                 } catch (IOException ex) {
                     // handle exception...
                 }
-                serverFiles.refresh(current.receiveFileNames());
             }
 
         });
@@ -243,13 +240,14 @@ public class Gui extends Application{
         private BorderPane root;
         private String orientation;
         private String selectedFile = null;
+        private Client current;
 
-        public FileList(BorderPane root, String orientation, String[] paths) {
-
-            this.paths = new ArrayList<>(Arrays.asList(paths));
+        public FileList(BorderPane root, String orientation, Client current) {
+            this.current = current;
+            this.paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(current.getName())));
             this.root = root;
             this.orientation = orientation;
-            currentDir = paths[0].split("/")[0];
+            currentDir = paths.toArray(new String[0])[0].split("/")[0];
             currentDir += "/";
             rootDir = currentDir;
             fillList();
@@ -269,7 +267,7 @@ public class Gui extends Application{
                 for (int i=0;i<dir.length;i++){
                     dirWithBack[i] = dir[i];
                 }
-                dirWithBack[dirWithBack.length -1] = "..";
+                dirWithBack[dirWithBack.length -1] = "<--";
                 sorted = sortDirectory(dirWithBack);
 
             }
@@ -357,7 +355,7 @@ public class Gui extends Application{
 
             }
             if(back){
-                sorted.add(0, "..");
+                sorted.add(0, "<--");
             }
             return sorted.toArray(new String[0]);
         }
@@ -380,17 +378,19 @@ public class Gui extends Application{
 
         private void nextDirectory(String directory) {
             this.currentDir += directory + "/";
+            System.out.println(current.receiveFileNames(currentDir) + currentDir);
+            paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(currentDir)));
         }
 
         private String determineType(String element){
             if(element.equals("..")){
                 return "back";
             }
-            String temp = currentDir + element;
-            if (paths.contains(temp)){
-                return "file";
+
+            if (element.charAt(element.length()-1) == '/'){
+                return "directory";
             }
-            return "directory";
+            return "file";
         }
 
         private void backDirectory() {
@@ -400,6 +400,8 @@ public class Gui extends Application{
                 newCurrent += temp[i] + "/";
             }
             this.currentDir = newCurrent;
+            System.out.println(current.receiveFileNames(currentDir) + currentDir);
+            paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(currentDir)));
         }
 
         protected String getSelectedFile(){
