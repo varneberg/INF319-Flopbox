@@ -203,7 +203,7 @@ public class Gui extends Application{
                 } catch (Exception exception) {
                     error_text.setText(current.getServerMessageContents());
                 }
-                serverFiles.refresh(current.receiveFileNames());
+                serverFiles.refresh(current.receiveFileNames(current.getName()));
             }
         });
 

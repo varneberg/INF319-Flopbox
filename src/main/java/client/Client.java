@@ -41,7 +41,7 @@ public class Client {
         }
     }
 
-    public serverMessage receiveMessage() {
+    public void receiveMessage() {
         serverMessage msg = null;
         try {
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -51,7 +51,7 @@ public class Client {
             e.printStackTrace();
         }
         serverMsg = msg;
-        return msg;
+        //return msg;
     }
 
     public void sendMessage(String requestType, String contents) {
@@ -66,7 +66,6 @@ public class Client {
         }
     }
 
-
     public String getServerMessageStatus() {
         return serverMsg.getRequestStatus();
     }
@@ -80,18 +79,17 @@ public class Client {
 
     }
     // TODO add server response as return
-    public String createUser(String username, String password) {
+    public void createUser(String username, String password) {
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
-        serverMessage servermsg = receiveMessage();
-        return servermsg.getRequestStatus();
+        //serverMessage servermsg = receiveMessage();
+        receiveMessage();
+        //return servermsg.getRequestStatus();
 
         //return serverResponse;
-
     }
-
 
 
     public boolean isAuthenticated(String username, String password) {
@@ -106,9 +104,12 @@ public class Client {
         //sendAuthentication(username, password);
         //String input = receiveServer();
         sendMessage("LOGIN()", username + "/" + password);
-        serverMessage servermsg = receiveMessage();
-        String status = servermsg.getRequestStatus();
-        String contents = servermsg.getMessageContents();
+        //serverMessage servermsg = receiveMessage();
+        receiveMessage();
+        //String status = servermsg.getRequestStatus();
+        String status = getServerMessageStatus();
+        //String contents = servermsg.getMessageContents();
+        String contents = getServerMessageContents();
         if (status.equals("1")) {
             setUuid(contents);
             setName(username);
@@ -118,12 +119,14 @@ public class Client {
     }
 
     // Receive names for files stored on server
-    public String[] receiveFileNames() {
-        sendMessage("FILES()", "LIST()");
-        serverMessage msg = receiveMessage();
-        String rawFilenames = msg.getMessageContents();
-        String[] fileNames = rawFilenames.split("\t");
-        return fileNames;
+    public String[] receiveFileNames(String filePath) {
+        sendMessage("LIST()", filePath);
+        //serverMessage msg = receiveMessage();
+        receiveMessage();
+        //String rawFilenames = msg.getMessageContents();
+        String rawFilenames = getServerMessageContents();
+        String[] filenames = rawFilenames.split(",");
+        return filenames;
     }
 
     public File getFile(String fileName){
@@ -133,9 +136,6 @@ public class Client {
 
     public void putFile(){}
 
-    public boolean registerClient(String name, String password) {
-        return false;
-    }
 
     public void sendFile(File filename) throws Exception{
         String fullPath = storagePath + filename;

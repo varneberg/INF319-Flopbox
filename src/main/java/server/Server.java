@@ -81,6 +81,7 @@ class RequestHandler extends Thread {
             System.out.println("[Server]: Received a connection\n");
             while (true) {
                 clientMessage clientMsg = receiveMessage();
+                FileHandler handler = new FileHandler();
                 String requestType = clientMsg.getRequestType();
                 String contents = clientMsg.getMessageContents();
                 String clientUUID = clientMsg.getUuid();
@@ -93,9 +94,11 @@ class RequestHandler extends Thread {
                     case "LOGIN()":
                         validateClient(contents);
                         break;
-                    case "FILES()":
+                    case "LIST()" :
                         if (!clientUUID.equals("null")) {
                             startFileHandler(getClientName(), contents);
+                            String clientFiles = handler.listFiles(clientMsg.getMessageContents());
+                            sendMessage("LIST()", "1", clientFiles);
                             break;
                         } else {
                             System.out.println("Unauthorized");
