@@ -42,7 +42,7 @@ public class Gui extends Application{
     }
 
 
-     
+
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -97,37 +97,36 @@ public class Gui extends Application{
         final Text error_text = new Text();
         GridPane.setConstraints(error_text, 0, 4);
         grid.getChildren().add(error_text);
+        error_text.setText("test");
 
 
         // set a handler that is executed when the user activates the button
         // e.g. by clicking it or pressing enter while it's focused
         login_button.setOnAction(e -> {
+            Client current = new Client(address, port);
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
-                Client current = new Client(address, port);
+
                 current.login(username_field.getText(), password_field.getText());
                 if (current.getServerMessageStatus().equals("1")) {
                     logged_in(current);
-                } else {
-                    info_text.setText(current.getServerMessageContents());
                 }
-            } else {
-                info_text.setText("Empty input field");
+                error_text.setText(current.getServerMessageContents());
             }
         });
 
         register_button.setOnAction(e -> {
+
+            Client current = new Client("localhost", port);
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
 
-                Client current = new Client("localhost", port);
-                if (current.createUser(username_field.getText(), password_field.getText()) == "1") {
+
+                if (current.createUser(username_field.getText(), password_field.getText()).equals("1")) {
                     logged_in(current);
-                } else {
-                    info_text.setText("User already exists");
                 }
 
-            } else {
-                info_text.setText("Empty input field");
             }
+            error_text.setText(current.getServerMessageContents());
+
         });
 
         // create a scene specifying the root and the size
