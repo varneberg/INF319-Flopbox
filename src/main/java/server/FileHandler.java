@@ -16,7 +16,7 @@ public class FileHandler {
 
     public String listFiles(String filePath) throws IOException {
         String[] paths;
-        String dir = "./src/main/resources/clientDirs/" + filePath + "/";
+        String dir = "./src/main/resources/clientDirs/" + filePath;
         File f = new File(dir);
         StringBuilder fileString = new StringBuilder();
         try {
