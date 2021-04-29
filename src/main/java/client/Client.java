@@ -3,6 +3,7 @@ package client;
 
 import message.clientMessage;
 import message.serverMessage;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.Socket;
@@ -12,7 +13,8 @@ public class Client {
     //public class Client implements Runnable{
 
     private String name; // TODO setName on validated login
-    String uuid= "null";
+    private String sep = "//s//";
+    String uuid = "null";
     Thread t;
     int port;
     Socket s;
@@ -30,34 +32,33 @@ public class Client {
     }
 
     public Client(String address, int port) {
-        try{
+        try {
             this.port = port;
             s = new Socket(address, port);
             this.uuid = uuid;
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public serverMessage receiveMessage(){
+    public serverMessage receiveMessage() {
         serverMessage msg = null;
-        try{
+        try {
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             msg = new serverMessage();
             msg.receiveMessage(clientInput.readLine());
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         serverMsg = msg;
         return msg;
     }
 
-
-    public void sendMessage(String requestType, String contents){
+    public void sendMessage(String requestType, String contents) {
         try {
             //ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
-            clientOutput = new PrintWriter(s.getOutputStream(),true);
-            clientMessage message = new clientMessage(s.getInetAddress().toString(), getUuid(),requestType, contents);
+            clientOutput = new PrintWriter(s.getOutputStream(), true);
+            clientMessage message = new clientMessage(s.getInetAddress().toString(), getUuid(), requestType, contents);
             clientOutput.println(message.createMessage());
 
         } catch (IOException e) {
@@ -65,18 +66,21 @@ public class Client {
         }
     }
 
-    public String getServerMessageStatus(){
 
+    public String getServerMessageStatus() {
         return serverMsg.getRequestStatus();
     }
 
-    public String getServerMessageContents(){
-
+    public String getServerMessageContents() {
         return serverMsg.getMessageContents();
     }
 
+    public void printServerContents(){
+        System.out.println(serverMsg.getMessageContents());
+
+    }
     // TODO add server response as return
-    public String createUser(String username, String password){
+    public String createUser(String username, String password) {
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
@@ -89,37 +93,23 @@ public class Client {
     }
 
 
-    // Receive names for files stored on server
-    public String[] receiveFileNames() {
-        serverMessage msg = receiveMessage();
-        String rawFilenames = msg.getMessageContents().replace("[", "").replace("]", "").replace(", ", ":");
-        String[] fileNames = rawFilenames.split(":");
-        for (int i = 0; i<fileNames.length; i++) {
-            int pathLoc = fileNames[i].indexOf(getName());
-            fileNames[i] = fileNames[i].substring(pathLoc);
 
-            }
-        return fileNames;
-    }
-
-
-    public boolean isAuthenticated(String username, String password){
-        if(getUuid().equals("null")){
+    public boolean isAuthenticated(String username, String password) {
+        if (getUuid().equals("null")) {
             return false;
         } else {
             return true;
         }
     }
 
-
-    public String login(String username, String password){
+    public String login(String username, String password) {
         //sendAuthentication(username, password);
         //String input = receiveServer();
-        sendMessage("LOGIN()", username +"/" + password);
+        sendMessage("LOGIN()", username + "/" + password);
         serverMessage servermsg = receiveMessage();
         String status = servermsg.getRequestStatus();
         String contents = servermsg.getMessageContents();
-        if(status.equals("1")){
+        if (status.equals("1")) {
             setUuid(contents);
             setName(username);
         }
@@ -127,13 +117,27 @@ public class Client {
         return status;
     }
 
+    // Receive names for files stored on server
+    public String[] receiveFileNames() {
+        sendMessage("FILES()", "LIST()");
+        serverMessage msg = receiveMessage();
+        String rawFilenames = msg.getMessageContents();
+        String[] fileNames = rawFilenames.split("\t");
+        return fileNames;
+    }
+
+    public void getFile(String fileName){
+        sendMessage("FILES()", "GET()" + sep + fileName);
+    }
+
+    public void putFile(){}
 
     public boolean registerClient(String name, String password) {
         return false;
     }
 
     // TODO convert to File filename
-    private void sendFile(String filename) throws Exception{
+    private void sendFile(String filename) throws Exception {
         String fullPath = storagePath + filename;
 
         int bytes = 0;
@@ -145,15 +149,15 @@ public class Client {
         // send file size
         dataOutput.writeLong(file.length());
         // break file into chunks
-        byte[] buffer = new byte[4*1024];
-        while ((bytes=fileInputStream.read(buffer))!=-1){
-            dataOutput.write(buffer,0,bytes);
+        byte[] buffer = new byte[4 * 1024];
+        while ((bytes = fileInputStream.read(buffer)) != -1) {
+            dataOutput.write(buffer, 0, bytes);
             dataOutput.flush();
         }
         fileInputStream.close();
     }
 
-    public String getName(){
+    public String getName() {
         return this.name;
     }
 

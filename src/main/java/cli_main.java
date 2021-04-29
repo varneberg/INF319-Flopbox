@@ -21,13 +21,16 @@ public class cli_main {
         Client client = new Client(address, port);
         String username = "test123";
         String password = "test";
-        client.login(username, password);
-        client.sendMessage("FILES()", "LIST()");
+        client.login(username,password);
         client.receiveFileNames();
+        //client.login(username, password);
+        //client.receiveFileNames();
+        //client.receiveFileNames();
+        //client.receiveFileNames();
+        //client.getFile("dir2/dummy7.txt");
 
-        //System.out.println(client.getUuid());
-        //client.sendAuthentication(username, password);
-        //client.sendMessage("LOGIN()", "flurp" +"/" +"test");
+
+
         server.stopServer();
 
     }
