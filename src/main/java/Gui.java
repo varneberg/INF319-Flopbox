@@ -120,9 +120,6 @@ public class Gui extends Application{
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
 
 
-                if (current.createUser(username_field.getText(), password_field.getText()).equals("1")) {
-                    logged_in(current);
-                }
 
             }
             error_text.setText(current.getServerMessageContents());
@@ -141,7 +138,7 @@ public class Gui extends Application{
     }
 
     private void logged_in(Client current) {
-        String[] files = current.receiveFileNames();
+        String[] files = current.receiveFileNames(current.getName());
 
         //Creating a GridPane container
         BorderPane grid = new BorderPane();
@@ -208,7 +205,7 @@ public class Gui extends Application{
                 } catch (Exception exception) {
                     error_text.setText("Cant upload file");
                 }
-                serverFiles.refresh(current.receiveFileNames());
+                serverFiles.refresh(current.receiveFileNames(current.getName()));
             }
         });
 
