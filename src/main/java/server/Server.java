@@ -170,7 +170,6 @@ class RequestHandler extends Thread {
             out.write(bytes,0,count);
         }
 
-
     }
 
     private String genUUID() {

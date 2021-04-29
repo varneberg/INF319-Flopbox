@@ -102,7 +102,7 @@ public class Client {
         }
     }
 
-    public String login(String username, String password) {
+    public void login(String username, String password) {
         //sendAuthentication(username, password);
         //String input = receiveServer();
         sendMessage("LOGIN()", username + "/" + password);
@@ -126,8 +126,9 @@ public class Client {
         return fileNames;
     }
 
-    public void getFile(String fileName){
+    public File getFile(String fileName){
         sendMessage("FILES()", "GET()" + sep + fileName);
+        return null;
     }
 
     public void putFile(){}
