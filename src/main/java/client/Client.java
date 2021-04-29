@@ -114,7 +114,7 @@ public class Client {
             setName(username);
         }
         //System.out.println(status + " " + contents);
-        return status;
+        //return status;
     }
 
     // Receive names for files stored on server
@@ -136,8 +136,7 @@ public class Client {
         return false;
     }
 
-    // TODO convert to File filename
-    private void sendFile(String filename) throws Exception {
+    public void sendFile(File filename) throws Exception{
         String fullPath = storagePath + filename;
 
         int bytes = 0;
