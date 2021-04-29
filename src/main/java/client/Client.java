@@ -19,8 +19,6 @@ public class Client {
     int port;
     Socket s;
     String clientPath = null;
-    private static DataOutputStream dataOutput = null;
-    private static DataInputStream dataInput = null;
     private static String storagePath = "src/main/resources/clientStorage/";
     BufferedReader clientInput = null;
     PrintWriter clientOutput = null;
@@ -60,6 +58,7 @@ public class Client {
             clientOutput = new PrintWriter(s.getOutputStream(), true);
             clientMessage message = new clientMessage(s.getInetAddress().toString(), getUuid(), requestType, contents);
             clientOutput.println(message.createMessage());
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -133,16 +132,43 @@ public class Client {
         sendMessage("GET()", filePath);
     }
 
-    public void putFile(){}
+    public void putFile(){
 
+        try {
+            DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
+            DataInputStream dataInput = new DataInputStream(new BufferedInputStream(s.getInputStream()));
+            String filePath = "./src/main/resources/clientDirs/kriss/test.txt";
+            sendMessage("PUT()", " ");
+            //String fullPath = storagePath + filename;
+            int bytes = 0;
+            File file = new File(filePath);
+            String path = file.getAbsolutePath();
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+            dataOutput.writeLong(file.length());
+            // break file into chunks
+            byte[] buffer = new byte[4 * 1024];
+
+            while ((bytes = fileInputStream.read(buffer)) > 0) {
+                dataOutput.write(buffer, 0, bytes);
+                dataOutput.flush();
+            }
+            //fileInputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // send file size
+    }
 
     public void sendFile(File filename) throws Exception{
-        String fullPath = storagePath + filename;
+        DataInputStream dataInput = null;
+        DataOutputStream dataOutput = null;
 
+        sendMessage("PUT()", "");
+        String fullPath = storagePath + filename;
         int bytes = 0;
         File file = new File(fullPath);
         String path = file.getAbsolutePath();
-
         FileInputStream fileInputStream = new FileInputStream(fullPath);
 
         // send file size
@@ -155,6 +181,7 @@ public class Client {
         }
         fileInputStream.close();
     }
+
 
     public String getName() {
         return this.name;

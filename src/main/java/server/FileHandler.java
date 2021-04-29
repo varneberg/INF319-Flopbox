@@ -20,14 +20,14 @@ public class FileHandler {
         File f = new File(dir);
         StringBuilder fileString = new StringBuilder();
         try {
-            for (File fi : f.listFiles()) {
+            for (File fi : f.listFiles()){
                 if (fi.isDirectory()) {
                     fileString.append(fi.getName()).append("/").append(sep);
                 } else if (fi.isFile()) {
                     fileString.append(fi.getName()).append(sep);
                 }
             }
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
            fileString.append("No file(s) were found");
         }
         return fileString.toString();
