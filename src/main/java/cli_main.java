@@ -22,8 +22,10 @@ public class cli_main {
         String username = "test123";
         String password = "test";
         client.login(username,password);
-        client.receiveFileNames();
-        //client.login(username, password);
+        String[] files = client.receiveFileNames(client.getName()+"dir1");
+        for(String i : files){
+            System.out.println(i);
+        }
         //client.receiveFileNames();
         //client.receiveFileNames();
         //client.receiveFileNames();
