@@ -137,7 +137,7 @@ public class Client {
         try {
             DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
             DataInputStream dataInput = new DataInputStream(new BufferedInputStream(s.getInputStream()));
-            String filePath = "./src/main/resources/clientDirs/kriss/test.txt";
+            String filePath = "./src/main/resources/clientDirs/tes123/dummy0.txt";
             sendMessage("PUT()", " ");
             //String fullPath = storagePath + filename;
             int bytes = 0;

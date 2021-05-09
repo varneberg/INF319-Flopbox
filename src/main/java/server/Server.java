@@ -120,7 +120,7 @@ class RequestHandler extends Thread {
                             break;
                         }
                         try {
-                            //receiveFile("./src/main/resources/clientDirs/" + clientName);
+                            receiveFile("./src/main/resources/clientDirs/output.txt");
                         } catch (Exception e) {
                             sendMessage("PUT()", "0", "Unable to upload");
                         }
