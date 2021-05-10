@@ -3,6 +3,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -60,10 +61,13 @@ public class Gui extends Application{
         grid.setVgap(10);
         grid.setHgap(10);
 
+        VBox title = new VBox(10);
+        title.setPadding(new Insets(10,10,10,10));
+        title.setAlignment(Pos.BASELINE_CENTER);
         //main text
         final Text main_text = new Text(10, 50, "Flopbox");
-        GridPane.setConstraints(main_text, 1, 0);
-        grid.getChildren().add(main_text);
+        title.getChildren().add(main_text);
+        grid.getChildren().add(title);
 
         //Defining the Name text field
         final TextField username_field = new TextField();
@@ -144,13 +148,15 @@ public class Gui extends Application{
         general.setVgap(10);
         general.setHgap(10);
 
-        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setPadding(new Insets(0, 20, 20, 20));
 
-
+        VBox title = new VBox(10);
+        title.setPadding(new Insets(10,10,10,10));
+        title.setAlignment(Pos.BASELINE_CENTER);
         //main text
         final Text main_text = new Text(10, 50, "Flopbox");
-        GridPane.setConstraints(main_text, 1, 0);
-        general.getChildren().add(main_text);
+        title.getChildren().add(main_text);
+        grid.setTop(title);
 
 
         //info text
@@ -182,20 +188,16 @@ public class Gui extends Application{
 
 
 
-        Gui.FileList serverFiles = new Gui.FileList(grid, "center", current);
+
+        Gui.FileList serverFiles = new Gui.FileList(grid, current);
         grid.setLeft(general);
 
-        TextField search_field = new TextField();
-        Button search_button = new Button("Go to directory");
-        VBox search = new VBox(search_field, search_button);
-        grid.setTop(search);
 
 
 
         logout_button.setOnAction(e -> {
             login();
         });
-
 
 
         upload_file_button.setOnAction(e -> {
@@ -247,14 +249,23 @@ public class Gui extends Application{
         private String orientation;
         private String selectedFile = null;
         private Client current;
+        private TextField search_field;
+        private Button search_button;
+        private Text search_text;
+        //private VBox search;
 
-        public FileList(BorderPane root, String orientation, Client current) {
+        public FileList(BorderPane root, Client current) {
             this.current = current;
             this.paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(current.getName())));
             this.root = root;
             this.orientation = orientation;
             currentDir = current.getName() + "/";
             rootDir = currentDir;
+            this.search_text = new Text("Go directly to directory:");
+            this.search_field = new TextField();
+            search_field.setPromptText("E.g " + rootDir + "wantedDir/");
+            this.search_button = new Button("Go to directory");
+            HBox fileExplorer = new HBox(10);
             fillList();
         }
 
@@ -279,6 +290,7 @@ public class Gui extends Application{
             else {
                 sorted = sortDirectory(dir);
             }
+            System.out.println(Arrays.toString(sorted));
             addItems(data, sorted);
 
             final ListView<Cell> listView = new ListView<Cell>(data);
@@ -290,7 +302,7 @@ public class Gui extends Application{
             });
 
             this.listView = listView;
-            //setOrientation(this.root, this.orientation);
+            setOrientation(this.root);
         }
 
         /*
@@ -370,11 +382,9 @@ public class Gui extends Application{
 
             if(type == "back"){
                 backDirectory();
-                fillList();
             }
             else if (type == "directory"){
                 nextDirectory(newDirectory);
-                fillList();
             }
             else if (type == "file"){
                 selectedFile = currentDir + newDirectory;
@@ -382,9 +392,10 @@ public class Gui extends Application{
         }
 
         private void nextDirectory(String directory) {
-            this.currentDir += directory + "/";
+            this.currentDir += directory;
             System.out.println(Arrays.asList(current.receiveFileNames(currentDir)) + currentDir);
-            paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(currentDir)));
+            String[] newPaths = current.receiveFileNames(currentDir);
+            refresh(newPaths);
         }
 
         private String determineType(String element){
@@ -405,7 +416,8 @@ public class Gui extends Application{
                 newCurrent += temp[i] + "/";
             }
             this.currentDir = newCurrent;
-            paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(currentDir)));
+            String[] newPaths = current.receiveFileNames(currentDir);
+            refresh(newPaths);
         }
 
         protected String getSelectedFile(){
@@ -417,23 +429,25 @@ public class Gui extends Application{
         }
 
         private void addItems(ObservableList<Gui.FileList.Cell> data, String[] paths){
+
             for (String item : paths){
                 data.add(new Gui.FileList.Cell(item));
             }
         }
 
-        private void setOrientation(BorderPane root, String orientation){
-            if (orientation == "right"){
-                root.setRight(listView);
-            }
-            else if(orientation == "center"){
-                root.setCenter(listView);
-            }
+        private void setOrientation(BorderPane root){
+
+            VBox fileExplorer = new VBox(10);
+            HBox search = new HBox(10);
+            search.getChildren().addAll(search_text, search_field, search_button);
+            fileExplorer.getChildren().addAll(search, listView);
+            root.setCenter(fileExplorer);
         }
 
         public ListView<Gui.FileList.Cell> getListView(){
             return listView;
         }
+
         private static class Cell {
             private String name;
 
