@@ -17,20 +17,22 @@ public class ClientStorage {
        return con;
     }
 
-    public void listAllClients(){
+    public String listAllClients(){
        String sql = "SELECT * FROM clients";
+       String output = null;
        try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)){
            while(rs.next()){
-               System.out.println(rs.getInt("id") + "\t" +
+               output = rs.getInt("id") + "\t" +
                        rs.getString("uname") + "\t" +
                        rs.getString("password") + "\t" +
-                       rs.getString("directory"));
+                       rs.getString("directory");
            }
        } catch (SQLException e){
-           System.out.println(e.getMessage());
+           output = e.getMessage();
        }
+       return output;
     }
 
     // Checks if a given client exists in the database
