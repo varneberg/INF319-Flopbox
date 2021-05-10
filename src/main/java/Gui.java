@@ -3,6 +3,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -15,6 +16,8 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import server.Server;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 public class Gui extends Application{
@@ -58,10 +61,13 @@ public class Gui extends Application{
         grid.setVgap(10);
         grid.setHgap(10);
 
+        VBox title = new VBox(10);
+        title.setPadding(new Insets(10,10,10,10));
+        title.setAlignment(Pos.BASELINE_CENTER);
         //main text
         final Text main_text = new Text(10, 50, "Flopbox");
-        GridPane.setConstraints(main_text, 1, 0);
-        grid.getChildren().add(main_text);
+        title.getChildren().add(main_text);
+        grid.getChildren().add(title);
 
         //Defining the Name text field
         final TextField username_field = new TextField();
@@ -89,15 +95,9 @@ public class Gui extends Application{
         grid.getChildren().add(register_button);
 
         //info text
-        final Text info_text = new Text();
-        GridPane.setConstraints(info_text, 0, 3);
-        grid.getChildren().add(info_text);
-
-        //info text
         final Text error_text = new Text();
-        GridPane.setConstraints(error_text, 0, 4);
+        GridPane.setConstraints(error_text, 0, 3);
         grid.getChildren().add(error_text);
-        error_text.setText("test");
 
 
         // set a handler that is executed when the user activates the button
@@ -118,8 +118,11 @@ public class Gui extends Application{
 
             Client current = new Client("localhost", port);
             if (!username_field.getText().isEmpty() && !password_field.getText().isEmpty()) {
+                current.createUser(username_field.getText(), password_field.getText());
 
-
+                if (current.getServerMessageStatus().equals("1")) {
+                    logged_in(current);
+                }
 
             }
             error_text.setText(current.getServerMessageContents());
@@ -138,8 +141,6 @@ public class Gui extends Application{
     }
 
     private void logged_in(Client current) {
-        String[] files = current.getFileNames(current.getName());
-
         //Creating a GridPane container
         BorderPane grid = new BorderPane();
         GridPane general = new GridPane();
@@ -147,14 +148,15 @@ public class Gui extends Application{
         general.setVgap(10);
         general.setHgap(10);
 
-        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setPadding(new Insets(0, 20, 20, 20));
 
-
+        VBox title = new VBox(10);
+        title.setPadding(new Insets(10,10,10,10));
+        title.setAlignment(Pos.BASELINE_CENTER);
         //main text
         final Text main_text = new Text(10, 50, "Flopbox");
-        GridPane.setConstraints(main_text, 1, 0);
-        general.getChildren().add(main_text);
-
+        title.getChildren().add(main_text);
+        grid.setTop(title);
 
 
         //info text
@@ -186,14 +188,16 @@ public class Gui extends Application{
 
 
 
-        Gui.FileList serverFiles = new Gui.FileList(grid, "center", files);
+
+        Gui.FileList serverFiles = new Gui.FileList(grid, current);
         grid.setLeft(general);
+
+
 
 
         logout_button.setOnAction(e -> {
             login();
         });
-
 
 
         upload_file_button.setOnAction(e -> {
@@ -203,13 +207,13 @@ public class Gui extends Application{
                 try {
                     current.putFile(" ",file.getAbsolutePath());
                 } catch (Exception exception) {
-                    error_text.setText("Cant upload file");
+                    error_text.setText(current.getServerMessageContents());
                 }
-                serverFiles.refresh(current.getFileNames(current.getName()));
+                serverFiles.refresh(current.getFileNames(serverFiles.getCurrentDir()));
             }
         });
 
-        /*
+
         download_file_button.setOnAction(e -> {
             final FileChooser fileChooser = new FileChooser();
             File dest = fileChooser.showSaveDialog(primaryStage);
@@ -220,11 +224,10 @@ public class Gui extends Application{
                 } catch (IOException ex) {
                     // handle exception...
                 }
-                serverFiles.refresh(current.receiveFileNames());
             }
 
         });
-         */
+
 
         // create a scene specifying the root and the size
         Scene stage = new Scene(grid, 750, 500);
@@ -239,31 +242,40 @@ public class Gui extends Application{
 
     private static class FileList {
         private ListView<Gui.FileList.Cell> listView;
-        private String[] paths;
+        private ArrayList<String> paths;
         private String currentDir;
         private String rootDir;
         private BorderPane root;
         private String orientation;
         private String selectedFile = null;
+        private Client current;
+        private TextField search_field;
+        private Button search_button;
+        private Text search_text;
+        //private VBox search;
 
-        public FileList(BorderPane root, String orientation, String[] paths) {
-
-            this.paths = paths;
+        public FileList(BorderPane root, Client current) {
+            this.current = current;
+            this.paths = new ArrayList<>(Arrays.asList(current.getFileNames(current.getName())));
             this.root = root;
             this.orientation = orientation;
-            currentDir = paths[0].split("/")[0];
-            currentDir += "/";
+            currentDir = current.getName() + "/";
             rootDir = currentDir;
+            this.search_text = new Text("Go directly to directory:");
+            this.search_field = new TextField();
+            search_field.setPromptText("E.g " + rootDir + "wantedDir/");
+            this.search_button = new Button("Go to directory");
+            HBox fileExplorer = new HBox(10);
             fillList();
         }
 
         public void refresh(String[] paths){
-            this.paths = paths;
+            this.paths = new ArrayList<>(Arrays.asList(paths));
             fillList();
         }
 
         private void fillList() {
-            String[] dir = showDirectory(currentDir);
+            String[] dir = paths.toArray(new String[0]);
             String[] dirWithBack = new String[dir.length +1];
             ObservableList<Cell> data = FXCollections.observableArrayList();
             String[] sorted;
@@ -271,13 +283,14 @@ public class Gui extends Application{
                 for (int i=0;i<dir.length;i++){
                     dirWithBack[i] = dir[i];
                 }
-                dirWithBack[dirWithBack.length -1] = "..";
+                dirWithBack[dirWithBack.length -1] = "<--";
                 sorted = sortDirectory(dirWithBack);
 
             }
             else {
                 sorted = sortDirectory(dir);
             }
+            System.out.println(Arrays.toString(sorted));
             addItems(data, sorted);
 
             final ListView<Cell> listView = new ListView<Cell>(data);
@@ -289,9 +302,10 @@ public class Gui extends Application{
             });
 
             this.listView = listView;
-            setOrientation(this.root, this.orientation);
+            setOrientation(this.root);
         }
 
+        /*
         private String[] showDirectory(String currentPath){
             String[] currentPathSplit = currentPath.split("/");
             ArrayList<String> newDir = new ArrayList<>();
@@ -337,6 +351,8 @@ public class Gui extends Application{
             return noDuplicates.toArray(new String[0]);
         }
 
+         */
+
         private String[] sortDirectory(String[] directory){
             ArrayList<String> sorted = new ArrayList<>();
             boolean back = false;
@@ -356,7 +372,7 @@ public class Gui extends Application{
 
             }
             if(back){
-                sorted.add(0, "..");
+                sorted.add(0, "<--");
             }
             return sorted.toArray(new String[0]);
         }
@@ -366,11 +382,9 @@ public class Gui extends Application{
 
             if(type == "back"){
                 backDirectory();
-                fillList();
             }
             else if (type == "directory"){
                 nextDirectory(newDirectory);
-                fillList();
             }
             else if (type == "file"){
                 selectedFile = currentDir + newDirectory;
@@ -378,18 +392,21 @@ public class Gui extends Application{
         }
 
         private void nextDirectory(String directory) {
-            this.currentDir += directory + "/";
+            this.currentDir += directory;
+            System.out.println(Arrays.asList(current.getFileNames(currentDir)) + currentDir);
+            String[] newPaths = current.getFileNames(currentDir);
+            refresh(newPaths);
         }
 
         private String determineType(String element){
-            if(element.equals("..")){
+            if(element.equals("<--")){
                 return "back";
             }
-            String temp = currentDir + element;
-            if (new ArrayList<String>(Arrays.asList(paths)).contains(temp)){
-                return "file";
+
+            if (element.charAt(element.length()-1) == '/'){
+                return "directory";
             }
-            return "directory";
+            return "file";
         }
 
         private void backDirectory() {
@@ -399,6 +416,8 @@ public class Gui extends Application{
                 newCurrent += temp[i] + "/";
             }
             this.currentDir = newCurrent;
+            String[] newPaths = current.getFileNames(currentDir);
+            refresh(newPaths);
         }
 
         protected String getSelectedFile(){
@@ -410,23 +429,25 @@ public class Gui extends Application{
         }
 
         private void addItems(ObservableList<Gui.FileList.Cell> data, String[] paths){
+
             for (String item : paths){
                 data.add(new Gui.FileList.Cell(item));
             }
         }
 
-        private void setOrientation(BorderPane root, String orientation){
-            if (orientation == "right"){
-                root.setRight(listView);
-            }
-            else if(orientation == "center"){
-                root.setCenter(listView);
-            }
+        private void setOrientation(BorderPane root){
+
+            VBox fileExplorer = new VBox(10);
+            HBox search = new HBox(10);
+            search.getChildren().addAll(search_text, search_field, search_button);
+            fileExplorer.getChildren().addAll(search, listView);
+            root.setCenter(fileExplorer);
         }
 
         public ListView<Gui.FileList.Cell> getListView(){
             return listView;
         }
+
         private static class Cell {
             private String name;
 

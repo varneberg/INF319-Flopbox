@@ -130,6 +130,10 @@ public class Client {
         return filenames;
     }
 
+    public File getFile(String fileName){
+        sendMessage("FILES()", "GET()" + sep + fileName);
+        return null;
+    }
 
     public void putFile(String localPath, String serverPath){
         try {
