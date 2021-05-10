@@ -25,10 +25,14 @@ public class server_main {
         String username = "test123";
         String password = "test";
         client.login(username,password);
-        String localPath = "./src/main/resources/clientDirs/test123/dummy0.txt";
-        String serverPath = "/brok/output2.txt";
+        String localPath = "./src/main/resources/clientDirs/test123/img.png";
+        String serverPath = "brok/img.png";
+        String toPath = "./src/main/resources/clientDirs/tmp/output3.png";
+        String fromPath = "brok/output2.txt";
+        //client.getFile(fromPath, toPath);
         //client.putFile(localPath, serverPath);
-        client.getFile(serverPath, localPath);
-        //server.stopServer();
+        client.getFile("brok/img.png", toPath);
+        //client.getFile(serverPath, localPath);
+        //client.getFile(serverPath,localPath);
     }
 }
