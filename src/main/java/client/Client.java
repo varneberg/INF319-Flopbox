@@ -1,159 +1,229 @@
 package client;
 
+
+import message.clientMessage;
+import message.serverMessage;
+import org.apache.commons.io.IOUtils;
+
 import java.io.*;
-import java.net.*;
-import java.util.Scanner;
+import java.net.Socket;
 
-public class Client implements Runnable{
-    String name;
-    String password;
+
+public class Client {
+    //public class Client implements Runnable{
+
+    private String name; // TODO setName on validated login
+    String uuid = "null";
     Thread t;
-    String message;
     int port;
-    private Socket s;
-    private static DataOutputStream dataOutput = null;
-    private static DataInputStream dataInput = null;
+    Socket s;
+    String clientPath = null;
     private static String storagePath = "src/main/resources/clientStorage/";
+    private BufferedReader clientInput = null;
+    private PrintWriter clientOutput = null;
+    private serverMessage serverMsg = null;
+   // private DataOutput dataOutput=null;
 
 
+    //private DataInputStream dataInput=null;
 
-    public Client(int port, String name, String password) {
 
-        this.port = port;
-        this.name = name;
-        this.password = password;
-    }
     public Client(int port) {
         this.port = port;
     }
 
-    @Override
-    public void run(){
-        try{
-            s = new Socket("localhost",port);
-            BufferedReader serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            PrintWriter clientOutput = new PrintWriter(s.getOutputStream(), true);
-
-            boolean auth = false;
-            while (true) {
-                // Update to gui credentials
-                String uname = "tes123";
-                String password = "test";
-                String creds = uname + "\t" + password;
-                //
-
-                clientOutput.println(creds);
-                String serverMessage = serverInput.readLine();
-                System.out.println("[Server]: " + serverMessage);
-                if (serverMessage.equals(1)){
-                    break;
-                }
-                serverInput.read();
-
-            }
-            /*
-            while(true) {
-                sendCredentials();
-                String authmsg = receiveServer();
-                if(authmsg.equals("1")){
-                    System.out.println("[Server]: Valid credentials");
-                    break;
-                } if(authmsg.equals("-1")){
-                    System.out.println("[Server]: Incorrect password");
-                } if(authmsg.equals("0")){
-                    System.out.println("[Server]: No user was found with given name");
-                } else { continue; }
-            }
-             */
-
-            //s.close();
-            //closeConnection();
-
-        }catch(Exception e){
-            System.out.println(e);
+    public Client(String address, int port) {
+        try {
+            this.port = port;
+            s = new Socket(address, port);
+            this.uuid = uuid;
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 
-    // Send data to server
-    private void sendServer(String message) throws IOException {
-        //DataOutputStream out = new DataOutputStream(s.getOutputStream());
-        dataOutput = new DataOutputStream(s.getOutputStream());
-        dataOutput.writeByte(1);
-        dataOutput.writeUTF(message);
-        dataOutput.writeByte(-1);
-        dataOutput.flush();
+    public void receiveMessage() {
+        serverMessage msg = null;
+        try {
+            clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            msg = new serverMessage();
+            msg.receiveMessage(clientInput.readLine());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        serverMsg = msg;
+        //return msg;
     }
 
-    // Receive data from server
-    private String receiveServer() throws IOException {
-        //DataInputStream inp = new DataInputStream(s.getInputStream());
-        //byte msgStream = inp.readByte();
-        //return inp.readUTF();
-        dataInput = new DataInputStream(s.getInputStream());
-        byte msgStream = dataInput.readByte();
-        String inp = dataInput.readUTF();
-        return inp;
+    public void sendMessage(String requestType, String contents) {
+        try {
+            //ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
+            clientOutput = new PrintWriter(s.getOutputStream(), true);
+            clientMessage message = new clientMessage(s.getInetAddress().toString(), getUuid(), requestType, contents);
+            clientOutput.println(message.createMessage());
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getServerMessageStatus() {
+        return serverMsg.getRequestStatus();
+    }
+
+    public String getServerMessageContents() {
+        return serverMsg.getMessageContents();
+    }
+
+    public void printServerContents(){
+        System.out.println(serverMsg.getMessageContents());
+
+    }
+    // TODO add server response as return
+    public void createUser(String username, String password) {
+        //sendServer("CREATEUSER()");
+        String credentials = username + "/" + password;
+        //sendServer("CREATEUSER()",credentials);
+        sendMessage("CREATEUSER()", credentials);
+        //serverMessage servermsg = receiveMessage();
+        receiveMessage();
+        //return servermsg.getRequestStatus();
+
+        //return serverResponse;
+    }
+
+
+    public boolean isAuthenticated(String username, String password) {
+        if (getUuid().equals("null")) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void login(String username, String password) {
+        //sendAuthentication(username, password);
+        //String input = receiveServer();
+        sendMessage("LOGIN()", username + "/" + password);
+        //serverMessage servermsg = receiveMessage();
+        receiveMessage();
+        //String status = servermsg.getRequestStatus();
+        String status = getServerMessageStatus();
+        //String contents = servermsg.getMessageContents();
+        String contents = getServerMessageContents();
+        if (status.equals("1")) {
+            setUuid(contents);
+            setName(username);
+        }
+        //System.out.println(status + " " + contents);
+        //return status;
     }
 
     // Receive names for files stored on server
-    private String receiveFileNames() throws IOException {
-        String[] filename;
-        String nameString = "";
-        String inp = receiveServer();
-        //System.out.println(inp);
-        return inp;
+    public String[] getFileNames(String folderPath) {
+        sendMessage("LIST()", folderPath);
+        //serverMessage msg = receiveMessage();
+        receiveMessage();
+        //String rawFilenames = msg.getMessageContents();
+        String rawFilenames = getServerMessageContents();
+        String[] filenames = rawFilenames.split(",");
+        return filenames;
     }
 
-    // Closes current connection to server
-    private void closeConnection() throws IOException{
-        sendServer("exit()");
-        System.out.println("[Client]: Connection to server closed");
-        s.close();
+    public File getFile(String fileName){
+        sendMessage("FILES()", "GET()"  + fileName);
+        return null;
     }
 
+    public void putFile(String localPath, String serverPath){
+        try {
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            File clientFile = new File(localPath);
+            byte[] buffer = new byte[(int)clientFile.length()];
+            long filesize = clientFile.length();
+            String fileInfo = serverPath + ","+ filesize;
+            sendMessage("PUT()", fileInfo);
+            FileInputStream fis = new FileInputStream(clientFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            bis.read(buffer,0,buffer.length);
+            OutputStream os = s.getOutputStream();
+            os.write(buffer,0,buffer.length);
+            os.flush();
+            System.out.println("[Client]: done");
 
-    private void sendCredentials() throws IOException {
-        System.out.println("[Client]: Please enter your credentials\n");
-        Scanner sc = new Scanner(System.in);
-
-        System.out.println("Username:");
-        String uname = sc.nextLine();
-        System.out.println("Password:");
-        String passwd= sc.nextLine();
-
-        String creds = uname +"\n"+ passwd;
-        sendServer(creds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private boolean authenticate() {
-        return false;
-    }
+/*
+    public void sendFile(File filename) throws Exception{
+        DataInputStream dataInput = null;
+        DataOutputStream dataOutput = null;
 
-    private void sendFile(String filename) throws Exception{
+        sendMessage("PUT()", filename.toString());
         String fullPath = storagePath + filename;
-
         int bytes = 0;
         File file = new File(fullPath);
         String path = file.getAbsolutePath();
-
         FileInputStream fileInputStream = new FileInputStream(fullPath);
 
         // send file size
         dataOutput.writeLong(file.length());
         // break file into chunks
-        byte[] buffer = new byte[4*1024];
-        while ((bytes=fileInputStream.read(buffer))!=-1){
-            dataOutput.write(buffer,0,bytes);
+        byte[] buffer = new byte[8 * 1024];
+        while ((bytes = fileInputStream.read(buffer)) != -1) {
+            dataOutput.write(buffer, 0, bytes);
             dataOutput.flush();
         }
         fileInputStream.close();
     }
+*/
+
+    public void getFile(String serverPath, String localPath) throws IOException {
+        sendMessage("GET()", serverPath);
+        receiveMessage();
+        int size = Integer.parseInt(getServerMessageContents());
+        InputStream dis = new DataInputStream(s.getInputStream());
+        OutputStream fos = new FileOutputStream(localPath);
+        byte[] buffer = new byte[size];
+
+        int read = 0;
+        int bytesRead=0;
+
+        while((read = dis.read(buffer)) > 0){
+            System.out.println("[Client]: Writing");
+            fos.write(buffer,0,read);
+            bytesRead = bytesRead + read;
+            System.out.println(bytesRead+"/"+size);
+            if(size > bytesRead){
+                continue;
+            }else {break;}
 
 
-    public String getMessage() { return message; }
+        }
+        System.out.println("[Client]: done");
+    }
 
-    public String getPassword() { return password; }
 
-    public String getName() { return name; }
+    public String getName() {
+        return this.name;
+    }
 
+    public void setSocket(Socket s) {
+        this.s = s;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
 }
