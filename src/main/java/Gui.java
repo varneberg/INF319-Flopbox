@@ -209,7 +209,7 @@ public class Gui extends Application{
                 } catch (Exception exception) {
                     error_text.setText(current.getServerMessageContents());
                 }
-                serverFiles.refresh(current.receiveFileNames(serverFiles.getCurrentDir()));
+                serverFiles.refresh(current.getFileNames(serverFiles.getCurrentDir()));
             }
         });
 
@@ -256,7 +256,7 @@ public class Gui extends Application{
 
         public FileList(BorderPane root, Client current) {
             this.current = current;
-            this.paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(current.getName())));
+            this.paths = new ArrayList<>(Arrays.asList(current.getFileNames(current.getName())));
             this.root = root;
             this.orientation = orientation;
             currentDir = current.getName() + "/";
@@ -393,8 +393,8 @@ public class Gui extends Application{
 
         private void nextDirectory(String directory) {
             this.currentDir += directory;
-            System.out.println(Arrays.asList(current.receiveFileNames(currentDir)) + currentDir);
-            String[] newPaths = current.receiveFileNames(currentDir);
+            System.out.println(Arrays.asList(current.getFileNames(currentDir)) + currentDir);
+            String[] newPaths = current.getFileNames(currentDir);
             refresh(newPaths);
         }
 
@@ -416,7 +416,7 @@ public class Gui extends Application{
                 newCurrent += temp[i] + "/";
             }
             this.currentDir = newCurrent;
-            String[] newPaths = current.receiveFileNames(currentDir);
+            String[] newPaths = current.getFileNames(currentDir);
             refresh(newPaths);
         }
 
