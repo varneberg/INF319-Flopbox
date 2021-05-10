@@ -138,7 +138,7 @@ public class Gui extends Application{
     }
 
     private void logged_in(Client current) {
-        String[] files = current.receiveFileNames(current.getName());
+        String[] files = current.getFileNames(current.getName());
 
         //Creating a GridPane container
         BorderPane grid = new BorderPane();
@@ -201,11 +201,11 @@ public class Gui extends Application{
             File file = fileChooser.showOpenDialog(primaryStage);
             if (file != null) {
                 try {
-                    current.sendFile(file);
+                    current.putFile(" ",file.getAbsolutePath());
                 } catch (Exception exception) {
                     error_text.setText("Cant upload file");
                 }
-                serverFiles.refresh(current.receiveFileNames(current.getName()));
+                serverFiles.refresh(current.getFileNames(current.getName()));
             }
         });
 

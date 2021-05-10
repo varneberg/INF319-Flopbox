@@ -20,9 +20,11 @@ public class Client {
     Socket s;
     String clientPath = null;
     private static String storagePath = "src/main/resources/clientStorage/";
-    BufferedReader clientInput = null;
-    PrintWriter clientOutput = null;
-    serverMessage serverMsg = null;
+    private BufferedReader clientInput = null;
+    private PrintWriter clientOutput = null;
+    private serverMessage serverMsg = null;
+    private DataOutput dataOutput = null;
+    private DataInputStream dataInput = null;
 
 
     public Client(int port) {
@@ -118,8 +120,8 @@ public class Client {
     }
 
     // Receive names for files stored on server
-    public String[] receiveFileNames(String filePath) {
-        sendMessage("LIST()", filePath);
+    public String[] getFileNames(String folderPath) {
+        sendMessage("LIST()", folderPath);
         //serverMessage msg = receiveMessage();
         receiveMessage();
         //String rawFilenames = msg.getMessageContents();
@@ -128,22 +130,19 @@ public class Client {
         return filenames;
     }
 
-    public void getFile(String filePath){
-        sendMessage("GET()", filePath);
-    }
 
-    public void putFile(){
-
+    public void putFile(String localPath, String serverPath){
         try {
             DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
             DataInputStream dataInput = new DataInputStream(new BufferedInputStream(s.getInputStream()));
-            String filePath = "./src/main/resources/clientDirs/tes123/dummy0.txt";
-            sendMessage("PUT()", " ");
+            //String filePath = "./src/main/resources/clientDirs/tes123/dummy0.txt";
+
+            sendMessage("PUT()", serverPath);
             //String fullPath = storagePath + filename;
             int bytes = 0;
-            File file = new File(filePath);
+            File file = new File(localPath);
             String path = file.getAbsolutePath();
-            FileInputStream fileInputStream = new FileInputStream(filePath);
+            FileInputStream fileInputStream = new FileInputStream(localPath);
             dataOutput.writeLong(file.length());
             // break file into chunks
             byte[] buffer = new byte[4 * 1024];
@@ -160,11 +159,12 @@ public class Client {
         // send file size
     }
 
+/*
     public void sendFile(File filename) throws Exception{
         DataInputStream dataInput = null;
         DataOutputStream dataOutput = null;
 
-        sendMessage("PUT()", "");
+        sendMessage("PUT()", filename.toString());
         String fullPath = storagePath + filename;
         int bytes = 0;
         File file = new File(fullPath);
@@ -174,12 +174,44 @@ public class Client {
         // send file size
         dataOutput.writeLong(file.length());
         // break file into chunks
-        byte[] buffer = new byte[4 * 1024];
+        byte[] buffer = new byte[8 * 1024];
         while ((bytes = fileInputStream.read(buffer)) != -1) {
             dataOutput.write(buffer, 0, bytes);
             dataOutput.flush();
         }
         fileInputStream.close();
+    }
+*/
+
+    public void getFile(String serverPath, String localPath) {
+        try {
+            //serverInput.ready();
+            clientInput.ready();
+            //this.clientName = clientName;
+            sendMessage("GET()", serverPath);
+            File file = new File(localPath);
+            if (file.createNewFile()) {
+                System.out.println("File downloaded: " + file.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            String path = file.getAbsolutePath();
+            int bytes = 0;
+            FileOutputStream fileOutputStream = new FileOutputStream(path);
+
+            int count;
+            byte[] buffer = new byte[8 * 1024];
+            while((count = dataInput.read(buffer))> 0){
+                fileOutputStream.write(buffer,0,bytes);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //while((count = dataInput.read(buffer)) > 0){
+        //    fileOutputStream.write(buffer,0,bytes);
+        //}
+
     }
 
 

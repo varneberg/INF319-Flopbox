@@ -58,8 +58,8 @@ public class Server extends Thread {
 
 class RequestHandler extends Thread {
     private Socket s;
-    private static DataOutputStream dataOutput = null;
-    private static DataInputStream dataInput = null;
+    private DataOutputStream dataOutput = null;
+    private DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
     private static ArrayList<String> authClients = new ArrayList<String>();
     private String currClientUUID = null;
@@ -85,6 +85,8 @@ class RequestHandler extends Thread {
                 String requestType = clientMsg.getRequestType();
                 String contents = clientMsg.getMessageContents();
                 String clientUUID = clientMsg.getUuid();
+                String storagePath;
+                String filename;
                 switch (requestType) {
                     case "EXIT()":
                         closeConnection();
@@ -102,7 +104,7 @@ class RequestHandler extends Thread {
                             sendMessage("LIST()", "0", "Unauthorized action");
                             break;
                         }
-                        startFileHandler(getClientName(), contents);
+                        //startFileHandler(getClientName(), contents);
                         String clientFiles = handler.listFiles(clientMsg.getMessageContents());
                         sendMessage("LIST()", "1", clientFiles);
                         break;
@@ -112,6 +114,11 @@ class RequestHandler extends Thread {
                             sendMessage("GET()", "0", "Unauthorized action");
                             break;
                         }
+                        storagePath = handler.getStoragePath();
+                        filename = contents;
+                        System.out.println(filename);
+                        //String storagePath = handler.getStoragePath();
+
                         break;
 
                     case "PUT()":
@@ -120,7 +127,11 @@ class RequestHandler extends Thread {
                             break;
                         }
                         try {
-                            receiveFile("./src/main/resources/clientDirs/output.txt");
+                            filename = contents;
+                            //String storagePath = handler.getStoragePath();
+                            //receiveFile("./src/main/resources/clientDirs/output.txt");
+                            storagePath = handler.getStoragePath();
+                            receiveFile(storagePath+filename);
                         } catch (Exception e) {
                             sendMessage("PUT()", "0", "Unable to upload");
                         }
@@ -257,6 +268,7 @@ class RequestHandler extends Thread {
 
     private void receiveFile(String fileName) throws Exception {
         serverInput.ready();
+        this.clientName = clientName;
         File file = new File(fileName);
         if (file.createNewFile()) {
             System.out.println("File created: " + file.getName());
@@ -268,7 +280,7 @@ class RequestHandler extends Thread {
         FileOutputStream fileOutputStream = new FileOutputStream(path);
 
         int count;
-        byte[] buffer = new byte[4 * 1024];
+        byte[] buffer = new byte[8 * 1024];
 
         while((count = dataInput.read(buffer)) > 0){
             fileOutputStream.write(buffer,0,bytes);
@@ -276,16 +288,32 @@ class RequestHandler extends Thread {
 
     }
 
-        /*
-        long size = dataInput.readLong();     // read file size
-        while (size > 0 && (bytes = dataInput.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
-            fileOutputStream.write(buffer, 0, bytes);
-            size -= bytes;      // read upto file size
-        }
-        //fileOutputStream.close();
+    public void sendFile(String localPath, String serverPath){
+        try {
+            DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
+            DataInputStream dataInput = new DataInputStream(new BufferedInputStream(s.getInputStream()));
+            //String filePath = "./src/main/resources/clientDirs/tes123/dummy0.txt";
 
+            //String fullPath = storagePath + filename;
+            int bytes = 0;
+            File file = new File(localPath);
+            String path = file.getAbsolutePath();
+            FileInputStream fileInputStream = new FileInputStream(localPath);
+            dataOutput.writeLong(file.length());
+            // break file into chunks
+            byte[] buffer = new byte[4 * 1024];
+
+            while ((bytes = fileInputStream.read(buffer)) > 0) {
+                dataOutput.write(buffer, 0, bytes);
+                dataOutput.flush();
+            }
+            //fileInputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // send file size
     }
-        */
 
 
     public void setClientName(String clientName) {
