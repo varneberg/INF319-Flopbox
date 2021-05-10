@@ -132,7 +132,7 @@ public class Client {
     }
 
     public File getFile(String fileName){
-        sendMessage("FILES()", "GET()" + sep + fileName);
+        sendMessage("FILES()", "GET()"  + fileName);
         return null;
     }
 
