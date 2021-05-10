@@ -1,11 +1,16 @@
 import client.Client;
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -15,8 +20,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import server.Server;
+import javafx.scene.image.Image;
+
+import javax.swing.text.html.ImageView;
+import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -187,12 +198,8 @@ public class Gui extends Application{
         general.getChildren().add(logout_button);
 
 
-
-
         Gui.FileList serverFiles = new Gui.FileList(grid, current);
         grid.setLeft(general);
-
-
 
 
         logout_button.setOnAction(e -> {
@@ -203,14 +210,13 @@ public class Gui extends Application{
         upload_file_button.setOnAction(e -> {
             final FileChooser fileChooser = new FileChooser();
             File file = fileChooser.showOpenDialog(primaryStage);
-            if (file != null) {
-                try {
-                    current.putFile(" ",file.getAbsolutePath());
-                } catch (Exception exception) {
-                    error_text.setText(current.getServerMessageContents());
-                }
-                serverFiles.refresh(current.getFileNames(serverFiles.getCurrentDir()));
+
+            try {
+                current.putFile(serverFiles.getCurrentDir(),file.getAbsolutePath());
+            } catch (Exception exception) {
+                error_text.setText(current.getServerMessageContents());
             }
+            serverFiles.refresh(current.getFileNames(serverFiles.getCurrentDir()));
         });
 
 
@@ -225,7 +231,6 @@ public class Gui extends Application{
                     // handle exception...
                 }
             }
-
         });
 
 
@@ -252,7 +257,6 @@ public class Gui extends Application{
         private TextField search_field;
         private Button search_button;
         private Text search_text;
-        //private VBox search;
 
         public FileList(BorderPane root, Client current) {
             this.current = current;
@@ -263,9 +267,9 @@ public class Gui extends Application{
             rootDir = currentDir;
             this.search_text = new Text("Go directly to directory:");
             this.search_field = new TextField();
-            search_field.setPromptText("E.g " + rootDir + "wantedDir/");
+            search_field.setPromptText("E.g firstDir/wantedDir/");
+            search_field.setFocusTraversable(false);
             this.search_button = new Button("Go to directory");
-            HBox fileExplorer = new HBox(10);
             fillList();
         }
 
@@ -290,7 +294,6 @@ public class Gui extends Application{
             else {
                 sorted = sortDirectory(dir);
             }
-            System.out.println(Arrays.toString(sorted));
             addItems(data, sorted);
 
             final ListView<Cell> listView = new ListView<Cell>(data);
@@ -305,53 +308,6 @@ public class Gui extends Application{
             setOrientation(this.root);
         }
 
-        /*
-        private String[] showDirectory(String currentPath){
-            String[] currentPathSplit = currentPath.split("/");
-            ArrayList<String> newDir = new ArrayList<>();
-            skipPath:
-            for (String path : paths){
-                ArrayList<String> temp = new ArrayList<String>(Arrays.asList(path.split("/"))); // arraylist of split current path
-                for(int i=0; i<currentPathSplit.length;i++) {
-                    try {
-                        if (!temp.get(i).equals(currentPathSplit[i])) {
-                            continue skipPath;
-                        }
-                     }
-                    catch (Exception e){
-                        continue skipPath;
-                    }
-                }
-                while(temp.size() > currentPathSplit.length + 1){
-                    temp.remove(temp.size() - 1);
-                }
-                String newPath = "";
-                for(String a : temp){
-                    newPath += a + "/";
-                }
-                newPath = newPath.substring(0, newPath.length() - 1);
-                newDir.add(newPath);
-
-
-            }
-            ArrayList<String> noDuplicates = new ArrayList<>();
-            for (String s : newDir){
-                if (!noDuplicates.contains(s)) {
-                    noDuplicates.add(s);
-                }
-            }
-
-
-            for (int i = 0; i<noDuplicates.size(); i++) {
-                //gets last element of noduplicates list
-                String temp = noDuplicates.get(i).split("/")[noDuplicates.get(i).split("/").length - 1];
-                noDuplicates.set(i,temp);
-            }
-
-            return noDuplicates.toArray(new String[0]);
-        }
-
-         */
 
         private String[] sortDirectory(String[] directory){
             ArrayList<String> sorted = new ArrayList<>();
@@ -393,7 +349,6 @@ public class Gui extends Application{
 
         private void nextDirectory(String directory) {
             this.currentDir += directory;
-            System.out.println(Arrays.asList(current.getFileNames(currentDir)) + currentDir);
             String[] newPaths = current.getFileNames(currentDir);
             refresh(newPaths);
         }
@@ -431,17 +386,49 @@ public class Gui extends Application{
         private void addItems(ObservableList<Gui.FileList.Cell> data, String[] paths){
 
             for (String item : paths){
-                data.add(new Gui.FileList.Cell(item));
+                Image image = getImage(item);
+                data.add(new Gui.FileList.Cell(item,image));
             }
+        }
+
+        private Image getImage(String filename){
+            String type = determineType(filename);
+            Image image;
+            try {
+                if (type == "folder") {
+                    InputStream stream = new FileInputStream("./src/main/resources/Images/folder.png");
+                    return new Image(stream);
+                }
+            }
+            catch (Exception exception){
+
+            }
+            return null;
         }
 
         private void setOrientation(BorderPane root){
 
             VBox fileExplorer = new VBox(10);
+            setupSearchArea(fileExplorer);
+            root.setCenter(fileExplorer);
+
+        }
+
+        private void setupSearchArea(VBox fileExplorer){
             HBox search = new HBox(10);
             search.getChildren().addAll(search_text, search_field, search_button);
             fileExplorer.getChildren().addAll(search, listView);
-            root.setCenter(fileExplorer);
+            search_button.setOnAction(e -> {
+
+                try {
+                    this.currentDir = rootDir + search_field.getText();
+                    String[] newPaths = current.getFileNames(currentDir);
+                    refresh(newPaths);
+                }
+                catch (Exception ex){
+
+                }
+            });
         }
 
         public ListView<Gui.FileList.Cell> getListView(){
@@ -450,13 +437,15 @@ public class Gui extends Application{
 
         private static class Cell {
             private String name;
+            private Image image;
 
             public String getName() {
                 return name;
             }
 
-            public Cell(String name) {
+            public Cell(String name, Image image) {
                 super();
+                this.image = image;
                 this.name = name;
             }
         }
@@ -465,13 +454,15 @@ public class Gui extends Application{
             private HBox content;
             private Text name;
             private Text description;
+            private Image image;
 
             public CustomListCell() {
                 super();
                 name = new Text();
                 description = new Text();
+                //ImageView icon = new ImageView(image);
                 VBox vBox = new VBox(name, description);
-                content = new HBox(new Label("[Graphic]"), vBox);
+                content = new HBox(new Label("[Icon]"), vBox);
 
                 content.setOnMouseClicked((mouseEvent -> {
                     handleClick(name.getText());
