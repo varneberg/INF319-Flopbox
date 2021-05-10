@@ -13,7 +13,6 @@ public class Client {
     //public class Client implements Runnable{
 
     private String name; // TODO setName on validated login
-    private String sep = "//s//";
     String uuid = "null";
     Thread t;
     int port;
@@ -23,8 +22,10 @@ public class Client {
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
-    private DataOutput dataOutput = null;
-    private DataInputStream dataInput = null;
+   // private DataOutput dataOutput=null;
+
+
+    //private DataInputStream dataInput=null;
 
 
     public Client(int port) {
@@ -131,36 +132,29 @@ public class Client {
     }
 
     public File getFile(String fileName){
-        sendMessage("FILES()", "GET()" + sep + fileName);
+        sendMessage("FILES()", "GET()"  + fileName);
         return null;
     }
 
     public void putFile(String localPath, String serverPath){
         try {
-            DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
-            DataInputStream dataInput = new DataInputStream(new BufferedInputStream(s.getInputStream()));
-            //String filePath = "./src/main/resources/clientDirs/tes123/dummy0.txt";
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            File clientFile = new File(localPath);
+            byte[] buffer = new byte[(int)clientFile.length()];
+            long filesize = clientFile.length();
+            String fileInfo = serverPath + ","+ filesize;
+            sendMessage("PUT()", fileInfo);
+            FileInputStream fis = new FileInputStream(clientFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            bis.read(buffer,0,buffer.length);
+            OutputStream os = s.getOutputStream();
+            os.write(buffer,0,buffer.length);
+            os.flush();
+            System.out.println("[Client]: done");
 
-            sendMessage("PUT()", serverPath);
-            //String fullPath = storagePath + filename;
-            int bytes = 0;
-            File file = new File(localPath);
-            String path = file.getAbsolutePath();
-            FileInputStream fileInputStream = new FileInputStream(localPath);
-            dataOutput.writeLong(file.length());
-            // break file into chunks
-            byte[] buffer = new byte[4 * 1024];
-
-            while ((bytes = fileInputStream.read(buffer)) > 0) {
-                dataOutput.write(buffer, 0, bytes);
-                dataOutput.flush();
-            }
-            //fileInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // send file size
     }
 
 /*
@@ -187,35 +181,29 @@ public class Client {
     }
 */
 
-    public void getFile(String serverPath, String localPath) {
-        try {
-            //serverInput.ready();
-            clientInput.ready();
-            //this.clientName = clientName;
-            sendMessage("GET()", serverPath);
-            File file = new File(localPath);
-            if (file.createNewFile()) {
-                System.out.println("File downloaded: " + file.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-            String path = file.getAbsolutePath();
-            int bytes = 0;
-            FileOutputStream fileOutputStream = new FileOutputStream(path);
+    public void getFile(String serverPath, String localPath) throws IOException {
+        sendMessage("GET()", serverPath);
+        receiveMessage();
+        int size = Integer.parseInt(getServerMessageContents());
+        InputStream dis = new DataInputStream(s.getInputStream());
+        OutputStream fos = new FileOutputStream(localPath);
+        byte[] buffer = new byte[size];
 
-            int count;
-            byte[] buffer = new byte[8 * 1024];
-            while((count = dataInput.read(buffer))> 0){
-                fileOutputStream.write(buffer,0,bytes);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        int read = 0;
+        int bytesRead=0;
+
+        while((read = dis.read(buffer)) > 0){
+            System.out.println("[Client]: Writing");
+            fos.write(buffer,0,read);
+            bytesRead = bytesRead + read;
+            System.out.println(bytesRead+"/"+size);
+            if(size > bytesRead){
+                continue;
+            }else {break;}
+
+
         }
-
-        //while((count = dataInput.read(buffer)) > 0){
-        //    fileOutputStream.write(buffer,0,bytes);
-        //}
-
+        System.out.println("[Client]: done");
     }
 
 
