@@ -185,6 +185,12 @@ public class Gui extends Application{
         Gui.FileList serverFiles = new Gui.FileList(grid, "center", current);
         grid.setLeft(general);
 
+        TextField search_field = new TextField();
+        Button search_button = new Button("Go to directory");
+        VBox search = new VBox(search_field, search_button);
+        grid.setTop(search);
+
+
 
         logout_button.setOnAction(e -> {
             login();
@@ -247,8 +253,7 @@ public class Gui extends Application{
             this.paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(current.getName())));
             this.root = root;
             this.orientation = orientation;
-            currentDir = paths.toArray(new String[0])[0].split("/")[0];
-            currentDir += "/";
+            currentDir = current.getName() + "/";
             rootDir = currentDir;
             fillList();
         }
@@ -285,7 +290,7 @@ public class Gui extends Application{
             });
 
             this.listView = listView;
-            setOrientation(this.root, this.orientation);
+            //setOrientation(this.root, this.orientation);
         }
 
         /*
@@ -378,12 +383,12 @@ public class Gui extends Application{
 
         private void nextDirectory(String directory) {
             this.currentDir += directory + "/";
-            System.out.println(current.receiveFileNames(currentDir) + currentDir);
+            System.out.println(Arrays.asList(current.receiveFileNames(currentDir)) + currentDir);
             paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(currentDir)));
         }
 
         private String determineType(String element){
-            if(element.equals("..")){
+            if(element.equals("<--")){
                 return "back";
             }
 
@@ -400,7 +405,6 @@ public class Gui extends Application{
                 newCurrent += temp[i] + "/";
             }
             this.currentDir = newCurrent;
-            System.out.println(current.receiveFileNames(currentDir) + currentDir);
             paths = new ArrayList<>(Arrays.asList(current.receiveFileNames(currentDir)));
         }
 
