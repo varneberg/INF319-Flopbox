@@ -22,7 +22,7 @@ import javafx.util.Callback;
 import server.Server;
 import javafx.scene.image.Image;
 
-import javax.swing.text.html.ImageView;
+import javafx.scene.image.ImageView;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -287,7 +287,7 @@ public class Gui extends Application{
                 for (int i=0;i<dir.length;i++){
                     dirWithBack[i] = dir[i];
                 }
-                dirWithBack[dirWithBack.length -1] = "<--";
+                dirWithBack[dirWithBack.length -1] = "back to last directory";
                 sorted = sortDirectory(dirWithBack);
 
             }
@@ -328,7 +328,7 @@ public class Gui extends Application{
 
             }
             if(back){
-                sorted.add(0, "<--");
+                sorted.add(0, "back to last directory");
             }
             return sorted.toArray(new String[0]);
         }
@@ -354,7 +354,7 @@ public class Gui extends Application{
         }
 
         private String determineType(String element){
-            if(element.equals("<--")){
+            if(element.equals("back to last directory")){
                 return "back";
             }
 
@@ -395,10 +395,20 @@ public class Gui extends Application{
             String type = determineType(filename);
             Image image;
             try {
-                if (type == "folder") {
+                if (type == "directory") {
                     InputStream stream = new FileInputStream("./src/main/resources/Images/folder.png");
                     return new Image(stream);
                 }
+                else if(type == "back"){
+                    InputStream stream = new FileInputStream("./src/main/resources/Images/back.png");
+                    return new Image(stream);
+                }
+                else if(type == "file"){
+                    InputStream stream = new FileInputStream("./src/main/resources/Images/file.png");
+                    return new Image(stream);
+                }
+                InputStream stream = new FileInputStream("./src/main/resources/Images/error.png");
+                return new Image(stream);
             }
             catch (Exception exception){
 
@@ -442,6 +452,7 @@ public class Gui extends Application{
             public String getName() {
                 return name;
             }
+            public Image getImage() { return image; }
 
             public Cell(String name, Image image) {
                 super();
@@ -455,14 +466,17 @@ public class Gui extends Application{
             private Text name;
             private Text description;
             private Image image;
+            private ImageView icon;
 
             public CustomListCell() {
                 super();
                 name = new Text();
                 description = new Text();
-                //ImageView icon = new ImageView(image);
+
                 VBox vBox = new VBox(name, description);
-                content = new HBox(new Label("[Icon]"), vBox);
+
+                this.icon = new ImageView();
+                content = new HBox(icon, vBox);
 
                 content.setOnMouseClicked((mouseEvent -> {
                     handleClick(name.getText());
@@ -477,6 +491,11 @@ public class Gui extends Application{
                 super.updateItem(item, empty);
                 if (item != null && !empty) { // <== test for null item and empty parameter
                     name.setText(item.getName());
+
+
+                    icon.setImage(getImage(item.getName()));
+                    icon.setFitWidth(20);
+
                     setGraphic(content);
                 } else {
                     setGraphic(null);
