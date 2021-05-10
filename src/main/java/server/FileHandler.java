@@ -20,37 +20,21 @@ public class FileHandler {
         File f = new File(dir);
         StringBuilder fileString = new StringBuilder();
         try {
-            for (File fi : f.listFiles()) {
+            for (File fi : f.listFiles()){
                 if (fi.isDirectory()) {
                     fileString.append(fi.getName()).append("/").append(sep);
                 } else if (fi.isFile()) {
                     fileString.append(fi.getName()).append(sep);
                 }
             }
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
            fileString.append("No file(s) were found");
         }
         return fileString.toString();
-        /*
-        Path path = Paths.get(dir);
-        List<Path> result;
-        try (Stream<Path> walk= Files.walk(path, 1)) {
-            result = walk
-                    //.filter(Files::isDirectory)
-                    .filter(Files::isRegularFile)
-                    .collect(Collectors.toList());
-        }
-        //String[] fileArr = result.toString().split(",");
-        StringBuilder fileString = new StringBuilder();
+    }
 
-        System.out.println(result);
-        for (String s :result.toString().split(",")){
-            fileString.append(sep);//s.substring(s.indexOf(clientname + "/") + clientname.length() + 1)).append(sep);
-        }
-        fileString = new StringBuilder(fileString.toString().replace("]", ""));
-        return fileString.toString();
+    public void storeFile(File clientFile){
 
-         */
     }
 
     public File getFile(String clientName, String filePath){
@@ -64,4 +48,5 @@ public class FileHandler {
     public String getClientPath(String clientName){
         return storagePath+clientName+"/";
     }
+    public String getStoragePath(){return storagePath;}
 }

@@ -205,7 +205,7 @@ public class Gui extends Application{
             File file = fileChooser.showOpenDialog(primaryStage);
             if (file != null) {
                 try {
-                    current.sendFile(file);
+                    current.putFile(" ",file.getAbsolutePath());
                 } catch (Exception exception) {
                     error_text.setText(current.getServerMessageContents());
                 }

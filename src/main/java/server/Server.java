@@ -58,8 +58,8 @@ public class Server extends Thread {
 
 class RequestHandler extends Thread {
     private Socket s;
-    //private static DataOutputStream dataOutput = null;
-    //private static DataInputStream dataInput = null;
+    private DataOutputStream dataOutput = null;
+    private DataInputStream dataInput = null;
     private ClientStorage cs = new ClientStorage();
     private static ArrayList<String> authClients = new ArrayList<String>();
     private String currClientUUID = null;
@@ -85,33 +85,65 @@ class RequestHandler extends Thread {
                 String requestType = clientMsg.getRequestType();
                 String contents = clientMsg.getMessageContents();
                 String clientUUID = clientMsg.getUuid();
+                String storagePath;
+                String filename;
                 switch (requestType) {
                     case "EXIT()":
                         closeConnection();
+
                     case "CREATEUSER()":
                         createNewClient(contents);
                         break;
+
                     case "LOGIN()":
                         validateClient(contents);
                         break;
-                    case "LIST()" :
-                        if (!clientUUID.equals("null")) {
-                            startFileHandler(getClientName(), contents);
-                            String clientFiles = handler.listFiles(clientMsg.getMessageContents());
-                            sendMessage("LIST()", "1", clientFiles);
-                            break;
-                        } else {
-                            System.out.println("Unauthorized");
+
+                    case "LIST()":
+                        if (clientUUID.equals("null")) {
+                            sendMessage("LIST()", "0", "Unauthorized action");
                             break;
                         }
+                        //startFileHandler(getClientName(), contents);
+                        String clientFiles = handler.listFiles(clientMsg.getMessageContents());
+                        sendMessage("LIST()", "1", clientFiles);
+                        break;
+
+                    case "GET()":
+                        if (clientUUID.equals("null")) {
+                            sendMessage("GET()", "0", "Unauthorized action");
+                            break;
+                        }
+                        storagePath = handler.getStoragePath();
+                        filename = contents;
+                        System.out.println(filename);
+                        //String storagePath = handler.getStoragePath();
+
+                        break;
+
+                    case "PUT()":
+                        if (clientUUID.equals("null")) {
+                            sendMessage("PUT()", "0", "Unauthorized action");
+                            break;
+                        }
+                        try {
+                            filename = contents;
+                            //String storagePath = handler.getStoragePath();
+                            //receiveFile("./src/main/resources/clientDirs/output.txt");
+                            storagePath = handler.getStoragePath();
+                            receiveFile(storagePath+filename);
+                        } catch (Exception e) {
+                            sendMessage("PUT()", "0", "Unable to upload");
+                        }
+                        break;
 
                     default:
-                        System.out.println("Could not understand");
+                        sendMessage("ERROR()", "0", "Could not understand request");
                 }
             }
 
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
@@ -165,14 +197,13 @@ class RequestHandler extends Thread {
 
     public void sendFile(File clientFile) throws IOException {
         long length = clientFile.length();
-        byte[] bytes = new byte[8*1024];
+        byte[] bytes = new byte[8 * 1024];
         InputStream in = new FileInputStream(clientFile);
         OutputStream out = s.getOutputStream();
         int count;
-        while ((count = in.read(bytes)) > 0){
-            out.write(bytes,0,count);
+        while ((count = in.read(bytes)) > 0) {
+            out.write(bytes, 0, count);
         }
-
     }
 
     private String genUUID() {
@@ -202,7 +233,7 @@ class RequestHandler extends Thread {
         s.close();
     }
 
-    private boolean validateClient(String input) {
+    private void validateClient(String input) {
         /*
         Status codes:
         -2: Client with username exists
@@ -218,25 +249,26 @@ class RequestHandler extends Thread {
                 if (cs.verifyPassword(password)) { // Client is authenticated
                     sendMessage("LOGIN()", "1", genUUID());
                     setClientName(username);
-                    System.out.println("[Server]: "+username+" authenticated");
-                    return true;
+                    System.out.println("[Server]: " + username + " authenticated");
+                    //return true;
                 } else { // Password is wrong
                     sendMessage("LOGIN()", "0", "Incorrect password");
-                    return false;
+                    //return false;
                 }
             } else { // No user was found with given name
                 sendMessage("LOGIN()", "-1", "No user was found");
-                return false;
+                //return false;
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             sendMessage("ERROR()", "-1", e.getMessage());
         }
-        return false;
+        //return false;
     }
 
-    /*
     private void receiveFile(String fileName) throws Exception {
+        serverInput.ready();
+        this.clientName = clientName;
         File file = new File(fileName);
         if (file.createNewFile()) {
             System.out.println("File created: " + file.getName());
@@ -247,17 +279,43 @@ class RequestHandler extends Thread {
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(path);
 
-        long size = dataInput.readLong();     // read file size
-        byte[] buffer = new byte[4 * 1024];
-        while (size > 0 && (bytes = dataInput.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
-            fileOutputStream.write(buffer, 0, bytes);
-            size -= bytes;      // read upto file size
+        int count;
+        byte[] buffer = new byte[8 * 1024];
+
+        while((count = dataInput.read(buffer)) > 0){
+            fileOutputStream.write(buffer,0,bytes);
         }
-        fileOutputStream.close();
 
     }
 
-     */
+    public void sendFile(String localPath, String serverPath){
+        try {
+            DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(s.getOutputStream()));
+            DataInputStream dataInput = new DataInputStream(new BufferedInputStream(s.getInputStream()));
+            //String filePath = "./src/main/resources/clientDirs/tes123/dummy0.txt";
+
+            //String fullPath = storagePath + filename;
+            int bytes = 0;
+            File file = new File(localPath);
+            String path = file.getAbsolutePath();
+            FileInputStream fileInputStream = new FileInputStream(localPath);
+            dataOutput.writeLong(file.length());
+            // break file into chunks
+            byte[] buffer = new byte[4 * 1024];
+
+            while ((bytes = fileInputStream.read(buffer)) > 0) {
+                dataOutput.write(buffer, 0, bytes);
+                dataOutput.flush();
+            }
+            //fileInputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // send file size
+    }
+
+
     public void setClientName(String clientName) {
         this.clientName = clientName;
     }
