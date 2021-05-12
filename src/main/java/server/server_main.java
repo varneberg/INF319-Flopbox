@@ -25,11 +25,13 @@ public class server_main {
         String username = "test123";
         String password = "test";
         client.login(username,password);
-        //client.putFile("./src/main/resources/clientDirs/brok/img3.png","brok/img4.png");
+        client.putFile("./src/main/resources/clientDirs/brok/img3.png","brok/img4.png");
         //client.getFile("brok/img4.png", "./src/main/resources/clientDirs/brok/img5.png");
-        client.createDir(username+"/flurpi");
-        client.receiveMessage();
-        client.printServerContents();
+        //client.getFileNames(username);
+        //client.createDir(username+"/dummy9.txt");
+        //client.deleteFile("brok/img4.png");
+        //client.receiveMessage();
+        //client.printServerContents();
 
         //client.putDir(username+"/durr");
     }

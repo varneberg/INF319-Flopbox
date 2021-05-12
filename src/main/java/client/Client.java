@@ -148,8 +148,8 @@ public class Client {
     }
     public void createDir(String folderPath){
         sendMessage("DIR()", folderPath);
+        receiveMessage();
     }
-
 
     public void getFile(String serverPath, String downloadPath) throws IOException {
         sendMessage("GET()", serverPath);
@@ -171,12 +171,15 @@ public class Client {
             //    continue;
             //}else {break;}
 
-
         }
         receiveMessage();
         //System.out.println("[Client]: done");
     }
 
+    public void deleteFile(String pathToFile){
+        sendMessage("DEL()", pathToFile);
+        receiveMessage();
+    }
 
     public String getName() {
         return this.name;

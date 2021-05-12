@@ -63,7 +63,7 @@ class RequestHandler extends Thread {
     private String currClientUUID;
     private String currClientAddress = null;
     private String clientName;
-
+    private clientMessage prev = null;
     //private String sep = ";;";
     private BufferedReader serverInput;
     private PrintWriter serverOutput;
@@ -97,6 +97,7 @@ class RequestHandler extends Thread {
                     case "DEL()": deleteFile(contents);                 break;
                     default: sendError("Unrecognized action"); break;
                 }
+                clientMsg = null;
             }
 
 
@@ -245,7 +246,7 @@ class RequestHandler extends Thread {
                 }
                 //else {break;}
             }
-            sendMessage("PUT()","1","Success!");
+            sendMessage("PUT()","1","File uploaded");
         } catch (Exception e) {
             //sendMessage("ERROR()", "0", "Unable to upload");
             sendError("Unable to upload");
@@ -282,7 +283,15 @@ class RequestHandler extends Thread {
         }
     }
 
-    public void deleteFile(String path){}
+    public void deleteFile(String path){
+        String storagePath = handler.getStoragePath();
+        File toDelete = new File(storagePath+"/"+path);
+        if(toDelete.delete()){
+            sendMessage("DEL()", "1", "File deleted");
+        }else{
+            sendError("Unable to delete file");
+        }
+    }
 
     public void createDir(String dirPath){
         if(!validateClient()){
@@ -292,12 +301,11 @@ class RequestHandler extends Thread {
         File newDir = new File(storagePath+dirPath);
         if(!newDir.exists()){
             newDir.mkdir();
+            sendMessage("DIR()","1","Directory created");
         }else{
-           if(newDir.isDirectory()) {
                sendError("Directory already exists");
            }
         }
-    }
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
@@ -306,6 +314,7 @@ class RequestHandler extends Thread {
     public String getClientName() {
         return clientName;
     }
+
 
 
     public void setCurrClientUUID(String currClientUUID) {
