@@ -126,14 +126,11 @@ public class ClientStorage {
         }
     }
 
-
-
     // List all files client has in directory
     public String[] listClientFiles(String path) {
         //File root = new File("./src/main/resources/clientDirs/" + clientName+"/");
         File root = new File(path);
         File[] list = root.listFiles();
-
 
         ArrayList<String> fileList = new ArrayList<String>();
         for (File f : list){
@@ -143,7 +140,6 @@ public class ClientStorage {
             else {
                 fileList.add(f.getName());
             }
-
         }
         return fileList.toArray(new String[fileList.size()]);
 

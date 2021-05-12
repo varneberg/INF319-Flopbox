@@ -37,6 +37,13 @@ public class FileHandler {
 
     }
 
+    public void createDir(String dirName){
+        File newDir = new File(storagePath+dirName);
+        if(!newDir.exists()){
+            newDir.mkdir();
+        }
+    }
+
     public File getFile(String clientName, String filePath){
         String clientPath = getClientPath(clientName);
         String pathToFile = clientPath+filePath;
