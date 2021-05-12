@@ -48,6 +48,7 @@ public class Client {
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             msg = new serverMessage();
             msg.receiveMessage(clientInput.readLine());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -68,19 +69,7 @@ public class Client {
         }
     }
 
-    public String getServerMessageStatus() {
-        return serverMsg.getRequestStatus();
-    }
 
-    public String getServerMessageContents() {
-        return serverMsg.getMessageContents();
-    }
-
-    public void printServerContents(){
-        System.out.println(serverMsg.getMessageContents());
-
-    }
-    // TODO add server response as return
     public void createUser(String username, String password) {
         //sendServer("CREATEUSER()");
         String credentials = username + "/" + password;
@@ -150,73 +139,70 @@ public class Client {
             OutputStream os = s.getOutputStream();
             os.write(buffer,0,buffer.length);
             os.flush();
-            System.out.println("[Client]: done");
+            receiveMessage();
+            //System.out.println("[Client]: done");
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-/*
-    public void sendFile(File filename) throws Exception{
-        DataInputStream dataInput = null;
-        DataOutputStream dataOutput = null;
-
-        sendMessage("PUT()", filename.toString());
-        String fullPath = storagePath + filename;
-        int bytes = 0;
-        File file = new File(fullPath);
-        String path = file.getAbsolutePath();
-        FileInputStream fileInputStream = new FileInputStream(fullPath);
-
-        // send file size
-        dataOutput.writeLong(file.length());
-        // break file into chunks
-        byte[] buffer = new byte[8 * 1024];
-        while ((bytes = fileInputStream.read(buffer)) != -1) {
-            dataOutput.write(buffer, 0, bytes);
-            dataOutput.flush();
-        }
-        fileInputStream.close();
+    public void createDir(String folderPath){
+        sendMessage("DIR()", folderPath);
+        receiveMessage();
     }
-*/
 
-    public void getFile(String serverPath, String localPath) throws IOException {
+    public void getFile(String serverPath, String downloadPath) throws IOException {
         sendMessage("GET()", serverPath);
         receiveMessage();
         int size = Integer.parseInt(getServerMessageContents());
         InputStream dis = new DataInputStream(s.getInputStream());
-        OutputStream fos = new FileOutputStream(localPath);
+        OutputStream fos = new FileOutputStream(downloadPath);
         byte[] buffer = new byte[size];
 
         int read = 0;
         int bytesRead=0;
 
         while((read = dis.read(buffer)) > 0){
-            System.out.println("[Client]: Writing");
+            //System.out.println("[Client]: Writing");
             fos.write(buffer,0,read);
             bytesRead = bytesRead + read;
-            System.out.println(bytesRead+"/"+size);
-            if(size > bytesRead){
-                continue;
-            }else {break;}
-
+            //System.out.println(bytesRead+"/"+size);
+            //if(size >= bytesRead){
+            //    continue;
+            //}else {break;}
 
         }
-        System.out.println("[Client]: done");
+        receiveMessage();
+        //System.out.println("[Client]: done");
     }
 
+    public void deleteFile(String pathToFile){
+        sendMessage("DEL()", pathToFile);
+        receiveMessage();
+    }
 
     public String getName() {
         return this.name;
     }
 
-    public void setSocket(Socket s) {
-        this.s = s;
-    }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getServerMessageStatus() {
+        return serverMsg.getRequestStatus();
+    }
+
+    public String getServerMessageContents() {
+        return serverMsg.getMessageContents();
+    }
+
+    public void printServerContents(){
+        System.out.println(serverMsg.getMessageContents());
+    }
+
+    public void setSocket(Socket s) {
+        this.s = s;
     }
 
     public void setUuid(String uuid) {

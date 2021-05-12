@@ -126,28 +126,7 @@ public class ClientStorage {
         }
     }
 
-
-
     // List all files client has in directory
-    public String[] listClientFiles(String path) {
-        //File root = new File("./src/main/resources/clientDirs/" + clientName+"/");
-        File root = new File(path);
-        File[] list = root.listFiles();
-
-
-        ArrayList<String> fileList = new ArrayList<String>();
-        for (File f : list){
-            if(f.isDirectory()){
-                fileList.add(f.getName()+"/");
-            }
-            else {
-                fileList.add(f.getName());
-            }
-
-        }
-        return fileList.toArray(new String[fileList.size()]);
-
-    }
 
     // Add client file
     public void clientAddFile(String clientName, String file){
