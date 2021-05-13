@@ -112,12 +112,18 @@ public class Client {
     // Receive names for files stored on server
     public String[] getFileNames(String folderPath) {
         sendMessage("LIST()", folderPath);
+        String[] filenames= null;
         //serverMessage msg = receiveMessage();
-        receiveMessage();
-        //String rawFilenames = msg.getMessageContents();
-        String rawFilenames = getServerMessageContents();
-        String[] filenames = rawFilenames.split(",");
-        return filenames;
+        try {
+            receiveMessage();
+            //String rawFilenames = msg.getMessageContents();
+            String rawFilenames = getServerMessageContents();
+            filenames = rawFilenames.split(",");
+            return filenames;
+        } catch (Exception e){
+            filenames = new String[]{""};
+            return filenames;
+        }
     }
 
     public File getFile(String fileName){
