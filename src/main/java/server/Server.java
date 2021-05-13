@@ -67,6 +67,7 @@ class RequestHandler extends Thread {
     //private String sep = ";;";
     private BufferedReader serverInput;
     private PrintWriter serverOutput;
+    private clientMessage clientMsg;
 
 
     RequestHandler(Socket socket) {
@@ -97,7 +98,7 @@ class RequestHandler extends Thread {
                     case "DEL()": deleteFile(contents);                 break;
                     default: sendError("Unrecognized action"); break;
                 }
-                clientMsg = null;
+                //clientMsg = null;
             }
 
 
@@ -124,6 +125,7 @@ class RequestHandler extends Thread {
             serverOutput = new PrintWriter(s.getOutputStream(), true);
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType, requestStatus, contents); // Change to server message
             serverOutput.println(msg.createMessage());
+            serverOutput.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -171,9 +173,12 @@ class RequestHandler extends Thread {
             //sendMessage("ERROR()", "0", "Unauthorized action");
             sendError("Unauthorized action");
             return;
-        }
-        try {
+        } try {
             String clientFiles = handler.listFiles(msgContents);
+            if (clientFiles==null){
+                //System.out.println("null");
+                sendMessage("FILES()", "1", " ");
+            }
             sendMessage("FILES()", "1", clientFiles);
             //sendMessage("LIST()", "1", clientFiles);
         } catch (IOException e) {

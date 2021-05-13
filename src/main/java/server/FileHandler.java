@@ -19,6 +19,7 @@ public class FileHandler {
         String dir = "./src/main/resources/clientDirs/" + filePath;
         File f = new File(dir);
         StringBuilder fileString = new StringBuilder();
+
         try {
             for (File fi : f.listFiles()){
                 if (fi.isDirectory()) {
@@ -27,8 +28,11 @@ public class FileHandler {
                     fileString.append(fi.getName()).append(sep);
                 }
             }
-        } catch (NullPointerException e) {
-           fileString.append("No file(s) were found");
+            if(fileString.length() == 0){
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return fileString.toString();
     }
