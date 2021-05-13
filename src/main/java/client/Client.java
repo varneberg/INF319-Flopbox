@@ -13,7 +13,7 @@ public class Client {
     //public class Client implements Runnable{
 
     private String name; // TODO setName on validated login
-    String uuid = "null";
+    String uuid = null;
     Thread t;
     int port;
     Socket s;
@@ -45,14 +45,18 @@ public class Client {
     public void receiveMessage() {
         serverMessage msg = null;
         try {
+
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             msg = new serverMessage();
             msg.receiveMessage(clientInput.readLine());
+            setServerMsg(msg);
+            msg = null;
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        serverMsg = msg;
+        //serverMsg = msg;
         //return msg;
     }
 
@@ -84,7 +88,14 @@ public class Client {
 
 
     public boolean isAuthenticated(String username, String password) {
-        if (getUuid().equals("null")) {
+        if (getUuid() == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    public boolean isAuthenticated() {
+        if (getUuid() == null) {
             return false;
         } else {
             return true;
@@ -193,6 +204,14 @@ public class Client {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setServerMsg(serverMessage serverMsg) {
+        this.serverMsg = serverMsg;
+    }
+
+    public serverMessage getServerMsg() {
+        return serverMsg;
     }
 
     public String getServerMessageStatus() {

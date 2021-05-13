@@ -98,6 +98,7 @@ class RequestHandler extends Thread {
                     case "DEL()": deleteFile(contents);                 break;
                     default: sendError("Unrecognized action"); break;
                 }
+                clientMsg = null;
                 //clientMsg = null;
             }
 

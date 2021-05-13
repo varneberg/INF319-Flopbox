@@ -27,14 +27,16 @@ public class server_main {
         //client.createUser(username, password);
         //client.printServerContents();
         client.login(username,password);
+        client.printServerContents();
+
         //client.printServerContents();
         //client.putFile("./src/main/resources/clientDirs/brok/img3.png",username+"/img4.png");
         //client.deleteFile(username+"/img4.png");
         //client.getFile("brok/img4.png", "./src/main/resources/clientDirs/brok/img5.png");
         //client.deleteFile(username+"/img4.png");
-        client.getFileNames(username);
+        //client.getFileNames(username);
 
-        client.printServerContents();
+        //client.printServerContents();
         //client.printServerContents();
         //client.printServerContents();
 
