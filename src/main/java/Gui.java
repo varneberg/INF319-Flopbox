@@ -16,6 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -212,7 +213,8 @@ public class Gui extends Application{
             File file = fileChooser.showOpenDialog(primaryStage);
 
             try {
-                current.putFile(serverFiles.getCurrentDir(),file.getAbsolutePath());
+                current.putFile(file.getAbsolutePath(), serverFiles.getCurrentDir() + file.getName());
+
             } catch (Exception exception) {
                 error_text.setText(current.getServerMessageContents());
             }
@@ -221,12 +223,14 @@ public class Gui extends Application{
 
 
         download_file_button.setOnAction(e -> {
-            final FileChooser fileChooser = new FileChooser();
-            File dest = fileChooser.showSaveDialog(primaryStage);
-            if (dest != null) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialFileName(serverFiles.getSelectedFile().split("/")[serverFiles.getSelectedFile().split("/").length - 1]);
+            File file = fileChooser.showSaveDialog(primaryStage);
+            if (file != null) {
                 try {
-                    File file = current.getFile(serverFiles.getSelectedFile());
-                    Files.copy(file.toPath(), dest.toPath());
+
+                    current.getFile(serverFiles.getSelectedFile(), file.getAbsolutePath());
+
                 } catch (IOException ex) {
                     // handle exception...
                 }
