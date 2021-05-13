@@ -22,17 +22,28 @@ public class server_main {
 
 
         Client client = new Client(address, port);
-        String username = "test123";
+        String username = "tesiboi";
         String password = "test";
+        //client.createUser(username, password);
+        //client.printServerContents();
         client.login(username,password);
-        String localPath = "./src/main/resources/clientDirs/test123/img.png";
-        String serverPath = "brok/img.png";
-        String toPath = "./src/main/resources/clientDirs/tmp/output3.png";
-        String fromPath = "brok/output2.txt";
-        //client.getFile(fromPath, toPath);
-        //client.putFile(localPath, serverPath);
-        client.getFile("brok/img.png", toPath);
-        //client.getFile(serverPath, localPath);
-        //client.getFile(serverPath,localPath);
+        //client.printServerContents();
+        //client.putFile("./src/main/resources/clientDirs/brok/img3.png",username+"/img4.png");
+        //client.deleteFile(username+"/img4.png");
+        //client.getFile("brok/img4.png", "./src/main/resources/clientDirs/brok/img5.png");
+        //client.deleteFile(username+"/img4.png");
+        client.getFileNames(username);
+
+        client.printServerContents();
+        //client.printServerContents();
+        //client.printServerContents();
+
+
+        //client.createDir(username+"/dummy9.txt");
+        //client.deleteFile("brok/img4.png");
+        //client.receiveMessage();
+        //client.printServerContents();
+
+        //client.putDir(username+"/durr");
     }
 }

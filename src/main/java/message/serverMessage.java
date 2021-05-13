@@ -36,9 +36,6 @@ public class serverMessage {
     }
 
 
-
-
-
     public void setServerAddress(String serverAddress) {
         this.serverAddress = serverAddress;
     }
@@ -49,6 +46,11 @@ public class serverMessage {
 
     public void setRequestType(String requestType) {
         this.requestType = requestType;
+    }
+
+    public void setError(String errorType){
+        this.requestType = "Error()";
+        this.messageContents = errorType;
     }
 
     public void setRequestStatus(String requestStatus) {
