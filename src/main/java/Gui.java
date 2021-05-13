@@ -218,7 +218,9 @@ public class Gui extends Application{
             } catch (Exception exception) {
                 error_text.setText(current.getServerMessageContents());
             }
+            error_text.setText(current.getServerMessageContents());
             serverFiles.refresh(current.getFileNames(serverFiles.getCurrentDir()));
+
         });
 
 
@@ -235,6 +237,7 @@ public class Gui extends Application{
                     // handle exception...
                 }
             }
+            error_text.setText(current.getServerMessageContents());
         });
 
 
