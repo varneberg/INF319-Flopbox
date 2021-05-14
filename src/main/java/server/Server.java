@@ -77,7 +77,6 @@ class RequestHandler extends Thread {
     @Override
     public void run() {
         try {
-            System.out.println("[Server]: Received a connection\n");
             while (true) {
                 clientMessage clientMsg = receiveMessage();
                 //FileHandler handler = new FileHandler();
