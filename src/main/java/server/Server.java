@@ -77,7 +77,6 @@ class RequestHandler extends Thread {
     @Override
     public void run() {
         try {
-            System.out.println("[Server]: Received a connection\n");
             while (true) {
                 clientMessage clientMsg = receiveMessage();
                 //FileHandler handler = new FileHandler();
@@ -98,6 +97,7 @@ class RequestHandler extends Thread {
                     case "DEL()": deleteFile(contents);                 break;
                     default: sendError("Unrecognized action"); break;
                 }
+                clientMsg = null;
                 //clientMsg = null;
             }
 
