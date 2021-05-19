@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class Server extends Thread {
@@ -68,6 +69,8 @@ class RequestHandler extends Thread {
     private BufferedReader serverInput;
     private PrintWriter serverOutput;
     private clientMessage clientMsg;
+    private int msgNum;
+    private ArrayList<serverMessage> msgList;
 
 
     RequestHandler(Socket socket) {
@@ -78,6 +81,7 @@ class RequestHandler extends Thread {
     public void run() {
         try {
             while (true) {
+                //System.out.println(msgNum);
                 clientMessage clientMsg = receiveMessage();
                 //FileHandler handler = new FileHandler();
                 String requestType = clientMsg.getRequestType();
@@ -97,7 +101,7 @@ class RequestHandler extends Thread {
                     case "DEL()": deleteFile(contents);                 break;
                     default: sendError("Unrecognized action"); break;
                 }
-                clientMsg = null;
+                //clientMsg = null;
                 //clientMsg = null;
             }
 
@@ -126,6 +130,7 @@ class RequestHandler extends Thread {
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType, requestStatus, contents); // Change to server message
             serverOutput.println(msg.createMessage());
             serverOutput.flush();
+            msgNum += 1;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -135,6 +140,16 @@ class RequestHandler extends Thread {
         try {
             serverOutput = new PrintWriter(s.getOutputStream(), true);
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), "ERROR()", "0", errorMsg);
+            serverOutput.println(msg.createMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendError(String errorType ,String errorMsg) {
+        try {
+            serverOutput = new PrintWriter(s.getOutputStream(), true);
+            serverMessage msg = new serverMessage(s.getInetAddress().toString(), "ERROR()", errorType, errorMsg);
             serverOutput.println(msg.createMessage());
         } catch (IOException e) {
             e.printStackTrace();
@@ -192,18 +207,25 @@ class RequestHandler extends Thread {
         String username = creds[0];
         String password = creds[1];
         //cs.clientLogin(username, password);
-        /*
         try {
             String s = cs.clientQuery(username);
-            if(s == null){
-                System.out.println("null");
+            if(s.equals("")){
+                sendError("-1", "No user was found");
+                return;
+
+            }else if(!cs.verifyPassword(password)){
+                sendError("0", "Incorrect password");
+                return;
+
+            }else{
+                String uuid = genUUID();
+                sendMessage("LOGIN()", "1", uuid);
             }
-            System.out.println(s);
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
 
-         */
+        /*
         try {
             if (cs.clientExists(username)) {
                 if (cs.verifyPassword(password)) { // Client is authenticated
@@ -227,6 +249,8 @@ class RequestHandler extends Thread {
         }
 
         //return false;
+
+         */
     }
 
     private boolean validateClient() {

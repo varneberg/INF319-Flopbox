@@ -45,13 +45,12 @@ public class Client {
     public void receiveMessage() {
         serverMessage msg = null;
         try {
-
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             msg = new serverMessage();
             msg.receiveMessage(clientInput.readLine());
             setServerMsg(msg);
-            msg = null;
 
+            msg = null;
 
         } catch (IOException e) {
             e.printStackTrace();

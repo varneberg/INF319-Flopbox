@@ -13,7 +13,7 @@ public class server_main {
         ClientStorage cs = new ClientStorage();
         DB.initDB();
         DB.createClientTable();
-        //cs.listAllClients();
+        cs.listAllClients();
 
         int port = 6666;
         String address = "localhost";
@@ -26,8 +26,8 @@ public class server_main {
         String password = "test";
         //client.createUser(username, password);
         //client.printServerContents();
-        client.login(username,password);
-        client.printServerContents();
+        //client.login(username,password);
+        //client.printServerContents();
 
         //client.printServerContents();
         //client.putFile("./src/main/resources/clientDirs/brok/img3.png",username+"/img4.png");
