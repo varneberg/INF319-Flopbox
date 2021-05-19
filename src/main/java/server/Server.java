@@ -79,6 +79,7 @@ class RequestHandler extends Thread {
 
     @Override
     public void run() {
+        setMsgNum(1);
         try {
             while (true) {
                 //System.out.println(msgNum);
@@ -211,14 +212,14 @@ class RequestHandler extends Thread {
             String s = cs.clientQuery(username);
             if(s.equals("")){
                 sendError("-1", "No user was found");
-                return;
 
             }else if(!cs.verifyPassword(password)){
                 sendError("0", "Incorrect password");
-                return;
 
             }else{
                 String uuid = genUUID();
+                setClientName(username);
+                setCurrClientUUID(uuid);
                 sendMessage("LOGIN()", "1", uuid);
             }
         } catch (Exception e){
@@ -366,5 +367,13 @@ class RequestHandler extends Thread {
 
     public String getCurrClientUUID() {
         return currClientUUID;
+    }
+
+    public void setMsgNum(int msgNum) {
+        this.msgNum = msgNum;
+    }
+
+    public int getMsgNum() {
+        return msgNum;
     }
 }
