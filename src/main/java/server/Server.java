@@ -209,7 +209,7 @@ class RequestHandler extends Thread {
         String password = creds[1];
         //cs.clientLogin(username, password);
         try {
-            String s = cs.clientQuery(username);
+            String s = cs.clientQuery(username, password);
             if(s.equals("")){
                 sendError("-1", "No user was found");
 

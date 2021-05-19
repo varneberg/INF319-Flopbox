@@ -19,15 +19,15 @@ public class ClientStorage {
 
     public String listAllClients(){
        String sql = "SELECT * FROM clients";
-       String output = null;
+       String output = "";
        try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)){
            while(rs.next()){
-               output = rs.getInt("id") + "\t" +
+               output += rs.getInt("id") + "\t" +
                        rs.getString("uname") + "\t" +
                        rs.getString("password") + "\t" +
-                       rs.getString("directory");
+                       rs.getString("directory") + "\n";
            }
        } catch (SQLException e){
            output = e.getMessage();
@@ -100,19 +100,17 @@ public class ClientStorage {
         }
     }
 
-    public String clientQuery(String where){
+    public String clientQuery(String username, String password){
 
         String out = "";
         String sql =
-                "SELECT *"
-                + "FROM clients "
-                + "WHERE uname = '" + where
-                + "'";
+                "SELECT * FROM clients WHERE uname = '"+ username + "'" + " AND password = '" + password + "'";
+        //"SELECT *" + "FROM clients " + "WHERE uname = '" + username + "'";
         try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)) {
                 while (rs.next()) {
-                    out = rs.getInt("id") + "\t"
+                    out += rs.getInt("id") + "\t"
                             + rs.getString("uname") + "\t"
                             + rs.getString("password") + "\t"
                             + rs.getString("directory");

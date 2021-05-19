@@ -1,6 +1,7 @@
 package server;
 
 import client.Client;
+import malicious.maliciousSQL;
 import server.Server;
 import storage.ClientStorage;
 import storage.DB;
@@ -10,10 +11,11 @@ import java.io.IOException;
 
 public class server_main {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        maliciousSQL msql = new maliciousSQL();
         ClientStorage cs = new ClientStorage();
         DB.initDB();
         DB.createClientTable();
-        cs.listAllClients();
+        //System.out.println(cs.listAllClients());
 
         int port = 6666;
         String address = "localhost";
@@ -24,6 +26,9 @@ public class server_main {
         Client client = new Client(address, port);
         String username = "tesiboi";
         String password = "test";
+        //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
+        //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
+
         //client.createUser(username, password);
         //client.printServerContents();
         //client.login(username,password);
