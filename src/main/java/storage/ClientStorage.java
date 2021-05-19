@@ -35,6 +35,25 @@ public class ClientStorage {
        return output;
     }
 
+    public String clientLogin(String username, String password){
+
+        System.out.println(username+" "+ password);
+        try{
+            if(clientExists(username)){
+                if(verifyPassword(password)){
+                    return ("valid");
+
+                }
+
+
+            }
+
+        }catch (SQLException e){
+            return e.getMessage();
+        }
+        return null;
+    }
+
     // Checks if a given client exists in the database
     public boolean clientExists(String uname)  throws SQLException{
        String sql =  "SELECT *"
@@ -83,6 +102,28 @@ public class ClientStorage {
         }
     }
 
+    public String clientQuery(String where){
+
+        String out = "";
+        String sql =
+                "SELECT *"
+                + "FROM clients "
+                + "WHERE uname = '" + where
+                + "'";
+        try (Connection con = this.connect();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
+                while (rs.next()) {
+                    out = rs.getInt("id") + "\t"
+                            + rs.getString("uname") + "\t"
+                            + rs.getString("password") + "\t"
+                            + rs.getString("directory");
+                }
+                return out;
+            }catch (SQLException e){
+                return e.getMessage();
+        }
+    }
 
     public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";

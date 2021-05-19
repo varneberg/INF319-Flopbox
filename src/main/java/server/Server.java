@@ -77,7 +77,6 @@ class RequestHandler extends Thread {
     @Override
     public void run() {
         try {
-            System.out.println("[Server]: Received a connection\n");
             while (true) {
                 clientMessage clientMsg = receiveMessage();
                 //FileHandler handler = new FileHandler();
@@ -98,6 +97,7 @@ class RequestHandler extends Thread {
                     case "DEL()": deleteFile(contents);                 break;
                     default: sendError("Unrecognized action"); break;
                 }
+                clientMsg = null;
                 //clientMsg = null;
             }
 
@@ -191,6 +191,19 @@ class RequestHandler extends Thread {
         String[] creds = input.split("/");
         String username = creds[0];
         String password = creds[1];
+        //cs.clientLogin(username, password);
+        /*
+        try {
+            String s = cs.clientQuery(username);
+            if(s == null){
+                System.out.println("null");
+            }
+            System.out.println(s);
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+         */
         try {
             if (cs.clientExists(username)) {
                 if (cs.verifyPassword(password)) { // Client is authenticated
@@ -212,6 +225,7 @@ class RequestHandler extends Thread {
             System.out.println(e.getMessage());
             sendMessage("ERROR()", "-1", e.getMessage());
         }
+
         //return false;
     }
 
