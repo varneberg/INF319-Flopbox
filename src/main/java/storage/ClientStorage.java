@@ -44,8 +44,6 @@ public class ClientStorage {
                     return ("valid");
 
                 }
-
-
             }
 
         }catch (SQLException e){
@@ -119,10 +117,10 @@ public class ClientStorage {
                             + rs.getString("password") + "\t"
                             + rs.getString("directory");
                 }
-                return out;
             }catch (SQLException e){
                 return e.getMessage();
         }
+        return out;
     }
 
     public void addClient(String uname, String password) {
@@ -212,5 +210,16 @@ public class ClientStorage {
         } catch (SQLException e){
             System.out.println(e.getMessage());
         }
+    }
+    public void dropClientTable(){
+        String sql = "DROP TABLE clients";
+        try(Connection con = this.connect();
+            Statement stmt = con.createStatement()){
+            stmt.execute(sql);
+            System.out.println("Client table dropped");
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+
     }
 }

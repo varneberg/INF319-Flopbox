@@ -9,8 +9,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import server.Server;
@@ -19,13 +23,13 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class builderGUI extends Application {
+    public Text txt_response;
     private Stage stage;
 
     public Button btn_login;
     public TextField field_user;
     public TextField field_passwd;
     public Button btn_register;
-    public Text login_response;
     String address = "localhost";
     int port = 6666;
     Client client = new Client(address, port);
@@ -65,6 +69,7 @@ public class builderGUI extends Application {
             gotoLogin();
             //gotoFiles();
             primaryStage.show();
+            //btn_login.isDefaultButton();
 
         } catch (Exception e){
             e.printStackTrace();
@@ -110,25 +115,39 @@ public class builderGUI extends Application {
         return page;
     }
 
-    public void login(ActionEvent event) throws IOException {
+    public void login(ActionEvent event) {
 
-        this.username = field_user.getText();
-        this.password = field_passwd.getText();
 
-        client.login(username, password);
-        login_response.setText(client.getServerMessageContents());
-        if (validRequest(client.getServerMessageStatus())) {
-            //gotoFiles();
+        try {
+
+            if (field_user.getText().trim().isEmpty()) {
+                txt_response.setText("Please enter a username");
+            }
+            if (field_passwd.getText().trim().isEmpty()) {
+                txt_response.setText("Please enter a password");
+            } else {
+                this.username = field_user.getText();
+                this.password = field_passwd.getText();
+                client.login(username, password);
+                if (validRequest(client.getServerMessageStatus())) {
+                    //gotoFiles();
             /*
             Parent blah = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/file_screen.fxml")));
             Scene scene = new Scene(blah);
             stage = (Stage)((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
             stage.show();
-
              */
-            fileScreen(event);
+                    fileScreen(event);
 
+                } else {
+                    //login_response.setText(client.getServerMessageContents());
+                    txt_response.setText(client.getServerMessageContents());
+                }
+
+            }
+        }catch (IOException e){
+            System.out.println(e.getMessage());
         }
         //login_response.setText(client.getServerMessageContents());
     }
@@ -151,9 +170,9 @@ public class builderGUI extends Application {
 
     public boolean validRequest(String requestStatus){
         if ("1".equals(requestStatus)) {
-            return true;
-        }
-        return false;
+            return true; }
+        else {
+            return false; }
     }
 
     public String getUsername() {
@@ -169,4 +188,10 @@ public class builderGUI extends Application {
         return client.getUuid();
     }
 
+    public void returnIsPressed(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER){
+            //System.out.println("enter");
+            btn_login.fire();
+        }
+    }
 }
