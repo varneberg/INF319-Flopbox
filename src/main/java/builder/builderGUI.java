@@ -7,29 +7,32 @@ import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import server.Server;
 
 import java.io.IOException;
 import java.util.Objects;
 
 public class builderGUI extends Application {
-    public Text txt_response;
     private Stage stage;
-
+    // Log in screen
+    public Text txt_response;
+    public TextField field_search;
     public Button btn_login;
     public TextField field_user;
     public TextField field_passwd;
     public Button btn_register;
+
+    // File screen
+    public Button btn_search;
+    public ScrollPane file_pane;
+    public MenuItem menu_logOut;
+    public Menu menu_quit;
+
     String address = "localhost";
     int port = 6666;
     Client client = new Client(address, port);
@@ -52,7 +55,8 @@ public class builderGUI extends Application {
     public void start(Stage primaryStage) throws Exception{
         try{
             stage=primaryStage;
-            gotoLogin();
+            //gotoLogin();
+            setScene("/fxml/login_screen.fxml");
             //gotoFiles();
             primaryStage.show();
             //btn_login.isDefaultButton();
@@ -86,12 +90,21 @@ public class builderGUI extends Application {
         }
     }
 
+    public Parent setScene(String fxml) throws Exception{
+        Parent page = (Parent) FXMLLoader.load(Objects.requireNonNull(builderGUI.class.getResource(fxml)), null, new JavaFXBuilderFactory());
+        //Scene scene = stage.getScene();
+        Scene scene = new Scene(page, 700, 450);
+        stage.setScene(scene);
+        stage.sizeToScene();
+        return page;
+    }
 
-    private Parent replaceScene(String fxml) throws Exception{
+
+    public Parent replaceScene(String fxml) throws Exception{
         Parent page = (Parent) FXMLLoader.load(Objects.requireNonNull(builderGUI.class.getResource(fxml)), null, new JavaFXBuilderFactory());
         Scene scene = stage.getScene();
         if(scene == null){
-            scene = new Scene(page, 700, 450);
+            scene = new Scene(page);
             //scene.getStylesheets()
             stage.setScene(scene);
         } else{
@@ -113,25 +126,32 @@ public class builderGUI extends Application {
                 this.password = field_passwd.getText();
                 client.login(username, password);
                 if (validRequest(client.getServerMessageStatus())) {
-                    fileScreen(event);
-                    //gotoFiles();
+                    setUsername(username);
+                    if(client.getServerMessageType().equals("LOGIN()")) {
+                        setUUID(client.getServerMessageContents());
+                        client.getFileNames(username);
+                        client.printServerContents();
+                        switchToFileScreen(event);
+                    }
 
                 } else {
-                    //login_response.setText(client.getServerMessageContents());
                     txt_response.setText(client.getServerMessageContents());
                 }
 
             }
         }catch (IOException e){
             System.out.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         //login_response.setText(client.getServerMessageContents());
     }
 
-    public void fileScreen(ActionEvent event)throws IOException{
+    public void switchToFileScreen(ActionEvent event)throws IOException{
         Parent blah = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/file_screen.fxml")));
         Scene scene = new Scene(blah);
         stage = (Stage)((Node) event.getSource()).getScene().getWindow();
+
         stage.setScene(scene);
         stage.show();
     }
@@ -150,10 +170,14 @@ public class builderGUI extends Application {
             return false; }
     }
 
+    public void viewFiles(String dir){
+        client.getFileNames(dir);
+
+    }
+
     public String getUsername() {
         return username;
     }
-
 
     public void setUsername(String username) {
         this.username = username;
@@ -161,6 +185,18 @@ public class builderGUI extends Application {
 
     public String getUUID() {
         return client.getUuid();
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public void setUUID(String UUID) {
+        this.UUID = UUID;
     }
 
     public void returnIsPressed(KeyEvent keyEvent) {
