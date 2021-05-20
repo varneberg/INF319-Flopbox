@@ -50,20 +50,6 @@ public class builderGUI extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        //builderGUI gui = new builderGUI();
-        //Server server = new Server(6666);
-        //server.startServer();
-
-        /*
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/fxml/login_screen.fxml"));
-        primaryStage.setTitle("Flopbox");
-        Scene scene = new Scene(loader.load());
-        Window window = scene.getWindow();
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-         */
         try{
             stage=primaryStage;
             gotoLogin();
@@ -116,10 +102,7 @@ public class builderGUI extends Application {
     }
 
     public void login(ActionEvent event) {
-
-
         try {
-
             if (field_user.getText().trim().isEmpty()) {
                 txt_response.setText("Please enter a username");
             }
@@ -130,15 +113,8 @@ public class builderGUI extends Application {
                 this.password = field_passwd.getText();
                 client.login(username, password);
                 if (validRequest(client.getServerMessageStatus())) {
-                    //gotoFiles();
-            /*
-            Parent blah = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/file_screen.fxml")));
-            Scene scene = new Scene(blah);
-            stage = (Stage)((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
-            stage.show();
-             */
                     fileScreen(event);
+                    //gotoFiles();
 
                 } else {
                     //login_response.setText(client.getServerMessageContents());
@@ -158,7 +134,6 @@ public class builderGUI extends Application {
         stage = (Stage)((Node) event.getSource()).getScene().getWindow();
         stage.setScene(scene);
         stage.show();
-
     }
 
     public void register(ActionEvent event){

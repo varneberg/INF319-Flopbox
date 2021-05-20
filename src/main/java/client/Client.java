@@ -209,9 +209,8 @@ public class Client {
         this.serverMsg = serverMsg;
     }
 
-    public serverMessage getServerMsg() {
-        return serverMsg;
-    }
+    public serverMessage getServerMsg() { return serverMsg; }
+
 
     public String getServerMessageStatus() {
         return serverMsg.getRequestStatus();
@@ -219,6 +218,10 @@ public class Client {
 
     public String getServerMessageContents() {
         return serverMsg.getMessageContents();
+    }
+
+    public String getServerMessageType(){
+        return serverMsg.getRequestType();
     }
 
     public void printServerContents(){

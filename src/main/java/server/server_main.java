@@ -26,6 +26,7 @@ public class server_main {
         Client client = new Client(address, port);
         String username = "tesiboi";
         String password = "test";
+        client.login(username, password);
         //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
         //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
 
