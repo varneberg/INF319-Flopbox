@@ -7,6 +7,9 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class Client {
@@ -31,6 +34,7 @@ public class Client {
     public Client(int port) {
         this.port = port;
     }
+
 
     public Client(String address, int port) {
         try {
@@ -126,6 +130,7 @@ public class Client {
         //serverMessage msg = receiveMessage();
         try {
             receiveMessage();
+
             //String rawFilenames = msg.getMessageContents();
             String rawFilenames = getServerMessageContents();
             filenames = rawFilenames.split(",");
@@ -134,6 +139,23 @@ public class Client {
             filenames = new String[]{""};
             return filenames;
         }
+    }
+
+    public List<String> getFileArray(String folderPath){
+        List<String> filenames = null;
+        sendMessage("LIST()", folderPath);
+        try{
+            receiveMessage();
+            filenames = new ArrayList<String>();
+            String rawFileNames = getServerMessageContents();
+            String fileNames[] = rawFileNames.split(",");
+            return Arrays.asList(fileNames);
+
+        } catch (Exception e){
+            filenames = new ArrayList<String>();
+            return filenames;
+        }
+
     }
 
     public File getFile(String fileName){
@@ -203,6 +225,13 @@ public class Client {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean validRequest(){
+        if ("1".equals(getServerMessageStatus())) {
+            return true; }
+        else {
+            return false; }
     }
 
     public void setServerMsg(serverMessage serverMsg) {

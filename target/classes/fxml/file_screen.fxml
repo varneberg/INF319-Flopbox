@@ -18,26 +18,18 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="builder.builderGUI">
+<VBox fx:id="file_vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="builder.FileScreen">
   <children>
-    <MenuBar VBox.vgrow="NEVER">
+    <MenuBar fx:id="file_menu" VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
             <MenuItem fx:id="menu_logOut" mnemonicParsing="false" text="Log out" />
-            <Menu fx:id="menu_quit" mnemonicParsing="false" text="Quit" />
+                  <MenuItem fx:id="menu_logOut1" mnemonicParsing="false" text="Quit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
@@ -63,9 +55,13 @@
                   <Text fx:id="txt_response" strokeType="OUTSIDE" strokeWidth="0.0" />
                </children>
             </TextFlow>
-            <TextField fx:id="field_search" layoutX="76.0" layoutY="14.0" prefHeight="24.0" prefWidth="451.0" />
-            <Button fx:id="btn_search" layoutX="533.0" layoutY="14.0" mnemonicParsing="false" text="Search" />
-            <ScrollPane fx:id="file_pane" layoutX="76.0" layoutY="60.0" prefHeight="318.0" prefWidth="522.0" vbarPolicy="ALWAYS" />
+            <TextField fx:id="field_search" layoutX="76.0" layoutY="14.0" onMouseEntered="#test" prefHeight="24.0" prefWidth="451.0" />
+            <Button fx:id="btn_search" layoutX="533.0" layoutY="14.0" mnemonicParsing="false" onAction="#search" text="Search" />
+            <ScrollPane fx:id="scroll_pane" layoutX="76.0" layoutY="49.0">
+               <content>
+                  <ListView fx:id="file_list" fixedCellSize="0.0" prefHeight="286.0" prefWidth="518.0" />
+               </content>
+            </ScrollPane>
          </children>
     </AnchorPane>
   </children>
