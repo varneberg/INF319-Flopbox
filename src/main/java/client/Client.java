@@ -20,7 +20,6 @@ public class Client {
     Thread t;
     int port;
     Socket s;
-    String clientPath = null;
     private static String storagePath = "src/main/resources/clientStorage/";
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
@@ -221,6 +220,10 @@ public class Client {
 
     public String getName() {
         return this.name;
+    }
+
+    public String getBaseDir(){
+        return getName()+"/";
     }
 
     public void setName(String name) {

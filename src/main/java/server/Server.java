@@ -193,7 +193,7 @@ class RequestHandler extends Thread {
             String clientFiles = handler.listFiles(msgContents);
             if (clientFiles==null){
                 //System.out.println("null");
-                sendMessage("FILES()", "1", " ");
+                sendMessage("FILES()", "0", " ");
             }
             sendMessage("FILES()", "1", clientFiles);
             //sendMessage("LIST()", "1", clientFiles);
@@ -225,39 +225,13 @@ class RequestHandler extends Thread {
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
-
-        /*
-        try {
-            if (cs.clientExists(username)) {
-                if (cs.verifyPassword(password)) { // Client is authenticated
-                    String uuid = genUUID();
-                    sendMessage("LOGIN()", "1", uuid);
-                    setClientName(username);
-                    setCurrClientUUID(uuid);
-                    //System.out.println("[Server]: " + username + " authenticated");
-                    //return true;
-                } else { // Password is wrong
-                    sendMessage("ERROR()", "0", "Incorrect password");
-                    //return false;
-                }
-            } else { // No user was found with given name
-                sendMessage("ERROR()", "-1", "No user was found");
-                //return false;
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            sendMessage("ERROR()", "-1", e.getMessage());
-        }
-
-        //return false;
-
-         */
     }
 
     private boolean validateClient() {
         String uuid = getCurrClientUUID();
         return uuid != null;
     }
+
 
     //private void receiveFile(String fileName, String fileSize) throws Exception {
     private void receiveFile(String contents) {

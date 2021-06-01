@@ -19,17 +19,18 @@
 -->
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox fx:id="file_vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="builder.FileScreen">
+<VBox fx:id="file_vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="builder.FileScreen">
   <children>
     <MenuBar fx:id="file_menu" VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem fx:id="menu_logOut" mnemonicParsing="false" text="Log out" />
-                  <MenuItem fx:id="menu_logOut1" mnemonicParsing="false" text="Quit" />
+            <MenuItem fx:id="menu_logOut" mnemonicParsing="false" onAction="#logOut" text="Log out" />
+                  <MenuItem fx:id="menu_exit" mnemonicParsing="false" onAction="#quit" text="Quit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
@@ -48,19 +49,41 @@
         </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="857.0" VBox.vgrow="ALWAYS">
          <children>
-            <TextFlow layoutX="55.0" layoutY="92.93310546875">
+            <TextFlow layoutX="11.0" layoutY="433.0" prefHeight="36.0" prefWidth="706.0">
                <children>
-                  <Text fx:id="txt_response" strokeType="OUTSIDE" strokeWidth="0.0" />
+                  <Text fx:id="txt_response" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="6.0" />
                </children>
             </TextFlow>
-            <TextField fx:id="field_search" layoutX="76.0" layoutY="14.0" onMouseEntered="#test" prefHeight="24.0" prefWidth="451.0" />
-            <Button fx:id="btn_search" layoutX="533.0" layoutY="14.0" mnemonicParsing="false" onAction="#search" text="Search" />
-            <ScrollPane fx:id="scroll_pane" layoutX="76.0" layoutY="49.0">
+            <TextField fx:id="field_search" layoutX="76.0" layoutY="11.0" prefHeight="24.0" prefWidth="451.0" />
+            <ImageView fx:id="img_home" fitHeight="38.0" fitWidth="25.0" layoutX="14.0" layoutY="11.0" onMouseClicked="#dirHome" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/home_icon.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="img_back" fitHeight="38.0" fitWidth="25.0" layoutX="43.0" layoutY="11.0" onMouseClicked="#prevDir" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/arrow_back.png" />
+               </image>
+            </ImageView>
+            <Button fx:id="btn_search" layoutX="541.0" layoutY="11.0" mnemonicParsing="false" onAction="#search" text="Search" />
+            <ScrollPane fx:id="scroll_pane" layoutX="14.0" layoutY="49.0">
                <content>
-                  <ListView fx:id="file_list" fixedCellSize="0.0" prefHeight="286.0" prefWidth="518.0" />
+                  <ListView fx:id="file_list" fixedCellSize="0.0" onMouseClicked="#nextDir" prefHeight="373.0" prefWidth="704.0" />
                </content>
+               <contextMenu>
+                  <ContextMenu fx:id="popup_file">
+                    <items>
+                        <MenuItem fx:id="item_back" mnemonicParsing="false" onAction="#prevDir" text="Back" />
+                        <MenuItem fx:id="item_newDir" mnemonicParsing="false" onAction="#newDirectory" text="New Directory" />
+                        <MenuItem fx:id="item_rename" mnemonicParsing="false" onAction="#renameFile" text="Rename" />
+                        <MenuItem fx:id="item_upload" mnemonicParsing="false" onAction="#uploadFile" text="Upload" />
+                      <MenuItem fx:id="item_download" mnemonicParsing="false" onAction="#downloadFile" text="Download" />
+                        <MenuItem fx:id="item_delete" mnemonicParsing="false" onAction="#deleteFile" text="Delete" />
+                    </items>
+                  </ContextMenu>
+               </contextMenu>
             </ScrollPane>
          </children>
     </AnchorPane>

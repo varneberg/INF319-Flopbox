@@ -13,7 +13,9 @@ import java.io.IOException;
 
 public class App extends Application {
     private static Scene scene;
+    private static Stage primaryStage;
     Client client;
+
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -22,6 +24,10 @@ public class App extends Application {
         primaryStage.show();
     }
 
+
+    public static Stage getPrimaryStage() {
+        return primaryStage;
+    }
 
     static void setRoot(String fxml) throws IOException{
         scene.setRoot(loadFXML(fxml));

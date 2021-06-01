@@ -105,7 +105,8 @@ public class loginScreen {
         username = field_user.getText();
         password = field_passwd.getText();
         client.createUser(username, password);
-        client.printServerContents();
+        //client.printServerContents();
+        txt_response.setText(client.getServerMessageContents());
     }
 
     public void viewFiles(String dir){
