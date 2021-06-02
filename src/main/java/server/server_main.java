@@ -2,6 +2,7 @@ package server;
 
 import client.Client;
 import encryption.ClientSSE;
+import encryption.ServerSSE;
 import storage.ClientStorage;
 import storage.DB;
 
@@ -30,11 +31,10 @@ public class server_main {
         String password = "test";
 
         ClientSSE clientsse = new ClientSSE(username);
-        String[] token = clientsse.generateSearchToken("test");
-        System.out.println(Arrays.toString(token));
+
         File test = new File("test.txt");
 
-        System.out.println(test.length());
+        //System.out.println(test.length());
 
         FileWriter fw = new FileWriter(test);
         fw.write("Firstly, the string produced is not properly xor'd");
@@ -52,13 +52,21 @@ public class server_main {
 
         File dec = clientsse.decryptFile(f);
 
-        System.out.println(dec.length());
+        //System.out.println(dec.length());
 
         Scanner sc = new Scanner(dec);
 
         while(sc.hasNext()){
             System.out.println(sc.nextLine());
         }
+
+        ServerSSE serversse = new ServerSSE();
+
+        String token1 = clientsse.generateSearchToken("is");
+        //String token2 = clientsse.generateSearchToken("abc");
+        //System.out.println(token1);
+        System.out.println(serversse.checkMatch(f, token1));
+        //System.out.println(serversse.checkMatch(f,token2));
 
         //client.createUser(username, password);
         //client.printServerContents();

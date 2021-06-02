@@ -11,30 +11,22 @@ public class ClientSSE {
 
     private static int blockSize = 24;
     private static int m = blockSize/2;
-    private String[] s_values;
     private String key;
     private HashMap<String, String> lookup;
+    private static char filler = '*';
 
     public ClientSSE(String key){
         this.key = key;
     }
 
-    private void generateS(){
-        Random random = new Random(Integer.parseInt(key));
-        RandomString randomStringGenerator = new RandomString(m,random);
-
-
-    }
-
-    public String[] generateSearchToken(String keyword){
+    public String generateSearchToken(String keyword){
         keyword = correctLength(keyword);
         String L = keyword.substring(0,blockSize-m);
         int k = L.hashCode();
-        String[] token = new String[] {keyword, Integer.toString(k)};
+
+        String token = keyword + k;
         return token;
     }
-
-
 
     public File decryptFile(File encrypted){
         String hashed = Integer.toString(encrypted.hashCode());
@@ -78,7 +70,7 @@ public class ClientSSE {
 
     private String decryptBlock(String word, RandomString randomStringGenerator){
         String C1 = word.substring(0,blockSize-m);
-        String C2 = word.substring(blockSize-m);
+        String C2 = word.substring(m);
 
         String s = randomStringGenerator.nextString();
 
@@ -94,6 +86,7 @@ public class ClientSSE {
         String L = new String(LBytes, StandardCharsets.UTF_8);
 
         int k = L.hashCode();
+        System.out.println("decrypt block k: "+ k);
         Random random = new Random(k);
         RandomString fsGenerator = new RandomString(blockSize-m,random);
         String fs = fsGenerator.nextString();
@@ -199,13 +192,17 @@ public class ClientSSE {
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
         String L = word.substring(0,blockSize-m);
-        String R = word.substring(blockSize-m);
+        String R = word.substring(m);
         int k = L.hashCode();
+
+
         String s = randomStringGenerator.nextString();
 
         Random random = new Random(k);
         RandomString fsGenerator = new RandomString(blockSize-m,random);
         String fs = fsGenerator.nextString();
+
+        System.out.println("encrypt word k: " + k + " word: "+ word + " s: " + s + " fs: " + fs);
 
         byte[] clearBytes1 = L.getBytes(StandardCharsets.UTF_8);
         byte[] clearBytes2 = R.getBytes(StandardCharsets.UTF_8);
@@ -226,45 +223,14 @@ public class ClientSSE {
         String T1string = new String(T1, StandardCharsets.UTF_8);
         String T2string = new String(T2, StandardCharsets.UTF_8);
 
-
         String C = T1string + T2string;
         return C;
-    }
-
-    public class StringXORer {
-
-        public String encode(String s, String key) {
-            return base64Encode(xorWithKey(s.getBytes(), key.getBytes()));
-        }
-
-        public String decode(String s, String key) {
-            return new String(xorWithKey(base64Decode(s), key.getBytes()));
-        }
-
-        private byte[] xorWithKey(byte[] a, byte[] key) {
-            byte[] out = new byte[a.length];
-            for (int i = 0; i < a.length; i++) {
-                out[i] = (byte) (a[i] ^ key[i%key.length]);
-            }
-            return out;
-        }
-
-        private byte[] base64Decode(String s) {
-
-            byte[] decodedBytes = Base64.getDecoder().decode(s);
-            return decodedBytes;
-        }
-
-        private String base64Encode(byte[] bytes) {
-            String s = Base64.getEncoder().encodeToString(bytes).replaceAll("\\s", "");
-            return s;
-        }
     }
 
 
     private String correctLength(String keyword) {
         while(keyword.length() < blockSize){
-            keyword += "*";
+            keyword += filler;
         }
         while (keyword.length() > blockSize){
             keyword = keyword.substring(0, keyword.length() - 1);
