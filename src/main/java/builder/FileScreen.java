@@ -5,10 +5,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -158,11 +160,13 @@ public class FileScreen extends loginScreen{
     public void newDirectory(ActionEvent actionEvent) {
         String dir = getSelectedItem();
         String toDir = getCurrentDir();
-        VBox layout = new VBox(10);
+        HBox layout = new HBox();
         Stage popup = new Stage();
         TextField dirName = new TextField();
+        dirName.setAlignment(Pos.BASELINE_LEFT);
         Button saveDir = new Button("Save");
-        Scene scene = new Scene(layout,100,50);
+        saveDir.setAlignment(Pos.BASELINE_RIGHT);
+        Scene scene = new Scene(layout,250,100);
         layout.getChildren().addAll(dirName, saveDir);
         popup.setScene(scene);
         popup.showAndWait();
