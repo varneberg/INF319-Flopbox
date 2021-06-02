@@ -36,17 +36,89 @@ public class ClientSSE {
 
 
 
-    public String[] decryptFile(){
-        return null;
+    public File decryptFile(File encrypted){
+        String hashed = Integer.toString(encrypted.hashCode());
+        if (!lookup.containsKey(hashed)){
+            System.out.println("key missing in lookup");
+            return encrypted;
+        }
+        String seed = lookup.get(hashed);
+        Random random = new Random(seed.hashCode());
+        RandomString randomStringGenerator = new RandomString(m,random);
+
+        File decrypted = new File("decrypted.txt");
+
+        try {
+
+            Scanner fileReader = new Scanner(encrypted);
+            System.out.println(fileReader.hasNextLine());
+            FileWriter fileWriter = new FileWriter(decrypted);
+            while (fileReader.hasNextLine()) {
+                String data = fileReader.nextLine();
+                String[] words = data.split("(?<=\\G.{" + blockSize + "})");
+
+                for(String word : words){
+                    String decryptedWord = decryptBlock(word,randomStringGenerator);
+                    decryptedWord = decryptedWord.replace("*", "");
+                    decryptedWord += " ";
+                    fileWriter.write(decryptedWord);
+                }
+            }
+            fileWriter.close();
+            fileReader.close();
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return decrypted;
     }
 
-    private String decryptBlock(){
-        return null;
+    private String decryptBlock(String word, RandomString randomStringGenerator){
+        String C1 = word.substring(0,blockSize-m);
+        String C2 = word.substring(blockSize-m);
+
+        String s = randomStringGenerator.nextString();
+
+        byte[] sBytes = s.getBytes(StandardCharsets.UTF_8);
+        byte[] cipherBytes1 = C1.getBytes(StandardCharsets.UTF_8);
+
+        byte[] LBytes = new byte[cipherBytes1.length];
+
+        for (int i =0;i<cipherBytes1.length;i++){
+            LBytes[i] = (byte) (cipherBytes1[i] ^ sBytes[i]);
+        }
+
+        String L = new String(LBytes, StandardCharsets.UTF_8);
+
+        int k = L.hashCode();
+        Random random = new Random(k);
+        RandomString fsGenerator = new RandomString(blockSize-m,random);
+        String fs = fsGenerator.nextString();
+
+
+        byte[] cipherBytes2 = C2.getBytes(StandardCharsets.UTF_8);
+        byte[] fsBytes = fs.getBytes(StandardCharsets.UTF_8);
+
+        byte[] RBytes = new byte[cipherBytes2.length];
+
+        for (int i =0;i<cipherBytes2.length;i++){
+            RBytes[i] = (byte) (cipherBytes2[i] ^ fsBytes[i]);
+        }
+
+        String R = new String(RBytes, StandardCharsets.UTF_8);
+
+
+        String T = L + R;
+
+        return T;
     }
 
     public void setLookup(File lookup) throws IOException {
         try {
-            File toRead = new File("lookup");
+            File toRead = new File("lookup.txt");
             FileInputStream fis = new FileInputStream(toRead);
             ObjectInputStream ois = new ObjectInputStream(fis);
 
@@ -135,10 +207,27 @@ public class ClientSSE {
         RandomString fsGenerator = new RandomString(blockSize-m,random);
         String fs = fsGenerator.nextString();
 
-        StringXORer xorer = new StringXORer();
-        String T1 = xorer.encode(L, s);
-        String T2 = xorer.encode(R, fs);
-        String C = T1 + T2;
+        byte[] clearBytes1 = L.getBytes(StandardCharsets.UTF_8);
+        byte[] clearBytes2 = R.getBytes(StandardCharsets.UTF_8);
+
+        byte[] sBytes = s.getBytes(StandardCharsets.UTF_8);
+        byte[] fsBytes = fs.getBytes(StandardCharsets.UTF_8);
+
+        byte[] T1 = new byte[clearBytes1.length];
+        byte[] T2 = new byte[clearBytes2.length];
+
+        for (int i =0;i<clearBytes1.length;i++){
+            T1[i] = (byte) (clearBytes1[i] ^ sBytes[i]);
+        }
+        for (int i =0;i<clearBytes2.length;i++){
+            T2[i] = (byte) (clearBytes2[i] ^ fsBytes[i]);
+        }
+
+        String T1string = new String(T1, StandardCharsets.UTF_8);
+        String T2string = new String(T2, StandardCharsets.UTF_8);
+
+
+        String C = T1string + T2string;
         return C;
     }
 

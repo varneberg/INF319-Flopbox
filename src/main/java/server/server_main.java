@@ -33,26 +33,32 @@ public class server_main {
         String[] token = clientsse.generateSearchToken("test");
         System.out.println(Arrays.toString(token));
         File test = new File("test.txt");
+
+        System.out.println(test.length());
+
         FileWriter fw = new FileWriter(test);
-        fw.write("Firstly, the string produced is not properly xor'd in the sense that you cannot get your original string back by xor'ing it with the key again (unless your key was guaranteed to be equal to or longer than the messages which would be very strange) making the code completely misrepresent the concept of xor'ing. Secondly, you are not guaranteed to get valid string bytes by simply xoring characters, so your output string may contain invalid byte sequences.");
+        fw.write("Firstly, the string produced is not properly xor'd");
         fw.close();
         File f = clientsse.encryptFile(test);
 
+        System.out.println(f.length());
 
         Scanner s = new Scanner(f);
         while(s.hasNext()){
             System.out.println(s.next());
         }
         s.close();
-        File fi = clientsse.getLookup();
 
-        Scanner sc = new Scanner(fi);
+
+        File dec = clientsse.decryptFile(f);
+
+        System.out.println(dec.length());
+
+        Scanner sc = new Scanner(dec);
 
         while(sc.hasNext()){
             System.out.println(sc.nextLine());
         }
-
-
 
         //client.createUser(username, password);
         //client.printServerContents();
