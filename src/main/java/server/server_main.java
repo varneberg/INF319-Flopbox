@@ -1,6 +1,7 @@
 package server;
 
 import client.Client;
+import encryption.MD5;
 import malicious.maliciousSQL;
 import server.Server;
 import storage.ClientStorage;
@@ -21,11 +22,15 @@ public class server_main {
         String address = "localhost";
         Server server = new Server(port);
         server.startServer();
+        String testString = "123";
 
 
-        Client client = new Client(address, port);
-        String username = "tesiboi";
-        String password = "test";
+
+        System.out.println(MD5.getDigest(testString));
+        //Client client = new Client(address, port);
+        //String username = "tesiboi";
+        //String password = "test";
+        //client.login(username, password);
         //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
         //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
 

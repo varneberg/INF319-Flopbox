@@ -15,44 +15,22 @@
   - Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in
     the documentation and/or other materials provided with the distribution.
-  - Neither the name of Oracle Corporation nor the names of its
-    contributors may be used to endorse or promote products derived
-    from this software without specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="builder.builderGUI">
+<VBox fx:id="file_vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="builder.FileScreen">
   <children>
-    <MenuBar VBox.vgrow="NEVER">
+    <MenuBar fx:id="file_menu" VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="New" />
-            <MenuItem mnemonicParsing="false" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Close" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
-            <MenuItem mnemonicParsing="false" text="Revert" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Preferences…" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Quit" />
+            <MenuItem fx:id="menu_logOut" mnemonicParsing="false" onAction="#logOut" text="Log out" />
+                  <MenuItem fx:id="menu_exit" mnemonicParsing="false" onAction="#quit" text="Quit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
@@ -69,17 +47,44 @@
             <MenuItem mnemonicParsing="false" text="Unselect All" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
-          </items>
-        </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="857.0" VBox.vgrow="ALWAYS">
          <children>
-            <ListView fx:id="list_file" layoutX="286.0" layoutY="8.0" prefHeight="360.0" prefWidth="259.0" />
-            <ScrollBar layoutX="618.0" orientation="VERTICAL" prefHeight="371.0" prefWidth="17.0" />
+            <TextFlow layoutX="11.0" layoutY="433.0" prefHeight="36.0" prefWidth="706.0">
+               <children>
+                  <Text fx:id="txt_response" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="6.0" />
+               </children>
+            </TextFlow>
+            <TextField fx:id="field_search" layoutX="76.0" layoutY="11.0" prefHeight="24.0" prefWidth="451.0" />
+            <ImageView fx:id="img_home" fitHeight="38.0" fitWidth="25.0" layoutX="14.0" layoutY="11.0" onMouseClicked="#dirHome" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/home_icon.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="img_back" fitHeight="38.0" fitWidth="25.0" layoutX="43.0" layoutY="11.0" onMouseClicked="#prevDir" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/arrow_back.png" />
+               </image>
+            </ImageView>
+            <Button fx:id="btn_search" layoutX="541.0" layoutY="11.0" mnemonicParsing="false" onAction="#search" text="Search" />
+            <ScrollPane fx:id="scroll_pane" layoutX="14.0" layoutY="49.0">
+               <content>
+                  <ListView fx:id="file_list" fixedCellSize="0.0" onMouseClicked="#nextDir" prefHeight="373.0" prefWidth="704.0" />
+               </content>
+               <contextMenu>
+                  <ContextMenu fx:id="popup_file">
+                    <items>
+                        <MenuItem fx:id="item_back" mnemonicParsing="false" onAction="#prevDir" text="Back" />
+                        <MenuItem fx:id="item_newDir" mnemonicParsing="false" onAction="#newDirectory" text="New Directory" />
+                        <MenuItem fx:id="item_rename" mnemonicParsing="false" onAction="#renameFile" text="Rename" />
+                        <MenuItem fx:id="item_upload" mnemonicParsing="false" onAction="#uploadFile" text="Upload" />
+                      <MenuItem fx:id="item_download" mnemonicParsing="false" onAction="#downloadFile" text="Download" />
+                        <MenuItem fx:id="item_delete" mnemonicParsing="false" onAction="#deleteFile" text="Delete" />
+                    </items>
+                  </ContextMenu>
+               </contextMenu>
+            </ScrollPane>
          </children>
     </AnchorPane>
   </children>
