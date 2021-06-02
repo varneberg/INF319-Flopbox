@@ -21,7 +21,7 @@ public class DB {
         String output = null;
         String sql = "CREATE TABLE IF NOT EXISTS clients (\n"
                 + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
-                + "     uname varchar(10) UNIQUE NOT NULL,\n"
+                + "     uname varchar(30) UNIQUE NOT NULL,\n"
                 + "     password varchar(256),\n"
                 + "     directory varchar(100)\n"
                 + ");";
@@ -36,8 +36,6 @@ public class DB {
         }
         return output;
     }
-
-
 
 
 }

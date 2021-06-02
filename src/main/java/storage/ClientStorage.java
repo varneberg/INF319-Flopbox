@@ -19,20 +19,37 @@ public class ClientStorage {
 
     public String listAllClients(){
        String sql = "SELECT * FROM clients";
-       String output = null;
+       String output = "";
        try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)){
            while(rs.next()){
-               output = rs.getInt("id") + "\t" +
+               output += rs.getInt("id") + "\t" +
                        rs.getString("uname") + "\t" +
                        rs.getString("password") + "\t" +
-                       rs.getString("directory");
+                       rs.getString("directory") + "\n";
            }
        } catch (SQLException e){
            output = e.getMessage();
        }
        return output;
+    }
+
+    public String clientLogin(String username, String password){
+
+        System.out.println(username+" "+ password);
+        try{
+            if(clientExists(username)){
+                if(verifyPassword(password)){
+                    return ("valid");
+
+                }
+            }
+
+        }catch (SQLException e){
+            return e.getMessage();
+        }
+        return null;
     }
 
     // Checks if a given client exists in the database
@@ -83,6 +100,26 @@ public class ClientStorage {
         }
     }
 
+    public String clientQuery(String username, String password){
+
+        String out = "";
+        String sql =
+                "SELECT * FROM clients WHERE uname = '"+ username + "'" + " AND password = '" + password + "'";
+        //"SELECT *" + "FROM clients " + "WHERE uname = '" + username + "'";
+        try (Connection con = this.connect();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
+                while (rs.next()) {
+                    out += rs.getInt("id") + "\t"
+                            + rs.getString("uname") + "\t"
+                            + rs.getString("password") + "\t"
+                            + rs.getString("directory");
+                }
+            }catch (SQLException e){
+                return e.getMessage();
+        }
+        return out;
+    }
 
     public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
@@ -126,28 +163,7 @@ public class ClientStorage {
         }
     }
 
-
-
     // List all files client has in directory
-    public String[] listClientFiles(String path) {
-        //File root = new File("./src/main/resources/clientDirs/" + clientName+"/");
-        File root = new File(path);
-        File[] list = root.listFiles();
-
-
-        ArrayList<String> fileList = new ArrayList<String>();
-        for (File f : list){
-            if(f.isDirectory()){
-                fileList.add(f.getName()+"/");
-            }
-            else {
-                fileList.add(f.getName());
-            }
-
-        }
-        return fileList.toArray(new String[fileList.size()]);
-
-    }
 
     // Add client file
     public void clientAddFile(String clientName, String file){
@@ -192,5 +208,16 @@ public class ClientStorage {
         } catch (SQLException e){
             System.out.println(e.getMessage());
         }
+    }
+    public void dropClientTable(){
+        String sql = "DROP TABLE clients";
+        try(Connection con = this.connect();
+            Statement stmt = con.createStatement()){
+            stmt.execute(sql);
+            System.out.println("Client table dropped");
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+
     }
 }
