@@ -25,7 +25,7 @@ public class Client {
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
-    boolean security = SecureState.getINSTANCE().isSecure();
+    boolean secure = SecureState.getINSTANCE().isSecure();
    // private DataOutput dataOutput=null;
 
 
@@ -269,6 +269,10 @@ public class Client {
 
     public void setSocket(Socket s) {
         this.s = s;
+    }
+
+    public boolean isSecure() {
+        return secure;
     }
 
     public void setUuid(String uuid) {

@@ -1,5 +1,6 @@
 package server;
 
+import builder.SecureState;
 import message.clientMessage;
 import message.serverMessage;
 import storage.ClientStorage;
@@ -72,17 +73,50 @@ class RequestHandler extends Thread {
     private clientMessage clientMsg;
     private int msgNum;
     private ArrayList<serverMessage> msgList;
+    boolean secure = SecureState.getINSTANCE().isSecure();
+    boolean running;
 
 
     RequestHandler(Socket socket) {
         this.s = socket;
     }
 
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
     @Override
     public void run() {
-        setMsgNum(1);
+        setRunning(true);
+        if (secure) {
+            while(isRunning()) {
+                try {
+                    secureMessageHandler();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }else {
+            while(isRunning()) {
+                try {
+                    messageHandler();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /*
+    @Override
+    public void run() {
+        boolean running = true;
         try {
-            while (true) {
+            while (running) {
                 //System.out.println(msgNum);
                 clientMessage clientMsg = receiveMessage();
                 //FileHandler handler = new FileHandler();
@@ -95,6 +129,7 @@ class RequestHandler extends Thread {
                 switch (requestType) {
                     case "EXIT()":
                         closeConnection();
+                        running = false;
                         break;
                     case "CREATEUSER()":
                         createNewClient(contents);
@@ -133,6 +168,92 @@ class RequestHandler extends Thread {
             System.out.println(e.getMessage());
         }
     }
+
+     */
+
+    public void messageHandler() throws IOException {
+        //System.out.println(msgNum);
+        clientMessage clientMsg = receiveMessage();
+        //FileHandler handler = new FileHandler();
+        String requestType = clientMsg.getRequestType();
+        String contents = clientMsg.getMessageContents();
+        //String clientUUID = clientMsg.getUuid();
+
+        switch (requestType) {
+            case "EXIT()":
+                closeConnection();
+                break;
+            case "CREATEUSER()":
+                createNewClient(contents);
+                break;
+            case "LOGIN()":
+                loginClient(contents);
+                break;
+            case "LIST()":
+                listClientFiles(contents);
+                break;
+            case "GET()":
+                sendFile(contents);
+                break;
+            case "PUT()":
+                receiveFile(contents);
+                break;
+            case "DIR()":
+                createDir(contents);
+                break;
+            case "DEL()":
+                deleteFile(contents);
+                break;
+            case "RENAME()":
+                renameFile(contents);
+                break;
+            default:
+                sendError("Unrecognized action");
+                break;
+        }
+    }
+
+    public void secureMessageHandler() throws IOException {
+        clientMessage clientMsg = receiveMessage();
+        //FileHandler handler = new FileHandler();
+        String requestType = clientMsg.getRequestType();
+        String contents = clientMsg.getMessageContents();
+        switch(requestType){
+            case "EXIT()":
+                closeConnection();
+                break;
+            case "CREATEUSER()": // TODO
+                createNewClient(contents);
+                break;
+            case "LOGIN()": // TODO
+                loginClient(contents);
+                break;
+            case "LIST()": // TODO
+                listClientFiles(contents);
+                break;
+            case "GET()":
+                sendFile(contents);
+                break;
+            case "SEARCH()": // TODO Searchable encryption
+                break;
+            case "PUT()":
+                receiveFile(contents);
+                break;
+            case "DIR()":
+                createDir(contents);
+                break;
+            case "DEL()":
+                deleteFile(contents);
+                break;
+            case "RENAME()":
+                renameFile(contents);
+                break;
+            default:
+                sendError("Unrecognized action");
+                break;
+        }
+    }
+
 
 
     public clientMessage receiveMessage() {
@@ -315,7 +436,6 @@ class RequestHandler extends Thread {
             OutputStream os = s.getOutputStream();
             os.write(buffer, 0, buffer.length);
             os.flush();
-            sendMessage("GET()", "1", "");
             sendMessage("GET()", "1", "Successfully downloaded file!");
             //System.out.println("[Server]: done");
 

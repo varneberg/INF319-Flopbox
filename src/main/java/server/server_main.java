@@ -1,5 +1,6 @@
 package server;
 
+import builder.SecureState;
 import client.Client;
 import encryption.MD5;
 import malicious.maliciousSQL;
@@ -12,6 +13,7 @@ import java.io.IOException;
 
 public class server_main {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        SecureState.getINSTANCE().setSecure(true);
         maliciousSQL msql = new maliciousSQL();
         ClientStorage cs = new ClientStorage();
         DB.initDB();
@@ -30,17 +32,19 @@ public class server_main {
         String username = "tes123";
         String password = "123";
         client.login(username, password);
+        client.printServerContents();
         //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
         //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
 
-        client.renameFile("dummy0000.txt", "tes123/dummy0.txt");
-        client.printServerContents();
-        //client.createUser(username, password);
+        //client.getFile("brok/img4.png", "./src/main/resources/clientDirs/brok/img5.png");
         //client.login(username,password);
         //client.putFile("./src/main/resources/clientDirs/brok/img3.png",username+"/img4.png");
         //client.deleteFile(username+"/img4.png");
         //client.getFile("brok/img4.png", "./src/main/resources/clientDirs/brok/img5.png");
-        //client.deleteFile(username+"/img4.png");
+        client.deleteFile(username+"/img4.png");
+        client.printServerContents();
+        client.deleteFile(username+"/img4.png");
+        client.printServerContents();
         //client.getFileNames(username);
         //client.printServerContents();
         //client.createDir(username+"/dummy9.txt");
