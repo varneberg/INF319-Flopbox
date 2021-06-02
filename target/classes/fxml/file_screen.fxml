@@ -75,12 +75,12 @@
                <contextMenu>
                   <ContextMenu fx:id="popup_file">
                     <items>
-                        <MenuItem fx:id="item_back" mnemonicParsing="false" onAction="#prevDir" text="Back" />
-                        <MenuItem fx:id="item_newDir" mnemonicParsing="false" onAction="#newDirectory" text="New Directory" />
-                        <MenuItem fx:id="item_rename" mnemonicParsing="false" onAction="#renameFile" text="Rename" />
-                        <MenuItem fx:id="item_upload" mnemonicParsing="false" onAction="#uploadFile" text="Upload" />
-                      <MenuItem fx:id="item_download" mnemonicParsing="false" onAction="#downloadFile" text="Download" />
-                        <MenuItem fx:id="item_delete" mnemonicParsing="false" onAction="#deleteFile" text="Delete" />
+                        <MenuItem fx:id="item_back" mnemonicParsing="false" onAction="#menuPrevDir" text="Back" />
+                        <MenuItem fx:id="item_newDir" mnemonicParsing="false" onAction="#menuNewDirectory" text="New Directory" />
+                        <MenuItem fx:id="item_rename" mnemonicParsing="false" onAction="#menuRenameFile" text="Rename" />
+                        <MenuItem fx:id="item_upload" mnemonicParsing="false" onAction="#menuUploadFile" text="Upload" />
+                      <MenuItem fx:id="item_download" mnemonicParsing="false" onAction="#menuDownloadFile" text="Download" />
+                        <MenuItem fx:id="item_delete" mnemonicParsing="false" onAction="#menuDeleteFile" text="Delete" />
                     </items>
                   </ContextMenu>
                </contextMenu>
