@@ -18,6 +18,7 @@ public class Server extends Thread {
     final int port;
     private boolean running = false;
 
+
     public Server(int port) {
         this.port = port;
     }
@@ -92,15 +93,36 @@ class RequestHandler extends Thread {
                 String filename;
                 String status;
                 switch (requestType) {
-                    case "EXIT()": closeConnection();                   break;
-                    case "CREATEUSER()": createNewClient(contents);     break;
-                    case "LOGIN()": loginClient(contents);              break;
-                    case "LIST()": listClientFiles(contents);           break;
-                    case "GET()": sendFile(contents);                   break;
-                    case "PUT()": receiveFile(contents);                break;
-                    case "DIR()": createDir(contents);                  break;
-                    case "DEL()": deleteFile(contents);                 break;
-                    default: sendError("Unrecognized action"); break;
+                    case "EXIT()":
+                        closeConnection();
+                        break;
+                    case "CREATEUSER()":
+                        createNewClient(contents);
+                        break;
+                    case "LOGIN()":
+                        loginClient(contents);
+                        break;
+                    case "LIST()":
+                        listClientFiles(contents);
+                        break;
+                    case "GET()":
+                        sendFile(contents);
+                        break;
+                    case "PUT()":
+                        receiveFile(contents);
+                        break;
+                    case "DIR()":
+                        createDir(contents);
+                        break;
+                    case "DEL()":
+                        deleteFile(contents);
+                        break;
+                    case "RENAME()":
+                        renameFile(contents);
+                        break;
+                    default:
+                        sendError("Unrecognized action");
+                        break;
                 }
                 //clientMsg = null;
                 //clientMsg = null;
@@ -147,7 +169,7 @@ class RequestHandler extends Thread {
         }
     }
 
-    public void sendError(String errorType ,String errorMsg) {
+    public void sendError(String errorType, String errorMsg) {
         try {
             serverOutput = new PrintWriter(s.getOutputStream(), true);
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), "ERROR()", errorType, errorMsg);
@@ -189,9 +211,10 @@ class RequestHandler extends Thread {
             //sendMessage("ERROR()", "0", "Unauthorized action");
             sendError("Unauthorized action");
             return;
-        } try {
+        }
+        try {
             String clientFiles = handler.listFiles(msgContents);
-            if (clientFiles==null){
+            if (clientFiles == null) {
                 //System.out.println("null");
                 sendMessage("FILES()", "0", " ");
             }
@@ -210,19 +233,19 @@ class RequestHandler extends Thread {
         //cs.clientLogin(username, password);
         try {
             String s = cs.clientQuery(username, password);
-            if(s.equals("")){
+            if (s.equals("")) {
                 sendError("-1", "No user was found");
 
-            }else if(!cs.verifyPassword(password)){
+            } else if (!cs.verifyPassword(password)) {
                 sendError("0", "Incorrect password");
 
-            }else{
+            } else {
                 String uuid = genUUID();
                 setClientName(username);
                 setCurrClientUUID(uuid);
                 sendMessage("LOGIN()", "1", uuid);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
@@ -264,7 +287,7 @@ class RequestHandler extends Thread {
                 }
                 //else {break;}
             }
-            sendMessage("PUT()","1","File uploaded");
+            sendMessage("PUT()", "1", "File uploaded");
         } catch (Exception e) {
             //sendMessage("ERROR()", "0", "Unable to upload");
             sendError("Unable to upload");
@@ -292,7 +315,8 @@ class RequestHandler extends Thread {
             OutputStream os = s.getOutputStream();
             os.write(buffer, 0, buffer.length);
             os.flush();
-            sendMessage("GET()", "1", "Success!");
+            sendMessage("GET()", "1", "");
+            sendMessage("GET()", "1", "Successfully downloaded file!");
             //System.out.println("[Server]: done");
 
         } catch (Exception e) {
@@ -301,29 +325,46 @@ class RequestHandler extends Thread {
         }
     }
 
-    public void deleteFile(String path){
+    public void deleteFile(String path) {
         String storagePath = handler.getStoragePath();
-        File toDelete = new File(storagePath+"/"+path);
-        if(toDelete.delete()){
+        File toDelete = new File(storagePath + "/" + path);
+        if (toDelete.delete()) {
             sendMessage("DEL()", "1", "File deleted");
-        }else{
+        } else {
             sendError("Unable to delete file");
         }
     }
 
-    public void createDir(String dirPath){
-        if(!validateClient()){
+    public void createDir(String dirPath) {
+        if (!validateClient()) {
             sendError("Unauthorized");
         }
         String storagePath = handler.getStoragePath();
-        File newDir = new File(storagePath+dirPath);
-        if(!newDir.exists()){
+        File newDir = new File(storagePath + dirPath);
+        if (!newDir.exists()) {
             newDir.mkdir();
-            sendMessage("DIR()","1","Directory created");
-        }else{
-               sendError("Directory already exists");
-           }
+            sendMessage("DIR()", "1", "Directory created");
+        } else {
+            sendError("Directory already exists");
         }
+    }
+
+
+    public void renameFile(String filePath) {
+        if (!validateClient()) {
+            sendError("Unauthorized");
+        }
+        String storagePath = handler.getStoragePath();
+        String[] fromClient = filePath.split("/");
+        String newName = fromClient[0];
+        File oldFile = new File(storagePath+fromClient[1]);
+        File newFile = new File(storagePath+fromClient[0]);
+        if(oldFile.renameTo(newFile)){
+            sendMessage("RENAME()", "1", "Renamed file");
+        }else{
+            sendError("Could not rename file");
+        }
+    }
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
@@ -332,7 +373,6 @@ class RequestHandler extends Thread {
     public String getClientName() {
         return clientName;
     }
-
 
 
     public void setCurrClientUUID(String currClientUUID) {

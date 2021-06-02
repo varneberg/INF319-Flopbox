@@ -1,6 +1,7 @@
 package client;
 
 
+import builder.SecureState;
 import message.clientMessage;
 import message.serverMessage;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +25,7 @@ public class Client {
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
+    boolean security = SecureState.getINSTANCE().isSecure();
    // private DataOutput dataOutput=null;
 
 
@@ -215,6 +217,11 @@ public class Client {
 
     public void deleteFile(String pathToFile){
         sendMessage("DEL()", pathToFile);
+        receiveMessage();
+    }
+
+    public void renameFile(String newName, String pathToFile){
+        sendMessage("RENAME()", newName+"/"+pathToFile);
         receiveMessage();
     }
 

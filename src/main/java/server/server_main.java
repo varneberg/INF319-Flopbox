@@ -26,35 +26,28 @@ public class server_main {
 
 
 
-        System.out.println(MD5.getDigest(testString));
-        //Client client = new Client(address, port);
-        //String username = "tesiboi";
-        //String password = "test";
-        //client.login(username, password);
+        Client client = new Client(address, port);
+        String username = "tes123";
+        String password = "123";
+        client.login(username, password);
         //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
         //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
 
+        client.renameFile("dummy0000.txt", "tes123/dummy0.txt");
+        client.printServerContents();
         //client.createUser(username, password);
-        //client.printServerContents();
         //client.login(username,password);
-        //client.printServerContents();
-
-        //client.printServerContents();
         //client.putFile("./src/main/resources/clientDirs/brok/img3.png",username+"/img4.png");
         //client.deleteFile(username+"/img4.png");
         //client.getFile("brok/img4.png", "./src/main/resources/clientDirs/brok/img5.png");
         //client.deleteFile(username+"/img4.png");
         //client.getFileNames(username);
-
         //client.printServerContents();
-        //client.printServerContents();
-        //client.printServerContents();
-
-
         //client.createDir(username+"/dummy9.txt");
         //client.deleteFile("brok/img4.png");
         //client.receiveMessage();
         //client.printServerContents();
+
 
         //client.putDir(username+"/durr");
     }
