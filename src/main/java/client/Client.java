@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import encryption.*;
 
 
 public class Client {
@@ -109,6 +110,7 @@ public class Client {
     public void login(String username, String password) {
         //sendAuthentication(username, password);
         //String input = receiveServer();
+        if(secure){ password = SHA256.getDigest(password); }
         sendMessage("LOGIN()", username + "/" + password);
         //serverMessage servermsg = receiveMessage();
         receiveMessage();

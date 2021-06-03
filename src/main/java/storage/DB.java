@@ -1,10 +1,13 @@
 package storage;
+import builder.SecureState;
+
 import java.sql.*;
 
 public class DB {
 
     //static File dbFile = new File("./flopbox.db");
     static String url = "jdbc:sqlite:./flopbox.db";
+    boolean secure = SecureState.getINSTANCE().isSecure();
 
     public static void initDB(){
         try (Connection con = DriverManager.getConnection(url)) {
@@ -17,7 +20,7 @@ public class DB {
         }
     }
 
-    public static String createClientTable(){
+    public static void createClientTable(){
         String output = null;
         String sql = "CREATE TABLE IF NOT EXISTS clients (\n"
                 + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
@@ -28,13 +31,31 @@ public class DB {
 
         try (Connection con = DriverManager.getConnection(url);
             Statement stmt = con.createStatement()) {
-            stmt.execute(sql);
-            output = ("[Success]\n\tClients table created\n");
+                stmt.execute(sql);
+            System.out.println("[Server]: Clients table created");
 
         } catch (SQLException e) {
-            output = e.getMessage();
+            System.out.println(e.getMessage());
         }
-        return output;
+    }
+
+    public static void createSecureClientTable(){
+        String sql =
+                "CREATE TABLE IF NOT EXISTS clients (\n"
+                + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
+                + "     uname varchar(30) UNIQUE NOT NULL,\n"
+                + "     password varchar(256),\n"
+                + "     directory varchar(100)\n"
+                + ");";
+        try(Connection con = DriverManager.getConnection(url);
+            Statement stmt = con.createStatement()){
+            stmt.execute(sql);
+            System.out.println("[Server]: SecureClients table created");
+
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
     }
 
 

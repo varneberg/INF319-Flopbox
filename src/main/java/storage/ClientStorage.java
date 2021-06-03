@@ -1,11 +1,15 @@
 package storage;
 
+import builder.SecureState;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
 public class ClientStorage {
+    boolean secure = SecureState.getINSTANCE().isSecure();
+    
     private Connection connect() {
        String url = "jdbc:sqlite:./flopbox.db";
        Connection con = null;
@@ -36,7 +40,6 @@ public class ClientStorage {
     }
 
     public String clientLogin(String username, String password){
-
         System.out.println(username+" "+ password);
         try{
             if(clientExists(username)){
@@ -101,6 +104,9 @@ public class ClientStorage {
     }
 
     public String clientQuery(String username, String password){
+        if(secure){
+            return secureClientQuery(username, password);
+        }
 
         String out = "";
         String sql =
@@ -120,6 +126,11 @@ public class ClientStorage {
         }
         return out;
     }
+
+    private String secureClientQuery(String username, String password) {
+        return "";
+    }
+
 
     public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
