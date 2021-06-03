@@ -31,6 +31,7 @@ public class loginScreen {
     String address = "localhost";
     int port = 6666;
     Client client = new Client(address, port);
+    ClientHandler handler = ClientHandler.getInstance();
     private String username;
     private String password;
     private String UUID;
@@ -55,11 +56,20 @@ public class loginScreen {
                 this.username = field_user.getText();
                 this.password = field_passwd.getText();
                 client.login(username, password);
+                if(client.isAuthenticated()){
+                    //setUUID();
+                    handler.setClient(client);
+                    //App.setRoot("/fxml/file_screen.fxml");
+                    gotoFiles();
+                } else {
+                    txt_response.setText(client.getServerMessageContents());
+                }
+                /*
                 if (client.validRequest()) {
                     setUsername(username);
                     if(client.getServerMessageType().equals("LOGIN()")) {
                         setUUID(client.getServerMessageContents());
-
+                        ClientHandler.getInstance().setClient(client);
                         //String[] files = client.getFileNames(username);
                         //fileList = client.getFileArray(username);
                         //client.printServerContents();
@@ -68,10 +78,13 @@ public class loginScreen {
                         //fs.initialize(client);
                         //fileScreen fileScreen = new fileScreen(client);
                         //switchToFileScreen(event);
+                    }else{
+                        txt_response.setText(client.getServerMessageContents());
                     }
                 } else {
                     txt_response.setText(client.getServerMessageContents());
                 }
+                */
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,10 +93,14 @@ public class loginScreen {
     }
 
     @FXML
-    private void gotoFiles() throws IOException {
-        ClientHandler handler = ClientHandler.getInstance();
-        handler.setClient(client);
-        App.setRoot("/fxml/file_screen.fxml");
+    private void gotoFiles() {
+        try {
+            ClientHandler handler = ClientHandler.getInstance();
+            handler.setClient(client);
+            App.setRoot("/fxml/file_screen.fxml");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

@@ -410,8 +410,8 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             bis.read(buffer, 0, buffer.length);
             OutputStream os = s.getOutputStream();
             os.write(buffer, 0, buffer.length);
-            os.flush();
-            sendMessage("GET()", "1", "Successfully downloaded file!");
+            //os.flush();
+            sendMessage("GET()", "2", "Successfully downloaded file!");
             //System.out.println("[Server]: done");
 
         } catch (Exception e) {

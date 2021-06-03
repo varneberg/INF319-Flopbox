@@ -3,11 +3,14 @@ package server;
 import builder.SecureState;
 import message.clientMessage;
 import message.serverMessage;
+import org.sqlite.SQLiteException;
 import storage.ClientStorage;
+import storage.DB;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -142,7 +145,15 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
         String[] creds = splitInput(input);
         String username = creds[0];
         String password = creds[1];
-        System.out.println(password);
+        try{
+            DB.secureAddClient(username,password);
+            sendMessage("CREATEUSER()", "1", "User "+username+" created");
+        } catch (SQLiteException e){
+            sendError("User already exists");
+        } catch (SQLException e) {
+           //e.printStackTrace();
+           sendError("An error occurred");
+        }
 
     }
 
@@ -161,7 +172,16 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
         String[] creds = splitInput(input);
         String username = creds[0];
         String password = creds[1];
-        sendMessage("LOGIN()","1", genUUID());
+        if (DB.secureLogin(username, password)){
+            String uuid = genUUID();
+            setClientName(username);
+            setCurrClientUUID(uuid);
+            sendMessage("LOGIN()", "1", uuid);
+        }else{
+            sendError("Login()","Credentials does not match");
+        }
+
+        //sendMessage("LOGIN()","1", genUUID());
 
     }
 
@@ -197,6 +217,7 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void setClientName(String clientName) {
+        this.clientName = clientName;
 
     }
 
@@ -207,12 +228,13 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void setCurrClientUUID(String currClientUUID) {
+        this.currClientUUID = currClientUUID;
 
     }
 
     @Override
     public String getCurrClientUUID() {
-        return null;
+        return currClientUUID;
     }
 
     @Override

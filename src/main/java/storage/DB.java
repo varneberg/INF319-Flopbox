@@ -4,7 +4,6 @@ import org.sqlite.SQLiteException;
 
 import java.io.File;
 import java.sql.*;
-import java.util.Optional;
 
 public class DB {
 
@@ -98,7 +97,7 @@ public class DB {
         return sb.toString();
     }
 
-    public static void secureAddClient(String uname, String password) throws SQLiteException{
+    public static void secureAddClient(String uname, String password) throws SQLException, SQLiteException{
         String sql = "INSERT INTO secureClients(uname, password, directory) VALUES(?,?,?)";
         String dir = "/" + uname + "/";
         Connection con = connect();
@@ -109,8 +108,6 @@ public class DB {
             pstmt.executeUpdate();
             secureCreateClientDir(uname);
             System.out.println("[Server]: Created user " + uname);
-        } catch (SQLException a){
-            a.printStackTrace();
         }
     }
 
@@ -130,6 +127,24 @@ public class DB {
             e.printStackTrace();
         }
 
+    }
+
+    public static boolean secureLogin(String uname, String password){
+        String query =
+                "select * "
+                + "from " + getSecureClientTable() + " where uname = ?"
+                + "and password = ?";
+        Connection con = connect();
+        try(PreparedStatement ps = con.prepareStatement(query)){
+           ps.setString(1,uname);
+           ps.setString(2,password);
+           ResultSet rs = ps.executeQuery();
+           return rs.next();
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return false;
+        }
     }
 
     public static String getStoragePath(String uname) {
