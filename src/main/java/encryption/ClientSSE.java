@@ -1,7 +1,10 @@
 package encryption;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 import java.io.IOException;
@@ -28,6 +31,17 @@ public class ClientSSE {
         return token;
     }
 
+    private byte f2plus(byte a, byte b){
+        Integer c = a + b;
+        return c.byteValue();
+    }
+
+    private byte f2minus(byte a, byte b){
+        Integer c = a - b;
+        return c.byteValue();
+    }
+
+
     public File decryptFile(File encrypted){
         String hashed = Integer.toString(encrypted.hashCode());
         if (!lookup.containsKey(hashed)){
@@ -42,22 +56,23 @@ public class ClientSSE {
 
         try {
 
-            Scanner fileReader = new Scanner(encrypted);
-            System.out.println(fileReader.hasNextLine());
-            FileWriter fileWriter = new FileWriter(decrypted);
-            while (fileReader.hasNextLine()) {
-                String data = fileReader.nextLine();
-                String[] words = data.split("(?<=\\G.{" + blockSize + "})");
+            String fileString = Files.readString(Paths.get(encrypted.getAbsolutePath()));
 
-                for(String word : words){
-                    String decryptedWord = decryptBlock(word,randomStringGenerator);
-                    decryptedWord = decryptedWord.replace("*", "");
-                    decryptedWord += " ";
-                    fileWriter.write(decryptedWord);
-                }
+            FileWriter fileWriter = new FileWriter(decrypted);
+
+
+
+            for (int i = 0; i <= fileString.length() - 1;) {
+                String word = fileString.substring(i, i + blockSize);
+                String decryptedWord = decryptBlock(word,randomStringGenerator);
+                decryptedWord = decryptedWord.replace("*", "");
+                decryptedWord += " ";
+                fileWriter.write(decryptedWord);
+
+                i = i + blockSize;
             }
+
             fileWriter.close();
-            fileReader.close();
 
 
         } catch (FileNotFoundException e) {
@@ -74,39 +89,44 @@ public class ClientSSE {
 
         String s = randomStringGenerator.nextString();
 
-        byte[] sBytes = s.getBytes(StandardCharsets.UTF_8);
-        byte[] cipherBytes1 = C1.getBytes(StandardCharsets.UTF_8);
+        byte[] sBytes = s.getBytes(Charset.forName("ISO-8859-1"));
+        byte[] cipherBytes1 = C1.getBytes(Charset.forName("ISO-8859-1"));
 
         byte[] LBytes = new byte[cipherBytes1.length];
 
         for (int i =0;i<cipherBytes1.length;i++){
-            LBytes[i] = (byte) (cipherBytes1[i] ^ sBytes[i]);
+            LBytes[i] = f2minus(cipherBytes1[i] , sBytes[i]);
         }
 
-        String L = new String(LBytes, StandardCharsets.UTF_8);
+        String L = new String(LBytes, Charset.forName("ISO-8859-1"));
 
         int k = L.hashCode();
-        System.out.println("decrypt block k: "+ k);
         Random random = new Random(k);
-        RandomString fsGenerator = new RandomString(blockSize-m,random);
-        String fs = fsGenerator.nextString();
+        RandomString fkGenerator = new RandomString(blockSize-m,random);
+        String fk = fkGenerator.nextString();
 
 
-        byte[] cipherBytes2 = C2.getBytes(StandardCharsets.UTF_8);
-        byte[] fsBytes = fs.getBytes(StandardCharsets.UTF_8);
+        byte[] cipherBytes2 = C2.getBytes(Charset.forName("ISO-8859-1"));
+        byte[] fkBytes = fk.getBytes(Charset.forName("ISO-8859-1"));
+
+        byte[] fsBytes = new byte[fkBytes.length];
+        for (int i =0;i<fsBytes.length;i++){
+            fsBytes[i] = f2plus(fkBytes[i] , sBytes[i]);
+        }
 
         byte[] RBytes = new byte[cipherBytes2.length];
 
         for (int i =0;i<cipherBytes2.length;i++){
-            RBytes[i] = (byte) (cipherBytes2[i] ^ fsBytes[i]);
+            RBytes[i] = f2minus(cipherBytes2[i] , fsBytes[i]);
         }
 
-        String R = new String(RBytes, StandardCharsets.UTF_8);
+        String R = new String(RBytes, Charset.forName("ISO-8859-1"));
 
 
-        String T = L + R;
+        String X = L + R;
 
-        return T;
+        //System.out.println("x: " + X + " k: " + k + " word: " + word + " X len: " + X.length() + " fk: " + fk + " C: " + word + " C len: " + word.length());
+        return X;
     }
 
     public void setLookup(File lookup) throws IOException {
@@ -158,11 +178,12 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File encrypted = new File(clear.getName());
+        File encrypted = new File("encrypted.txt");
         try {
 
             Scanner fileReader = new Scanner(clear);
-            System.out.println(fileReader.hasNextLine());
+            fileReader.hasNextLine();
+            //System.out.println(fileReader.hasNextLine());
             FileWriter fileWriter = new FileWriter(encrypted);
             while (fileReader.hasNextLine()) {
                 String data = fileReader.nextLine();
@@ -189,41 +210,47 @@ public class ClientSSE {
         return encrypted;
     }
 
+
+
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
         String L = word.substring(0,blockSize-m);
         String R = word.substring(m);
         int k = L.hashCode();
 
-
         String s = randomStringGenerator.nextString();
 
         Random random = new Random(k);
-        RandomString fsGenerator = new RandomString(blockSize-m,random);
-        String fs = fsGenerator.nextString();
+        RandomString fkGenerator = new RandomString(blockSize-m,random);
+        String fk = fkGenerator.nextString();
 
-        System.out.println("encrypt word k: " + k + " word: "+ word + " s: " + s + " fs: " + fs);
+        byte[] clearBytes1 = L.getBytes(Charset.forName("ISO-8859-1"));
+        byte[] clearBytes2 = R.getBytes(Charset.forName("ISO-8859-1"));
 
-        byte[] clearBytes1 = L.getBytes(StandardCharsets.UTF_8);
-        byte[] clearBytes2 = R.getBytes(StandardCharsets.UTF_8);
+        byte[] sBytes = s.getBytes(Charset.forName("ISO-8859-1"));
+        byte[] fkBytes = fk.getBytes(Charset.forName("ISO-8859-1"));
 
-        byte[] sBytes = s.getBytes(StandardCharsets.UTF_8);
-        byte[] fsBytes = fs.getBytes(StandardCharsets.UTF_8);
+        byte[] fsBytes = new byte[fkBytes.length];
+        for (int i =0;i<fsBytes.length;i++){
+            fsBytes[i] = f2plus(sBytes[i] , fkBytes[i]);
+        }
 
-        byte[] T1 = new byte[clearBytes1.length];
-        byte[] T2 = new byte[clearBytes2.length];
+        byte[] C1 = new byte[clearBytes1.length];
+        byte[] C2 = new byte[clearBytes2.length];
 
         for (int i =0;i<clearBytes1.length;i++){
-            T1[i] = (byte) (clearBytes1[i] ^ sBytes[i]);
+            C1[i] = f2plus(clearBytes1[i] , sBytes[i]);
         }
         for (int i =0;i<clearBytes2.length;i++){
-            T2[i] = (byte) (clearBytes2[i] ^ fsBytes[i]);
+            C2[i] = f2plus(clearBytes2[i] , fsBytes[i]);
         }
 
-        String T1string = new String(T1, StandardCharsets.UTF_8);
-        String T2string = new String(T2, StandardCharsets.UTF_8);
+        String C1string = new String(C1, Charset.forName("ISO-8859-1"));
+        String C2string = new String(C2, Charset.forName("ISO-8859-1"));
 
-        String C = T1string + T2string;
+        String C = C1string + C2string;
+
+        System.out.println("encrypt word k: " + k + " word: "+ word + " fk: " + fk + " word len: " + word.length() + " C: " + C + " C len: " + C.length());
         return C;
     }
 

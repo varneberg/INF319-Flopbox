@@ -1,1 +1,1 @@
-Firstly, the string produced is not properly xor'd 
+I am aware you can store no more than +127 in a java byte, and the documentation says that a byte is only 8 bits but here I am told that it actually takes up the same amount of memory as an int, and therefore is just a Type that helps in code comprehension and not efficiency. 
