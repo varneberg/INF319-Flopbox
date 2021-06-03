@@ -56,7 +56,7 @@ public class FileScreen extends loginScreen{
         if (handler.getFirstEntry()){
             displayFiles(client.getBaseDir());
             handler.setFirstEntry(false);
-            file_list.requestFocus();
+            //file_list.requestFocus();
 
         }
     }
@@ -252,8 +252,10 @@ public class FileScreen extends loginScreen{
         String toGet = getSelectedItem();
         if(!isDir(toGet)) {
             FileChooser chooser = fileSelector("Save file");
+            chooser.setInitialFileName(toGet);
             File location = chooser.showSaveDialog(App.getPrimaryStage());
             String saveLoc = location.toString();
+            System.out.println(saveLoc);
             handler.getClient().getFile(getCurrentDir() + toGet, saveLoc);
             System.out.println(getCurrentDir());
             printServerResponse();
