@@ -1,7 +1,6 @@
 package encryption;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -10,7 +9,6 @@ import java.security.SecureRandom;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
-import java.util.Scanner;
 
 public class ServerSSE {
 
@@ -30,14 +28,16 @@ public class ServerSSE {
         return c.byteValue();
     }
 
-    public boolean checkMatch(File encrypted, String searchToken) throws IOException {
+    public boolean checkMatch(File encrypted, String searchToken) {
         String keyword = searchToken.substring(0, blockSize);
         String k = searchToken.substring(blockSize);
 
-        Scanner fileReader = new Scanner(encrypted);
-
-        String fileString = Files.readString(Paths.get(encrypted.getAbsolutePath()));
-
+        String fileString = null;
+        try {
+            fileString = Files.readString(Paths.get(encrypted.getAbsolutePath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         String L = keyword.substring(0,blockSize-m);
         byte[] LBytes = L.getBytes(Charset.forName("ISO-8859-1"));
@@ -49,53 +49,43 @@ public class ServerSSE {
         RandomString fkGenerator = new RandomString(blockSize-m,random);
         String fk = fkGenerator.nextString();
 
-
-        //while (fileReader.hasNextLine()) {
         for (int j = 0; j <= fileString.length() - 1;) {
 
             String word = fileString.substring(j, j + blockSize);
 
+            String c1 = word.substring(0,blockSize-m);
+            byte[] c1Bytes = c1.getBytes(Charset.forName("ISO-8859-1"));
 
+            String c2 = word.substring(m);
+            byte[] c2Bytes = c2.getBytes(Charset.forName("ISO-8859-1"));
 
-                String c1 = word.substring(0,blockSize-m);
-                byte[] c1Bytes = c1.getBytes(Charset.forName("ISO-8859-1"));
-
-                String c2 = word.substring(m);
-                byte[] c2Bytes = c2.getBytes(Charset.forName("ISO-8859-1"));
-
-                byte[] sBytes = new byte[c1Bytes.length];
-                for (int i =0;i<c1Bytes.length;i++){
-                    sBytes[i] = f2minus(c1Bytes[i] , LBytes[i]);
-                }
-
-
-                byte[] fkBytes = fk.getBytes(Charset.forName("ISO-8859-1"));
-
-                String c = new String(fkBytes, Charset.forName("ISO-8859-1"));
-
-                byte[] fs = new byte[c1Bytes.length];
-                for (int i =0;i<c1Bytes.length;i++){
-                    fs[i] = f2plus(sBytes[i] , fkBytes[i]);
-                }
-
-                byte[] fsr = new byte[c2Bytes.length];
-                for (int i =0;i<fsr.length;i++){
-                    fsr[i] = f2plus(fs[i] , RBytes[i]);
-                }
-
-                String a = new String(c2Bytes, Charset.forName("ISO-8859-1"));
-                String b = new String(fsr, Charset.forName("ISO-8859-1"));
-
-
-                if(a.equals(b)){
-                    return true;
-                }
-
-                j = j + blockSize;
-
-
+            byte[] sBytes = new byte[c1Bytes.length];
+            for (int i =0;i<c1Bytes.length;i++){
+                sBytes[i] = f2minus(c1Bytes[i] , LBytes[i]);
             }
-        //}
+
+            byte[] fkBytes = fk.getBytes(Charset.forName("ISO-8859-1"));
+
+            byte[] fs = new byte[c1Bytes.length];
+            for (int i =0;i<c1Bytes.length;i++){
+                fs[i] = f2plus(sBytes[i] , fkBytes[i]);
+            }
+
+            byte[] fsr = new byte[c2Bytes.length];
+            for (int i =0;i<fsr.length;i++){
+                fsr[i] = f2plus(fs[i] , RBytes[i]);
+            }
+
+            String a = new String(c2Bytes, Charset.forName("ISO-8859-1"));
+            String b = new String(fsr, Charset.forName("ISO-8859-1"));
+
+
+            if(a.equals(b)){
+                return true;
+            }
+
+            j = j + blockSize;
+        }
         return false;
     }
 

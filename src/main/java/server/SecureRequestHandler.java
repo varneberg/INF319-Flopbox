@@ -1,6 +1,7 @@
 package server;
 
 import builder.SecureState;
+import encryption.ServerSSE;
 import message.clientMessage;
 import message.serverMessage;
 import storage.ClientStorage;
@@ -9,6 +10,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class SecureRequestHandler extends Thread implements RequestHandlerInterface{
@@ -71,6 +73,7 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
                 sendFile(contents);
                 break;
             case "SEARCH()": // TODO Searchable encryption
+                searchFiles(contents);
                 break;
             case "PUT()":
                 receiveFile(contents);
@@ -88,6 +91,18 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
                 sendError("Unrecognized action");
                 break;
         }
+    }
+
+    public void searchFiles(String input){
+        List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
+        ServerSSE sse = new ServerSSE();
+        List<File> accepted = new ArrayList<>();
+        for(File file : files){
+            if(sse.checkMatch(file, input)){
+                accepted.add(file);
+            }
+        }
+
     }
 
     @Override
@@ -197,12 +212,13 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void setClientName(String clientName) {
+        this.clientName = clientName;
 
     }
 
     @Override
     public String getClientName() {
-        return null;
+        return clientName;
     }
 
     @Override

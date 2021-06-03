@@ -2,7 +2,6 @@ package encryption;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
@@ -11,12 +10,12 @@ import java.io.IOException;
 
 public class ClientSSE {
 
-
     private static int blockSize = 24;
     private static int m = blockSize/2;
     private String key;
     private HashMap<String, String> lookup;
     private static char filler = '*';
+    private static String tmpFolder = "./src/main/resources/tmp/";
 
     public ClientSSE(String key){
         this.key = key;
@@ -41,7 +40,6 @@ public class ClientSSE {
         return c.byteValue();
     }
 
-
     public File decryptFile(File encrypted){
         String hashed = Integer.toString(encrypted.hashCode());
         if (!lookup.containsKey(hashed)){
@@ -52,15 +50,13 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File decrypted = new File("decrypted.txt");
+        File decrypted = new File(tmpFolder + "decrypted.txt");
 
         try {
 
             String fileString = Files.readString(Paths.get(encrypted.getAbsolutePath()));
 
             FileWriter fileWriter = new FileWriter(decrypted);
-
-
 
             for (int i = 0; i <= fileString.length() - 1;) {
                 String word = fileString.substring(i, i + blockSize);
@@ -73,7 +69,6 @@ public class ClientSSE {
             }
 
             fileWriter.close();
-
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -105,7 +100,6 @@ public class ClientSSE {
         RandomString fkGenerator = new RandomString(blockSize-m,random);
         String fk = fkGenerator.nextString();
 
-
         byte[] cipherBytes2 = C2.getBytes(Charset.forName("ISO-8859-1"));
         byte[] fkBytes = fk.getBytes(Charset.forName("ISO-8859-1"));
 
@@ -122,16 +116,13 @@ public class ClientSSE {
 
         String R = new String(RBytes, Charset.forName("ISO-8859-1"));
 
-
         String X = L + R;
-
-        //System.out.println("x: " + X + " k: " + k + " word: " + word + " X len: " + X.length() + " fk: " + fk + " C: " + word + " C len: " + word.length());
         return X;
     }
 
     public void setLookup(File lookup) throws IOException {
         try {
-            File toRead = new File("lookup.txt");
+            File toRead = new File(tmpFolder + ".lookup");
             FileInputStream fis = new FileInputStream(toRead);
             ObjectInputStream ois = new ObjectInputStream(fis);
 
@@ -152,7 +143,7 @@ public class ClientSSE {
     }
 
     public File getLookup() throws IOException {
-        File lookupFile = new File("lookup.txt");
+        File lookupFile = new File(tmpFolder + ".lookup");
         try {
             FileOutputStream fos = new FileOutputStream(lookupFile);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -168,7 +159,6 @@ public class ClientSSE {
     }
 
     public File encryptFile(File clear) {
-
         if(lookup == null){
             lookup = new HashMap<String,String>();
         }
@@ -178,7 +168,7 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File encrypted = new File("encrypted.txt");
+        File encrypted = new File(tmpFolder + "encrypted.txt");
         try {
 
             Scanner fileReader = new Scanner(clear);
@@ -198,7 +188,6 @@ public class ClientSSE {
             fileWriter.close();
             fileReader.close();
 
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -209,8 +198,6 @@ public class ClientSSE {
 
         return encrypted;
     }
-
-
 
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
@@ -249,11 +236,8 @@ public class ClientSSE {
         String C2string = new String(C2, Charset.forName("ISO-8859-1"));
 
         String C = C1string + C2string;
-
-        System.out.println("encrypt word k: " + k + " word: "+ word + " fk: " + fk + " word len: " + word.length() + " C: " + C + " C len: " + C.length());
         return C;
     }
-
 
     private String correctLength(String keyword) {
         while(keyword.length() < blockSize){
@@ -267,7 +251,6 @@ public class ClientSSE {
     }
 
     public static class RandomString {
-
         /**
          * Generate a random string.
          */

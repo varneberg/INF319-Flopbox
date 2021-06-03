@@ -136,6 +136,9 @@ public class FileScreen extends loginScreen{
 
     public void search(ActionEvent actionEvent) {
         ClientHandler handler = ClientHandler.getInstance();
+        String search = field_search.getText();
+        handler.getClient().search(search);
+        /*
         displayFiles(client.getName());
         String newDir = field_search.getText();
         try{
@@ -143,6 +146,8 @@ public class FileScreen extends loginScreen{
         } catch (NullPointerException e){
             e.printStackTrace();
         }
+
+         */
     }
 
 

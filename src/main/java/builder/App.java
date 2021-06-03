@@ -40,6 +40,7 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
+        SecureState.getINSTANCE().setSecure(false);
         ClientHandler handler = new ClientHandler();
         Server server = new Server(6666);
         server.startServer();

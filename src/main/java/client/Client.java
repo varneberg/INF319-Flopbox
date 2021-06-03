@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import encryption.*;
+import server.FileHandler;
 
 
 public class Client {
@@ -162,11 +163,6 @@ public class Client {
 
     }
 
-    public File getFile(String fileName){
-        sendMessage("FILES()", "GET()"  + fileName);
-        return null;
-    }
-
     public void putFile(String localPath, String serverPath){
         try {
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
@@ -216,6 +212,10 @@ public class Client {
         }
         receiveMessage();
         //System.out.println("[Client]: done");
+    }
+
+    public void getMultipleFiles(){
+
     }
 
     public void deleteFile(String pathToFile){
@@ -284,5 +284,18 @@ public class Client {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void search(String search) {
+        if(secure){
+            ClientSSE sse = new ClientSSE(getName());
+            String token = sse.generateSearchToken(search);
+
+
+
+        }
+        else {
+            System.out.println("NO!");
+        }
     }
 }
