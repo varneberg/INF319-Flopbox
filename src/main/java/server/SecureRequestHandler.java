@@ -139,6 +139,10 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void registerClient(String input) {
+        String[] creds = splitInput(input);
+        String username = creds[0];
+        String password = creds[1];
+        System.out.println(password);
 
     }
 

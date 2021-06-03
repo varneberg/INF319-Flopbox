@@ -1,13 +1,17 @@
 package storage;
 import builder.SecureState;
+import org.sqlite.SQLiteException;
 
+import java.io.File;
 import java.sql.*;
+import java.util.Optional;
 
 public class DB {
 
     //static File dbFile = new File("./flopbox.db");
     static String url = "jdbc:sqlite:./flopbox.db";
     boolean secure = SecureState.getINSTANCE().isSecure();
+    static String storagePath = "./src/main/resources/clientDirs/";
 
     public static void initDB(){
         try (Connection con = DriverManager.getConnection(url)) {
@@ -18,6 +22,17 @@ public class DB {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private static Connection connect(){
+        String url = "jdbc:sqlite:./flopbox.db";
+        Connection con = null;
+        try{
+            con = DriverManager.getConnection(url);
+        } catch(SQLException e){
+            e.printStackTrace();
+        }
+        return con;
     }
 
     public static void createClientTable(){
@@ -41,7 +56,7 @@ public class DB {
 
     public static void createSecureClientTable(){
         String sql =
-                "CREATE TABLE IF NOT EXISTS clients (\n"
+                "CREATE TABLE IF NOT EXISTS secureClients (\n"
                 + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
                 + "     uname varchar(30) UNIQUE NOT NULL,\n"
                 + "     password varchar(256),\n"
@@ -58,5 +73,74 @@ public class DB {
         }
     }
 
+    public static String SecureListClients() {
+        Connection con = connect();
+        //String query = "select * from "+secureClientTable;
+        String query = "select * from " + getSecureClientTable();
+        StringBuilder sb = new StringBuilder();
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                //StringBuilder sb = new StringBuilder();
+                int id = rs.getInt("id");
+                String varchar = rs.getString("uname");
+                String password = rs.getString("password");
+                String directory = rs.getString("directory");
+                sb
+                        .append(id).append('\t')
+                        .append(varchar).append('\t')
+                        .append(password).append('\t')
+                        .append(directory).append('\n');
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
 
+    public static void secureAddClient(String uname, String password) throws SQLiteException{
+        String sql = "INSERT INTO secureClients(uname, password, directory) VALUES(?,?,?)";
+        String dir = "/" + uname + "/";
+        Connection con = connect();
+        try(PreparedStatement pstmt = con.prepareStatement(sql)) {
+            pstmt.setString(1, uname);
+            pstmt.setString(2, password);
+            pstmt.setString(3, dir);
+            pstmt.executeUpdate();
+            secureCreateClientDir(uname);
+            System.out.println("[Server]: Created user " + uname);
+        } catch (SQLException a){
+            a.printStackTrace();
+        }
+    }
+
+    private static void secureCreateClientDir(String uname) {
+        File f = new File(getStoragePath(uname));
+        if(!f.exists()){
+            f.mkdir();
+        }
+    }
+    public static void secureDeleteAllClients(){
+        String query = "delete from " + getSecureClientTable();
+        Connection con = connect();
+        try(PreparedStatement ps = con.prepareStatement(query)){
+            ps.executeUpdate();
+            System.out.println("[Server]: Deleted all clients");
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public static String getStoragePath(String uname) {
+        return storagePath + uname + "/";
+    }
+
+    public static String getClientTable() {
+        return "clients";
+    }
+
+    public static String getSecureClientTable() {
+        return "secureClients";
+    }
 }

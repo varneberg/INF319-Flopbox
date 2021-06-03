@@ -21,6 +21,8 @@ public class StartServer {
         DB.initDB();
         DB.createClientTable();
         DB.createSecureClientTable();
+        //DB.secureDeleteAllClients();
+        System.out.println(DB.SecureListClients());
         //System.out.println(cs.listAllClients());
 
         int port = 6666;
@@ -34,7 +36,9 @@ public class StartServer {
         Client client = new Client(address, port);
         String username = "vgrd";
         String password = "123";
-        client.login(username, password);
+        client.createUser(username, password);
+
+
         //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
         //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
 
