@@ -1,12 +1,17 @@
 package client;
 
 
+import builder.SecureState;
 import message.clientMessage;
 import message.serverMessage;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import encryption.*;
 
 
 public class Client {
@@ -17,11 +22,11 @@ public class Client {
     Thread t;
     int port;
     Socket s;
-    String clientPath = null;
     private static String storagePath = "src/main/resources/clientStorage/";
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
+    boolean secure = SecureState.getINSTANCE().isSecure();
    // private DataOutput dataOutput=null;
 
 
@@ -31,6 +36,7 @@ public class Client {
     public Client(int port) {
         this.port = port;
     }
+
 
     public Client(String address, int port) {
         try {
@@ -45,13 +51,12 @@ public class Client {
     public void receiveMessage() {
         serverMessage msg = null;
         try {
-
             clientInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             msg = new serverMessage();
             msg.receiveMessage(clientInput.readLine());
             setServerMsg(msg);
-            msg = null;
 
+            msg = null;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,6 +81,7 @@ public class Client {
 
     public void createUser(String username, String password) {
         //sendServer("CREATEUSER()");
+        if(secure){password = SHA256.getDigest(password);}
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
@@ -105,6 +111,7 @@ public class Client {
     public void login(String username, String password) {
         //sendAuthentication(username, password);
         //String input = receiveServer();
+        if(secure){ password = SHA256.getDigest(password); }
         sendMessage("LOGIN()", username + "/" + password);
         //serverMessage servermsg = receiveMessage();
         receiveMessage();
@@ -127,6 +134,7 @@ public class Client {
         //serverMessage msg = receiveMessage();
         try {
             receiveMessage();
+
             //String rawFilenames = msg.getMessageContents();
             String rawFilenames = getServerMessageContents();
             filenames = rawFilenames.split(",");
@@ -135,6 +143,23 @@ public class Client {
             filenames = new String[]{""};
             return filenames;
         }
+    }
+
+    public List<String> getFileArray(String folderPath){
+        List<String> filenames = null;
+        sendMessage("LIST()", folderPath);
+        try{
+            receiveMessage();
+            filenames = new ArrayList<String>();
+            String rawFileNames = getServerMessageContents();
+            String fileNames[] = rawFileNames.split(",");
+            return Arrays.asList(fileNames);
+
+        } catch (Exception e){
+            filenames = new ArrayList<String>();
+            return filenames;
+        }
+
     }
 
     public File getFile(String fileName){
@@ -198,21 +223,36 @@ public class Client {
         receiveMessage();
     }
 
+    public void renameFile(String newName, String pathToFile){
+        sendMessage("RENAME()", newName+"/"+pathToFile);
+        receiveMessage();
+    }
+
     public String getName() {
         return this.name;
+    }
+
+    public String getBaseDir(){
+        return getName()+"/";
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
+    public boolean validRequest(){
+        if ("1".equals(getServerMessageStatus())) {
+            return true; }
+        else {
+            return false; }
+    }
+
     public void setServerMsg(serverMessage serverMsg) {
         this.serverMsg = serverMsg;
     }
 
-    public serverMessage getServerMsg() {
-        return serverMsg;
-    }
+    public serverMessage getServerMsg() { return serverMsg; }
+
 
     public String getServerMessageStatus() {
         return serverMsg.getRequestStatus();
@@ -222,12 +262,20 @@ public class Client {
         return serverMsg.getMessageContents();
     }
 
+    public String getServerMessageType(){
+        return serverMsg.getRequestType();
+    }
+
     public void printServerContents(){
         System.out.println(serverMsg.getMessageContents());
     }
 
     public void setSocket(Socket s) {
         this.s = s;
+    }
+
+    public boolean isSecure() {
+        return secure;
     }
 
     public void setUuid(String uuid) {

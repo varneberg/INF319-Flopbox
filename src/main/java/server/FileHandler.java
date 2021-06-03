@@ -29,7 +29,7 @@ public class FileHandler {
                 }
             }
             if(fileString.length() == 0){
-                return null;
+                fileString.append("Empty Directory");
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,11 +1,15 @@
 package storage;
 
+import builder.SecureState;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
 public class ClientStorage {
+    boolean secure = SecureState.getINSTANCE().isSecure();
+    
     private Connection connect() {
        String url = "jdbc:sqlite:./flopbox.db";
        Connection con = null;
@@ -19,15 +23,15 @@ public class ClientStorage {
 
     public String listAllClients(){
        String sql = "SELECT * FROM clients";
-       String output = null;
+       String output = "";
        try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)){
            while(rs.next()){
-               output = rs.getInt("id") + "\t" +
+               output += rs.getInt("id") + "\t" +
                        rs.getString("uname") + "\t" +
                        rs.getString("password") + "\t" +
-                       rs.getString("directory");
+                       rs.getString("directory") + "\n";
            }
        } catch (SQLException e){
            output = e.getMessage();
@@ -36,7 +40,6 @@ public class ClientStorage {
     }
 
     public String clientLogin(String username, String password){
-
         System.out.println(username+" "+ password);
         try{
             if(clientExists(username)){
@@ -44,8 +47,6 @@ public class ClientStorage {
                     return ("valid");
 
                 }
-
-
             }
 
         }catch (SQLException e){
@@ -102,28 +103,34 @@ public class ClientStorage {
         }
     }
 
-    public String clientQuery(String where){
+    public String clientQuery(String username, String password){
+        if(secure){
+            return secureClientQuery(username, password);
+        }
 
         String out = "";
         String sql =
-                "SELECT *"
-                + "FROM clients "
-                + "WHERE uname = '" + where
-                + "'";
+                "SELECT * FROM clients WHERE uname = '"+ username + "'" + " AND password = '" + password + "'";
+        //"SELECT *" + "FROM clients " + "WHERE uname = '" + username + "'";
         try (Connection con = this.connect();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql)) {
                 while (rs.next()) {
-                    out = rs.getInt("id") + "\t"
+                    out += rs.getInt("id") + "\t"
                             + rs.getString("uname") + "\t"
                             + rs.getString("password") + "\t"
                             + rs.getString("directory");
                 }
-                return out;
             }catch (SQLException e){
                 return e.getMessage();
         }
+        return out;
     }
+
+    private String secureClientQuery(String username, String password) {
+        return "";
+    }
+
 
     public void addClient(String uname, String password) {
         String sql = "INSERT INTO clients(uname, password, directory) VALUES(?,?,?)";
@@ -212,5 +219,16 @@ public class ClientStorage {
         } catch (SQLException e){
             System.out.println(e.getMessage());
         }
+    }
+    public void dropClientTable(){
+        String sql = "DROP TABLE clients";
+        try(Connection con = this.connect();
+            Statement stmt = con.createStatement()){
+            stmt.execute(sql);
+            System.out.println("Client table dropped");
+        } catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+
     }
 }
