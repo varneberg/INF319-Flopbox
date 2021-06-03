@@ -81,6 +81,7 @@ public class Client {
 
     public void createUser(String username, String password) {
         //sendServer("CREATEUSER()");
+        if(secure){password = SHA256.getDigest(password);}
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
