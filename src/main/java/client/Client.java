@@ -166,6 +166,20 @@ public class Client {
     }
 
     public void putFile(String localPath, String serverPath){
+        if(secure){
+            ClientSSE sse = new ClientSSE(getName());
+            File encrypted = sse.encryptFile(new File(localPath));
+            File lookup = sse.getLookup();
+            uploadFile(encrypted.getAbsolutePath(), serverPath);
+            uploadFile(lookup.getAbsolutePath(), serverPath);
+        }
+        else{
+            uploadFile(localPath, serverPath);
+        }
+
+    }
+
+    private void uploadFile(String localPath, String serverPath){
         try {
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
             File clientFile = new File(localPath);
@@ -186,6 +200,7 @@ public class Client {
             e.printStackTrace();
         }
     }
+
     public void createDir(String folderPath){
         sendMessage("DIR()", folderPath);
         receiveMessage();

@@ -120,7 +120,7 @@ public class ClientSSE {
         return X;
     }
 
-    public void setLookup(File lookup) throws IOException {
+    public void setLookup(File lookup) {
         try {
             File toRead = new File(tmpFolder + ".lookup");
             FileInputStream fis = new FileInputStream(toRead);
@@ -142,7 +142,7 @@ public class ClientSSE {
         }
     }
 
-    public File getLookup() throws IOException {
+    public File getLookup() {
         File lookupFile = new File(tmpFolder + ".lookup");
         try {
             FileOutputStream fos = new FileOutputStream(lookupFile);

@@ -75,7 +75,7 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
             case "GET()":
                 sendFile(contents);
                 break;
-            case "SEARCH()": // TODO Searchable encryption
+            case "SEARCH()":
                 searchFiles(contents);
                 break;
             case "PUT()":
@@ -96,7 +96,7 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
         }
     }
 
-    public void searchFiles(String searchtoken){
+    public void searchFiles(String searchToken){
         List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
         ServerSSE sse = new ServerSSE();
         List<File> accepted = new ArrayList<>();
@@ -106,7 +106,7 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
                 continue;
             }
 
-            if(sse.checkMatch(file, searchtoken)){
+            if(sse.checkMatch(file, searchToken)){
                 accepted.add(file);
             }
         }
@@ -141,11 +141,6 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
             }
         }
         sendMessage("GET()", "1", "Successfully downloaded file!");
-
-
-
-
-
     }
 
     @Override
@@ -247,7 +242,44 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void receiveFile(String contents) {
+        if (!validateClient()) {
+            sendError("Unauthorized");
+            return;
+        }
+        try {
+            String[] fileInfo = contents.split(",");
+            //filename = contents;
+            String storagePath = handler.getStoragePath();
+            String fileName = storagePath + fileInfo[0];
+            String fileSize = fileInfo[1];
 
+            if(fileName.equals(".lookup")){
+                storagePath = handler.getClientPath(getClientName());
+            }
+            //receiveFile(filename,filesize);
+            InputStream dis = new DataInputStream(s.getInputStream());
+            OutputStream fos = new FileOutputStream(fileName);
+            int size = Integer.parseInt(fileSize);
+            byte[] buffer = new byte[size];
+
+            int read = 0;
+            int bytesRead = 0;
+
+            while ((read = dis.read(buffer)) > 0) {
+                //System.out.println("[Server]: Writing");
+                fos.write(buffer, 0, read);
+                bytesRead = bytesRead + read;
+                //System.out.println(bytesRead+"/"+size);
+                if (size == bytesRead) {
+                    break;
+                }
+                //else {break;}
+            }
+            sendMessage("PUT()", "1", "File uploaded");
+        } catch (Exception e) {
+            //sendMessage("ERROR()", "0", "Unable to upload");
+            sendError("Unable to upload");
+        }
     }
 
     @Override
