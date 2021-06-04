@@ -21,7 +21,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     InputStream dataInput = null;
     OutputStream dataOutput = null;
     private ClientStorage cs = new ClientStorage();
-    private FileHandler handler = new FileHandler();
+    private FileHandler handler;// = new FileHandler();
     private String currClientUUID;
     private String currClientAddress = null;
     private String clientName;
@@ -97,6 +97,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     }
 
     public void searchFiles(String searchtoken){
+        handler = new FileHandler();
         List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
         ServerSSE sse = new ServerSSE();
         List<File> accepted = new ArrayList<>();
@@ -233,18 +234,36 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         if(!validateClient()){
             sendError("Unauthorized action");
             return; }
+        //try {
+        String clientFiles = null;
         try {
-            String clientFiles = handler.listFiles(msgContents);
-            if(clientFiles == null){
-                sendMessage("ERROR()", "0", " ");
-            }
+            handler = new FileHandler();
+            clientFiles = handler.listFiles(msgContents);
             sendMessage("FILES()", "1", clientFiles);
+        } catch (FileNotFoundException a){
+            a.printStackTrace();
+            sendError("Directory not found");
 
-        }catch(IOException e){
-            sendError("An error occured");
-        }catch(NullPointerException a){
-            sendError("No such directory");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        } catch (NullPointerException s){
+            System.out.println("oh no");
+            sendError("eerrr");
         }
+        //if(clientFiles == null){
+        //        sendMessage("ERROR()", "0", " ");
+        //    }
+        //    sendMessage("FILES()", "1", clientFiles);
+
+        //}catch(IOException e){
+           // e.printStackTrace();
+            //sendError("An error occured");
+        //}catch(NullPointerException a){
+         //   a.printStackTrace();
+          //  sendError("No such directory");
+        //}
 
     }
 
@@ -261,9 +280,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }else{
             sendError("Login()","Credentials does not match");
         }
-
         //sendMessage("LOGIN()","1", genUUID());
-
     }
 
     @Override
@@ -272,13 +289,26 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         return uuid != null;
     }
 
+    public boolean allowedAccess(String directory){
+        int count = 0;
+        for (String s: directory.split("/")) {
+            if(s.equals(getClientName())){
+                System.out.println(s);
+                System.out.println("Hei");
+            }
+
+        }
+        return true;
+    }
+
     @Override
     public void receiveFile(String contents) {
-        if (!validateClient()) {
+        if (!validateClient()){
             sendError("Unauthorized");
-            return;
-        }
+            return; }
+
         try {
+            handler = new FileHandler();
             String[] fileInfo = contents.split(",");
             //filename = contents;
             String storagePath = handler.getStoragePath();
@@ -313,6 +343,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     @Override
     public void sendFile(String filePath) {
+        handler = new FileHandler();
         String storagePath = handler.getStoragePath();
         String fileName = storagePath + filePath;
         if (!validateClient()) {
@@ -344,6 +375,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     @Override
     public void deleteFile(String path) {
+        handler = new FileHandler();
         String storagePath = handler.getStoragePath();
         String clientPath = handler.getClientPath(getClientName());
         File toDelete = new File(clientPath + path);
@@ -360,6 +392,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         if (!validateClient()) {
             sendError("Unauthorized");
         }
+        handler = new FileHandler();
         String storagePath = handler.getStoragePath();
         File newDir = new File(storagePath + dirPath);
         if (!newDir.exists()) {
@@ -375,6 +408,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         if (!validateClient()) {
             sendError("Unauthorized");
         }
+        handler = new FileHandler();
         String storagePath = handler.getStoragePath();
         String[] fromClient = filePath.split("/");
         String newName = fromClient[0];

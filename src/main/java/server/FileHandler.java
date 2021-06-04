@@ -1,6 +1,7 @@
 package server;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -9,30 +10,45 @@ public class FileHandler {
 
     private static String storagePath = "./src/main/resources/clientDirs/";
 
-    public String listFiles(String filePath) throws IOException, NullPointerException {
+
+    public boolean fileExists(File f){
+        return f.exists();
+    }
+
+    public String listFiles(String filePath) throws IOException{
         String[] paths;
         String dir = "./src/main/resources/clientDirs/" + filePath;
+
         File f = new File(dir);
-        StringBuilder fileString = new StringBuilder();
+        //StringBuilder fileString = new StringBuilder();
         List<String> dirList = new ArrayList<>();
         List<String> fileList = new ArrayList<>();
 
-        for (File fi : f.listFiles()){
-            if (fi.getName().equals(".lookup")){
-                continue;
+        if(fileExists(f)) {
+            for (File fi : f.listFiles()) {
+
+                if (fi.getName().equals(".lookup")) {
+                    continue;
+                }
+                if (fi.isDirectory()) {
+                    //fileString.append(fi.getName()).append("/").append(sep);
+                    dirList.add(fi.getName());
+                } else if (fi.isFile()) {
+                    //fileString.append(fi.getName()).append(sep);
+                    fileList.add(fi.getName());
+                }
             }
-            if (fi.isDirectory()) {
-                fileString.append(fi.getName()).append("/").append(sep);
-                dirList.add(fi.getName());
-            } else if (fi.isFile()) {
-                fileString.append(fi.getName()).append(sep);
-                fileList.add(fi.getName());
+            //if(fileString.length() == 0){
+            //fileString.append("Empty Directory");
+            //}
+            if (dirList.size() == 0 && fileList.size() == 0) {
+                return "Empty Directory";
+
             }
+            return combineLists(dirList, fileList);
+        }else {
+            return "No directory found";
         }
-        if(fileString.length() == 0){
-            fileString.append("Empty Directory");
-        }
-        return combineLists(dirList, fileList);
     }
 
     public String combineLists(List<String> dirList, List<String> fileList){
