@@ -56,7 +56,7 @@
                   <Text fx:id="txt_response" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="6.0" />
                </children>
             </TextFlow>
-            <TextField fx:id="field_search" layoutX="76.0" layoutY="11.0" prefHeight="24.0" prefWidth="451.0" />
+            <TextField fx:id="field_search" layoutX="76.0" layoutY="11.0" onAction="#gotoDir"  prefHeight="24.0" prefWidth="451.0" />
             <ImageView fx:id="img_home" fitHeight="38.0" fitWidth="25.0" layoutX="14.0" layoutY="11.0" onMouseClicked="#dirHome" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../Images/home_icon.png" />
@@ -76,6 +76,7 @@
                   <ContextMenu fx:id="popup_file">
                     <items>
                         <MenuItem fx:id="item_back" mnemonicParsing="false" onAction="#menuPrevDir" text="Back" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="item_newDir" mnemonicParsing="false" onAction="#menuNewDirectory" text="New Directory" />
                         <MenuItem fx:id="item_rename" mnemonicParsing="false" onAction="#menuRenameFile" text="Rename" />
                         <MenuItem fx:id="item_upload" mnemonicParsing="false" onAction="#menuUploadFile" text="Upload" />
