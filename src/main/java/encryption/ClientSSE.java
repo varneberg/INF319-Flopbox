@@ -50,7 +50,7 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File decrypted = new File(tmpFolder + "decrypted.txt");
+        File decrypted = new File(tmpFolder + encrypted.getName());
 
         try {
 
@@ -168,7 +168,7 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File encrypted = new File(tmpFolder + "encrypted.txt");
+        File encrypted = new File(tmpFolder + clear.getName());
         try {
 
             Scanner fileReader = new Scanner(clear);

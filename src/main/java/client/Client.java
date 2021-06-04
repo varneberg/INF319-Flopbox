@@ -23,7 +23,7 @@ public class Client {
     Thread t;
     int port;
     Socket s;
-    private static String storagePath = "src/main/resources/clientStorage/";
+    private static String tmpFolder = "./src/main/resources/tmp/";
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
@@ -171,7 +171,7 @@ public class Client {
             File encrypted = sse.encryptFile(new File(localPath));
             File lookup = sse.getLookup();
             uploadFile(encrypted.getAbsolutePath(), serverPath);
-            uploadFile(lookup.getAbsolutePath(), serverPath);
+            uploadFile(lookup.getAbsolutePath(), getName() + "/" + lookup.getName());
         }
         else{
             uploadFile(localPath, serverPath);
