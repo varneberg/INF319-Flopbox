@@ -93,15 +93,55 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
         }
     }
 
-    public void searchFiles(String input){
+    public void searchFiles(String searchtoken){
         List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
         ServerSSE sse = new ServerSSE();
         List<File> accepted = new ArrayList<>();
         for(File file : files){
-            if(sse.checkMatch(file, input)){
+            if(file.getName().equals(".lookup")){
+                accepted.add(file);
+                continue;
+            }
+
+            if(sse.checkMatch(file, searchtoken)){
                 accepted.add(file);
             }
         }
+        //only .lookup in accepted files = no files with searchword
+        if(accepted.size() == 1){
+            sendError("No match");
+            return;
+        }
+
+        sendMessage("GET()", "1", Integer.toString(accepted.size()));
+        for(File file : accepted){
+            try {
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                File clientFile = file;
+                byte[] buffer = new byte[(int) clientFile.length()];
+                long filesize = clientFile.length();
+                String fileSize = clientFile.length() + "";
+
+                sendMessage("GET()", "1", fileSize + "/" + file.getName());
+                FileInputStream fis = new FileInputStream(clientFile);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                bis.read(buffer, 0, buffer.length);
+                OutputStream os = s.getOutputStream();
+                os.write(buffer, 0, buffer.length);
+                os.flush();
+
+                //System.out.println("[Server]: done");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                //sendError("Unable to download");
+            }
+        }
+        sendMessage("GET()", "1", "Successfully downloaded file!");
+
+
+
+
 
     }
 
