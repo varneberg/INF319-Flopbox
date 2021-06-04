@@ -24,6 +24,9 @@ public class FileHandler {
 
         try {
             for (File fi : f.listFiles()){
+                if (fi.getName().equals(".lookup")){
+                    continue;
+                }
                 if (fi.isDirectory()) {
                     fileString.append(fi.getName()).append("/").append(sep);
                 } else if (fi.isFile()) {

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class SecureRequestHandler extends Thread implements RequestHandlerInterface{
+class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     private Socket s;
     InputStream dataInput = null;
     OutputStream dataOutput = null;
@@ -168,7 +168,6 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType, requestStatus, contents); // Change to server message
             serverOutput.println(msg.createMessage());
             serverOutput.flush();
-            msgNum += 1;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -176,12 +175,25 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
     }
     @Override
     public void sendError(String errorMsg) {
+        try {
+            serverOutput = new PrintWriter(s.getOutputStream(), true);
+            serverMessage msg = new serverMessage(s.getInetAddress().toString(), "ERROR()", "0", errorMsg);
+            serverOutput.println(msg.createMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Override
     public void sendError(String errorType, String errorMsg) {
-
+        try {
+            serverOutput = new PrintWriter(s.getOutputStream(), true);
+            serverMessage msg = new serverMessage(s.getInetAddress().toString(), "ERROR()", errorType, errorMsg);
+            serverOutput.println(msg.createMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -214,11 +226,26 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void closeConnection() throws IOException, SocketException {
+        s.close();
+
 
     }
 
     @Override
     public void listClientFiles(String msgContents) {
+        if(!validateClient()){
+            sendError("Unauthorized action");
+            return; }
+        try {
+            String clientFiles = handler.listFiles(msgContents);
+            if(clientFiles == null){
+                sendMessage("FILES()", "0", " ");
+            }
+            sendMessage("FILES()", "1", clientFiles);
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -242,7 +269,8 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public boolean validateClient() {
-        return false;
+        String uuid = getCurrClientUUID();
+        return uuid != null;
     }
 
     @Override
@@ -252,12 +280,10 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void sendFile(String filePath) {
-
     }
 
     @Override
     public void deleteFile(String path) {
-
     }
 
     @Override
@@ -267,7 +293,19 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
 
     @Override
     public void renameFile(String filePath) {
-
+        if (!validateClient()) {
+            sendError("Unauthorized");
+        }
+        String storagePath = handler.getStoragePath();
+        String[] fromClient = filePath.split("/");
+        String newName = fromClient[0];
+        File oldFile = new File(storagePath + fromClient[1]);
+        File newFile = new File(storagePath + fromClient[0]);
+        if (oldFile.renameTo(newFile)) {
+            sendMessage("RENAME()", "1", "Renamed file");
+        } else {
+            sendError("Could not rename file");
+        }
     }
 
     @Override
@@ -280,6 +318,7 @@ public class SecureRequestHandler extends Thread implements RequestHandlerInterf
     public String getClientName() {
         return clientName;
     }
+
 
     @Override
     public void setCurrClientUUID(String currClientUUID) {
