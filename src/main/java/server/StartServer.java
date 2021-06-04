@@ -41,6 +41,8 @@ public class StartServer {
         client.printServerContents();
 
 
+
+
         //String t = cs.clientQuery("'--' OR 1=1", "123sdga");
         //System.out.println(cs.clientQuery(msql.bypassAuth(), msql.bypassAuth()));
 
