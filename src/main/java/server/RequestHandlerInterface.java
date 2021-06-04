@@ -1,6 +1,7 @@
 package server;
 
 import message.clientMessage;
+import org.sqlite.SQLiteException;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -27,7 +28,7 @@ public interface RequestHandlerInterface extends Runnable {
 
     String[] splitInput(String input);
 
-    void registerClient(String input);
+    void registerClient(String input) throws SQLiteException;
 
     // Closes current connection to client
     void closeConnection() throws IOException, SocketException;

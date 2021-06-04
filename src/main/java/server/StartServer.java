@@ -24,7 +24,6 @@ public class StartServer {
         //DB.secureDeleteAllClients();
         System.out.println(DB.SecureListClients());
         //System.out.println(cs.listAllClients());
-
         int port = 6666;
         String address = "localhost";
         Server server = new Server(port);
@@ -34,9 +33,12 @@ public class StartServer {
 
 
         Client client = new Client(address, port);
-        String username = "vgrd";
+        String username = "burp";
         String password = "123";
-        client.createUser(username, password);
+        client.login(username, password);
+
+        System.out.println(client.isAuthenticated());
+        client.printServerContents();
 
 
 

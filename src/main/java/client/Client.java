@@ -80,6 +80,7 @@ public class Client {
     }
 
 
+
     public void createUser(String username, String password) {
         //sendServer("CREATEUSER()");
         if(secure){password = SHA256.getDigest(password);}
@@ -120,6 +121,7 @@ public class Client {
         String status = getServerMessageStatus();
         //String contents = servermsg.getMessageContents();
         String contents = getServerMessageContents();
+
         if (status.equals("1")) {
             setUuid(contents);
             setName(username);
@@ -200,10 +202,12 @@ public class Client {
         int read = 0;
         int bytesRead=0;
 
-        while((read = dis.read(buffer)) > 0){
-            //System.out.println("[Client]: Writing");
-            fos.write(buffer,0,read);
-            bytesRead = bytesRead + read;
+        while((read = dis.read(buffer)) >= size){
+            if(getServerMessageStatus().equals("2")){
+                break;
+            }
+                fos.write(buffer, 0, read);
+                bytesRead = bytesRead + read;
             //System.out.println(bytesRead+"/"+size);
             //if(size >= bytesRead){
             //    continue;
@@ -286,10 +290,7 @@ public class Client {
     }
 
     public boolean validRequest(){
-        if ("1".equals(getServerMessageStatus())) {
-            return true; }
-        else {
-            return false; }
+        return "1".equals(getServerMessageStatus());
     }
 
     public void setServerMsg(serverMessage serverMsg) {
