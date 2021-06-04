@@ -69,65 +69,6 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             }
         }
 
-    /*
-    @Override
-    public void run() {
-        boolean running = true;
-        try {
-            while (running) {
-                //System.out.println(msgNum);
-                clientMessage clientMsg = receiveMessage();
-                //FileHandler handler = new FileHandler();
-                String requestType = clientMsg.getRequestType();
-                String contents = clientMsg.getMessageContents();
-                String clientUUID = clientMsg.getUuid();
-                String storagePath;
-                String filename;
-                String status;
-                switch (requestType) {
-                    case "EXIT()":
-                        closeConnection();
-                        running = false;
-                        break;
-                    case "CREATEUSER()":
-                        createNewClient(contents);
-                        break;
-                    case "LOGIN()":
-                        loginClient(contents);
-                        break;
-                    case "LIST()":
-                        listClientFiles(contents);
-                        break;
-                    case "GET()":
-                        sendFile(contents);
-                        break;
-                    case "PUT()":
-                        receiveFile(contents);
-                        break;
-                    case "DIR()":
-                        createDir(contents);
-                        break;
-                    case "DEL()":
-                        deleteFile(contents);
-                        break;
-                    case "RENAME()":
-                        renameFile(contents);
-                        break;
-                    default:
-                        sendError("Unrecognized action");
-                        break;
-                }
-                //clientMsg = null;
-                //clientMsg = null;
-            }
-
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-     */
 
     @Override
     public void messageHandler() throws IOException {
@@ -171,48 +112,6 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
                 break;
         }
     }
-
-    public void secureMessageHandler() throws IOException {
-        clientMessage clientMsg = receiveMessage();
-        //FileHandler handler = new FileHandler();
-        String requestType = clientMsg.getRequestType();
-        String contents = clientMsg.getMessageContents();
-        switch (requestType) {
-            case "EXIT()":
-                closeConnection();
-                break;
-            case "CREATEUSER()": // TODO
-                registerClient(contents);
-                break;
-            case "LOGIN()": // TODO
-                loginClient(contents);
-                break;
-            case "LIST()": // TODO
-                listClientFiles(contents);
-                break;
-            case "GET()":
-                sendFile(contents);
-                break;
-            case "SEARCH()": // TODO Searchable encryption
-                break;
-            case "PUT()":
-                receiveFile(contents);
-                break;
-            case "DIR()":
-                createDir(contents);
-                break;
-            case "DEL()":
-                deleteFile(contents);
-                break;
-            case "RENAME()":
-                renameFile(contents);
-                break;
-            default:
-                sendError("Unrecognized action");
-                break;
-        }
-    }
-
 
     @Override
     public clientMessage receiveMessage() {
