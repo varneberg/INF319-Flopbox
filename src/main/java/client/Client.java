@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import encryption.*;
+import server.FileHandler;
 
 
 public class Client {
@@ -78,8 +80,10 @@ public class Client {
     }
 
 
+
     public void createUser(String username, String password) {
         //sendServer("CREATEUSER()");
+        if(secure){password = SHA256.getDigest(password);}
         String credentials = username + "/" + password;
         //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
@@ -109,6 +113,7 @@ public class Client {
     public void login(String username, String password) {
         //sendAuthentication(username, password);
         //String input = receiveServer();
+        if(secure){ password = SHA256.getDigest(password); }
         sendMessage("LOGIN()", username + "/" + password);
         //serverMessage servermsg = receiveMessage();
         receiveMessage();
@@ -116,6 +121,7 @@ public class Client {
         String status = getServerMessageStatus();
         //String contents = servermsg.getMessageContents();
         String contents = getServerMessageContents();
+
         if (status.equals("1")) {
             setUuid(contents);
             setName(username);
@@ -159,11 +165,6 @@ public class Client {
 
     }
 
-    public File getFile(String fileName){
-        sendMessage("FILES()", "GET()"  + fileName);
-        return null;
-    }
-
     public void putFile(String localPath, String serverPath){
         try {
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
@@ -201,10 +202,12 @@ public class Client {
         int read = 0;
         int bytesRead=0;
 
-        while((read = dis.read(buffer)) > 0){
-            //System.out.println("[Client]: Writing");
-            fos.write(buffer,0,read);
-            bytesRead = bytesRead + read;
+        while((read = dis.read(buffer)) >= size){
+            if(getServerMessageStatus().equals("2")){
+                break;
+            }
+                fos.write(buffer, 0, read);
+                bytesRead = bytesRead + read;
             //System.out.println(bytesRead+"/"+size);
             //if(size >= bytesRead){
             //    continue;
@@ -213,6 +216,55 @@ public class Client {
         }
         receiveMessage();
         //System.out.println("[Client]: done");
+    }
+
+    public void getMultipleFiles(String searchToken) throws IOException {
+        String downloadPath = "./src/main/resources/tmp/"; //TODO: download path should be set by user
+
+        ClientSSE sse = new ClientSSE(getName());
+        File lookup;
+        sendMessage("SEARCH()", searchToken);
+        receiveMessage();
+        int numberOfFiles = Integer.parseInt(getServerMessageContents());
+        List<String> filesToBeDecrypted = new ArrayList<>();
+        for(int i=0;i<numberOfFiles;i++){
+            receiveMessage();
+            String response = getServerMessageContents();
+            String[] sizeAndName = response.split("/");
+            int size = Integer.parseInt(sizeAndName[0]);
+            String fileName = sizeAndName[1];
+            InputStream dis = new DataInputStream(s.getInputStream());
+            OutputStream fos = new FileOutputStream(downloadPath + fileName);
+            byte[] buffer = new byte[size];
+
+            int read = 0;
+            int bytesRead=0;
+
+            while((read = dis.read(buffer)) > 0){
+                //System.out.println("[Client]: Writing");
+                fos.write(buffer,0,read);
+                bytesRead = bytesRead + read;
+                //System.out.println(bytesRead+"/"+size);
+                //if(size >= bytesRead){
+                //    continue;
+                //}else {break;}
+
+            }
+
+            if(fileName.equals(".lookup")){
+                lookup = new File(downloadPath + fileName);
+                sse.setLookup(lookup);
+            }
+            else{
+                filesToBeDecrypted.add(downloadPath + fileName);
+            }
+            //System.out.println("[Client]: done");
+        }
+        receiveMessage();
+
+        for(String file : filesToBeDecrypted){
+            File current = sse.decryptFile(new File(file));
+        }
     }
 
     public void deleteFile(String pathToFile){
@@ -238,10 +290,7 @@ public class Client {
     }
 
     public boolean validRequest(){
-        if ("1".equals(getServerMessageStatus())) {
-            return true; }
-        else {
-            return false; }
+        return "1".equals(getServerMessageStatus());
     }
 
     public void setServerMsg(serverMessage serverMsg) {
@@ -281,5 +330,18 @@ public class Client {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void search(String search) {
+        if(secure){
+            ClientSSE sse = new ClientSSE(getName());
+            String token = sse.generateSearchToken(search);
+
+
+
+        }
+        else {
+            System.out.println("NO!");
+        }
     }
 }

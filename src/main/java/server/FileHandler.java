@@ -1,40 +1,89 @@
 package server;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
 
 public class FileHandler {
     private String sep = ",";
 
     private static String storagePath = "./src/main/resources/clientDirs/";
 
-    public String listFiles(String filePath) throws IOException {
+
+    public boolean fileExists(File f){
+        return f.exists();
+    }
+
+    public String listFiles(String filePath) throws IOException{
         String[] paths;
         String dir = "./src/main/resources/clientDirs/" + filePath;
-        File f = new File(dir);
-        StringBuilder fileString = new StringBuilder();
 
-        try {
-            for (File fi : f.listFiles()){
+        File f = new File(dir);
+        //StringBuilder fileString = new StringBuilder();
+        List<String> dirList = new ArrayList<>();
+        List<String> fileList = new ArrayList<>();
+
+        if(fileExists(f)) {
+            for (File fi : f.listFiles()) {
+
+                if (fi.getName().equals(".lookup")) {
+                    continue;
+                }
                 if (fi.isDirectory()) {
-                    fileString.append(fi.getName()).append("/").append(sep);
+                    //fileString.append(fi.getName()).append("/").append(sep);
+                    dirList.add(fi.getName());
                 } else if (fi.isFile()) {
-                    fileString.append(fi.getName()).append(sep);
+                    //fileString.append(fi.getName()).append(sep);
+                    fileList.add(fi.getName());
                 }
             }
-            if(fileString.length() == 0){
-                fileString.append("Empty Directory");
+            //if(fileString.length() == 0){
+            //fileString.append("Empty Directory");
+            //}
+            if (dirList.size() == 0 && fileList.size() == 0) {
+                return "Empty Directory";
+
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return combineLists(dirList, fileList);
+        }else {
+            return "No directory found";
         }
-        return fileString.toString();
+    }
+
+    public String combineLists(List<String> dirList, List<String> fileList){
+        StringBuilder sb = new StringBuilder();
+        Collections.sort(dirList);
+        for (String s : dirList) {
+            String toAdd = s +"/"+sep;
+            sb.append(toAdd);
+        }
+        Collections.sort(fileList);
+        for (String s : fileList){
+            String toAdd = s + sep;
+            sb.append(toAdd);
+        }
+        return sb.toString();
+
+    }
+
+    public List<File> listAllFiles(String directoryName) {
+        File directory = new File(directoryName);
+
+        List<File> resultList = new ArrayList<File>();
+
+        // get all the files from a directory
+        File[] fList = directory.listFiles();
+        resultList.addAll(Arrays.asList(fList));
+        for (File file : fList) {
+            if (file.isFile()) {
+                System.out.println(file.getAbsolutePath());
+            } else if (file.isDirectory()) {
+                resultList.addAll(listAllFiles(file.getAbsolutePath()));
+            }
+        }
+        //System.out.println(fList);
+        return resultList;
     }
 
     public void storeFile(File clientFile){

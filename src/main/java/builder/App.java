@@ -18,10 +18,14 @@ public class App extends Application {
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
-        scene = new Scene(loadFXML("/fxml/login_screen.fxml"));
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    public void start(Stage primaryStage) {
+        try {
+            scene = new Scene(loadFXML("/fxml/login_screen.fxml"));
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -29,18 +33,29 @@ public class App extends Application {
         return primaryStage;
     }
 
-    static void setRoot(String fxml) throws IOException{
-        scene.setRoot(loadFXML(fxml));
+    static void setRoot(String fxml) {
+        try {
+            scene.setRoot(loadFXML(fxml));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
 
     private static Parent loadFXML(String fxml) throws IOException{
-        FXMLLoader loader = new FXMLLoader(App.class.getResource(fxml));
-        return loader.load();
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource(fxml));
+            return loader.load();
+        } catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static void main(String[] args) {
-        ClientHandler handler = new ClientHandler();
+        boolean secure = true;
+        SecureState.getINSTANCE().setSecure(secure);
+        //ClientHandler handler = new ClientHandler();
         Server server = new Server(6666);
         server.startServer();
         launch(args);

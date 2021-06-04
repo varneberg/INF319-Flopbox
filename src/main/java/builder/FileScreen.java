@@ -4,6 +4,7 @@ import client.Client;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -24,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class FileScreen extends loginScreen{
+public class FileScreen {
     public MenuItem menu_logOut;
     public Text txt_response;
     public TextField field_search;
@@ -46,24 +47,29 @@ public class FileScreen extends loginScreen{
     public ContextMenu popup_file;
 
     ClientHandler handler = ClientHandler.getInstance();
-    Client client = handler.getClient() ;
+    Client client = handler.getClient();
     private List<String> files;
     private String currentDir;// = client.getBaseDir();
 
 
-    public void initialize(){
+    public void initialize() {
         //displayFiles(client.getName());
-        if (handler.getFirstEntry()){
-            displayFiles(client.getBaseDir());
-            handler.setFirstEntry(false);
-            file_list.requestFocus();
 
+        if (handler.getFirstEntry()) {
+            try{
+                displayFiles(client.getBaseDir());
+                handler.setFirstEntry(false);
+            }catch (NullPointerException e){
+                txt_response.setText("No files found");
+            }
+            //file_list.requestFocus();
         }
     }
 
-    public ObservableList<String> getFiles(String directory){
+
+    public ObservableList<String> getFiles(String directory) {
         files = client.getFileArray(directory);
-        if(client.validRequest()){
+        if (client.validRequest()) {
             ObservableList<String> fileList = FXCollections.observableArrayList(files);
             setCurrentDir(directory);
             return fileList;
@@ -71,20 +77,54 @@ public class FileScreen extends loginScreen{
         return null;
     }
 
-    public void displayFiles(String directory){
-        files = client.getFileArray(directory);
-        if(client.validRequest()) {
-            ObservableList<String> olist = FXCollections.observableArrayList(files);
-            file_list.setItems(olist);
-            //setFile_list(file_list);
-            setCurrentDir(directory);
+    public boolean isError(String message) {
+        String messageType = handler.getClient().getServerMessageType();
+        if (messageType.equals("ERROR()")) {
+            txt_response.setText(handler.getClient().getServerMessageContents());
+            return true;
         }
+        return false;
+
     }
 
+    public ObservableList<String> receiveFileNames(String directory){
+        ObservableList<String> inputList = null;
+        files = handler.getClient().getFileArray(directory);
+        if (isError(handler.getClient().getServerMessageType())) {
+            txt_response.setText(handler.getClient().getServerMessageContents());
+        }
+        else if(handler.getClient().validRequest()){
+            inputList = FXCollections.observableArrayList(files);
+            return inputList;
+            }
+        return null;
+    }
 
-    @Override
-    public List<String> getFileList() {
-        return super.getFileList();
+    public void displayFiles(ObservableList<String> files){
+        try {
+            file_list.setItems(files);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public void displayFiles(String directory) {
+        if (isError(handler.getClient().getServerMessageType())) {
+            txt_response.setText(handler.getClient().getServerMessageContents());
+            return;
+        }
+        files = client.getFileArray(directory);
+        if (handler.getClient().validRequest()) {
+            ObservableList<String> olist = FXCollections.observableArrayList(files);
+            if (!olist.isEmpty()) {
+                file_list.setItems(olist);
+                setCurrentDir(directory);
+            }
+
+            //setFile_list(file_list);
+        }
     }
 
 
@@ -93,32 +133,42 @@ public class FileScreen extends loginScreen{
     }
 
 
-    public String getSelectedItem(){
+    public String getSelectedItem() {
         return file_list.getSelectionModel().getSelectedItem();
     }
 
 
     public void nextDir(MouseEvent mouseEvent) {
-        if(mouseEvent.getClickCount() >= 2){
+        if (mouseEvent.getClickCount() >= 2) {
             String selected = getSelectedItem();
-            if(isDir(selected)){
-                String newDir = getCurrentDir()+selected;
+            if (isDir(selected)) {
+                String newDir = getCurrentDir() + selected;
+                //System.out.println(newDir);
                 displayFiles(newDir);
-                if(client.validRequest()){
+                if (client.validRequest()) {
                     setCurrentDir(newDir);
                 }
             }
         }
     }
-
-    public void prevDir(MouseEvent actionEvent) {
+    public String getPrevDir(){
         String currentDir = getCurrentDir();
         if(currentDir.equals(handler.getClient().getBaseDir())){
-            return;
+            return handler.getClient().getBaseDir();
         }
         String[] allDirs = currentDir.split("/");
         String lastDir = allDirs[allDirs.length-1];
-        String prevDir = currentDir.substring(0,currentDir.indexOf(lastDir));
+        return currentDir.substring(0,currentDir.indexOf(lastDir));
+    }
+
+    public void prevDir(MouseEvent actionEvent) {
+        String currentDir = getCurrentDir();
+        if (currentDir.equals(handler.getClient().getBaseDir())) {
+            return;
+        }
+        String[] allDirs = currentDir.split("/");
+        String lastDir = allDirs[allDirs.length - 1];
+        String prevDir = currentDir.substring(0, currentDir.indexOf(lastDir));
         displayFiles(prevDir);
         ///String lastDir = allDirs[allDirs.length-2];
     }
@@ -129,13 +179,16 @@ public class FileScreen extends loginScreen{
         displayFiles(client.getBaseDir());
     }
 
-    public boolean isDir(String dir){
-        char lastChar = dir.charAt(dir.length()-1);
+    public boolean isDir(String dir) {
+        char lastChar = dir.charAt(dir.length() - 1);
         return dir.endsWith("/");
     }
 
     public void search(ActionEvent actionEvent) {
         ClientHandler handler = ClientHandler.getInstance();
+        String search = field_search.getText();
+        handler.getClient().search(search);
+        /*
         displayFiles(client.getName());
         String newDir = field_search.getText();
         try{
@@ -143,10 +196,12 @@ public class FileScreen extends loginScreen{
         } catch (NullPointerException e){
             e.printStackTrace();
         }
+
+         */
     }
 
 
-    public FileChooser fileSelector(String title){
+    public FileChooser fileSelector(String title) {
         FileChooser chooser = new FileChooser();
         //chooser.showOpenDialog();
         chooser.setTitle(title);
@@ -177,34 +232,11 @@ public class FileScreen extends loginScreen{
         System.exit(0);
     }
 
-    public Stage simplePopup(String title, String btnText){
-        HBox layout = new HBox();
-        GridPane grid = new GridPane();
-        Stage popup = new Stage();
-        popup.setAlwaysOnTop(true);
-        popup.setMaxHeight(100);
-        popup.setMinHeight(50);
-        popup.setMaxWidth(1000);
-        popup.setMinWidth(150);
-        popup.setTitle(title);
-        TextField text_dir = new TextField();
-        text_dir.setAlignment(Pos.CENTER_LEFT);
-
-        Button btn_newDir = new Button(btnText);
-        btn_newDir.setAlignment(Pos.CENTER_RIGHT);
-
-        Scene scene = new Scene(layout);
-        layout.getChildren().addAll(text_dir, btn_newDir);
-        popup.setScene(scene);
-        return popup;
-
-    }
-
     public void menuNewDirectory(ActionEvent actionEvent) {
         String dir = getSelectedItem();
-        String toDir = getCurrentDir();
+        //String toDir = getCurrentDir();
         HBox layout = new HBox();
-        GridPane grid = new GridPane();
+        //GridPane grid = new GridPane();
         Stage popup = new Stage();
 
         popup.setAlwaysOnTop(true);
@@ -229,13 +261,13 @@ public class FileScreen extends loginScreen{
         btn_newDir.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                handler.getClient().createDir(getCurrentDir()+text_dir.getText());
+                handler.getClient().createDir(getCurrentDir() + text_dir.getText());
                 popup.close();
             }
 
-            public void handle(KeyEvent keyEvent){
-                if(keyEvent.getCode() == KeyCode.ENTER){
-                    handler.getClient().createDir(getCurrentDir()+text_dir.getText());
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.getCode() == KeyCode.ENTER) {
+                    handler.getClient().createDir(getCurrentDir() + text_dir.getText());
                     popup.close();
                 }
 
@@ -244,40 +276,52 @@ public class FileScreen extends loginScreen{
         displayFiles(getCurrentDir());
     }
 
-    public void printServerResponse(){
+    public void printServerResponse() {
         txt_response.setText(handler.getClient().getServerMessageContents());
     }
 
-    public void menuDownloadFile(ActionEvent actionEvent) throws IOException {
+    public void menuDownloadFile(ActionEvent actionEvent) {
         String toGet = getSelectedItem();
-        if(!isDir(toGet)) {
-            FileChooser chooser = fileSelector("Save file");
-            File location = chooser.showSaveDialog(App.getPrimaryStage());
-            String saveLoc = location.toString();
-            handler.getClient().getFile(getCurrentDir() + toGet, saveLoc);
-            System.out.println(getCurrentDir());
-            printServerResponse();
+        try {
+            if (!isDir(toGet)) {
+                FileChooser chooser = fileSelector("Save file");
+                chooser.setInitialFileName(toGet);
+                File location = chooser.showSaveDialog(App.getPrimaryStage());
+                String saveLoc = location.toString();
+                System.out.println(saveLoc);
+                handler.getClient().getFile(getCurrentDir() + toGet, saveLoc);
+                System.out.println(getCurrentDir());
+                printServerResponse();
 
-        }else if(isDir(toGet)) {
-            txt_response.setText("Please choose a file");
+
+            } else if (isDir(toGet)) {
+                txt_response.setText("Please choose a file");
+            }
+        } catch (Exception a) {
+            a.printStackTrace();
         }
     }
 
     public void menuUploadFile(ActionEvent actionEvent) {
-        String uploadDir = getSelectedItem();
-        FileChooser chooser = fileSelector("Upload file");
-        File location = chooser.showOpenDialog(App.getPrimaryStage());
-        String fileName = location.toString();
-        System.out.println(location.getName());
-        handler.getClient().putFile(fileName,getCurrentDir()+location.getName());
-        printServerResponse();
-        displayFiles(getCurrentDir());
+        try {
+            String uploadDir = getSelectedItem();
+            FileChooser chooser = fileSelector("Upload file");
+            File location = chooser.showOpenDialog(App.getPrimaryStage());
+            //File location = chooser.showOpenMultipleDialog(App.getPrimaryStage());
+            String fileName = location.toString();
+            handler.getClient().putFile(fileName, getCurrentDir() + location.getName());
+            printServerResponse();
+            displayFiles(getCurrentDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void menuDeleteFile(ActionEvent actionEvent) {
         String toDelete = getSelectedItem();
         client.deleteFile(toDelete);
         txt_response.setText(client.getServerMessageContents());
+        displayFiles(getCurrentDir());
     }
 
 
@@ -315,8 +359,8 @@ public class FileScreen extends loginScreen{
                 popup.close();
             }
 
-            public void handle(KeyEvent keyEvent){
-                if(keyEvent.getCode() == KeyCode.ENTER){
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.getCode() == KeyCode.ENTER) {
                     handler.getClient().renameFile(txt_name.getText(), toRename);
                     popup.close();
                 }
@@ -339,16 +383,36 @@ public class FileScreen extends loginScreen{
         return currentDir;
     }
 
-    public void RetractCurrentDir(){
+    public void RetractCurrentDir() {
         StringBuilder sb = new StringBuilder();
-        String[] dir =  getCurrentDir().split("/");
+        String[] dir = getCurrentDir().split("/");
     }
 
     public void menuPrevDir(ActionEvent actionEvent) {
         String currentDir = getCurrentDir();
         String[] allDirs = currentDir.split("/");
-        String lastDir = allDirs[allDirs.length-1];
-        String prevDir = currentDir.substring(0,currentDir.indexOf(lastDir));
+        String lastDir = allDirs[allDirs.length - 1];
+        String prevDir = currentDir.substring(0, currentDir.indexOf(lastDir));
         displayFiles(prevDir);
     }
+
+
+    public void gotoDir(ActionEvent actionEvent) {
+        if (field_search.getText().equals("")) {
+            displayFiles(client.getBaseDir());
+            return;
+        }
+        ObservableList<String> inp = getFiles(field_search.getText());
+        //displayFiles(field_search.getText().strip());
+        if(isError(handler.getClient().getServerMessageType())){
+            printServerResponse();
+            //displayFiles(getCurrentDir());
+            return;
+        }
+
+        String searchDir = getCurrentDir()+field_search.getText().strip()+"/";
+        ObservableList<String> files = receiveFileNames(searchDir);
+        displayFiles(files);
+    }
+
 }
