@@ -141,12 +141,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             }
         }
         sendMessage("GET()", "1", "Successfully downloaded file!");
-
-
-
-
-
     }
+
 
     @Override
     public clientMessage receiveMessage() {
@@ -161,6 +157,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         return msg;
     }
 
+
     @Override
     public void sendMessage(String requestType, String requestStatus, String contents) {
         try {
@@ -171,8 +168,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
+
     @Override
     public void sendError(String errorMsg) {
         try {
@@ -182,8 +180,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
 
     @Override
     public void sendError(String errorType, String errorMsg) {
@@ -196,11 +194,13 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+
     @Override
     public String genUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
+
 
     @Override
     public String[] splitInput(String input) {
@@ -221,14 +221,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
            //e.printStackTrace();
            sendError("An error occurred");
         }
-
     }
 
     @Override
     public void closeConnection() throws IOException, SocketException {
         s.close();
-
-
     }
 
     @Override
@@ -239,12 +236,14 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         try {
             String clientFiles = handler.listFiles(msgContents);
             if(clientFiles == null){
-                sendMessage("FILES()", "0", " ");
+                sendMessage("ERROR()", "0", " ");
             }
             sendMessage("FILES()", "1", clientFiles);
 
         }catch(IOException e){
-            e.printStackTrace();
+            sendError("An error occured");
+        }catch(NullPointerException a){
+            sendError("No such directory");
         }
 
     }
@@ -275,20 +274,100 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     @Override
     public void receiveFile(String contents) {
+        if (!validateClient()) {
+            sendError("Unauthorized");
+            return;
+        }
+        try {
+            String[] fileInfo = contents.split(",");
+            //filename = contents;
+            String storagePath = handler.getStoragePath();
+            String fileName = storagePath + fileInfo[0];
+            String fileSize = fileInfo[1];
+            //receiveFile(filename,filesize);
+            InputStream dis = new DataInputStream(s.getInputStream());
+            OutputStream fos = new FileOutputStream(fileName);
+            int size = Integer.parseInt(fileSize);
+            byte[] buffer = new byte[size];
+
+            int read = 0;
+            int bytesRead = 0;
+
+            while ((read = dis.read(buffer)) > 0) {
+                //System.out.println("[Server]: Writing");
+                fos.write(buffer, 0, read);
+                bytesRead = bytesRead + read;
+                //System.out.println(bytesRead+"/"+size);
+                if (size == bytesRead) {
+                    break;
+                }
+                //else {break;}
+            }
+            sendMessage("PUT()", "1", "File uploaded");
+        } catch (Exception e) {
+            //sendMessage("ERROR()", "0", "Unable to upload");
+            sendError("Unable to upload");
+        }
 
     }
 
     @Override
     public void sendFile(String filePath) {
+        String storagePath = handler.getStoragePath();
+        String fileName = storagePath + filePath;
+        if (!validateClient()) {
+            sendError("Unauthorized");
+            return;
+        }
+        try {
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            File clientFile = new File(fileName);
+            byte[] buffer = new byte[(int) clientFile.length()];
+            long filesize = clientFile.length();
+            String fileSize = clientFile.length() + "";
+
+            sendMessage("GET()", "1", fileSize);
+            FileInputStream fis = new FileInputStream(clientFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            bis.read(buffer, 0, buffer.length);
+            OutputStream os = s.getOutputStream();
+            os.write(buffer, 0, buffer.length);
+            //os.flush();
+            sendMessage("GET()", "2", "Successfully downloaded file!");
+            //System.out.println("[Server]: done");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            //sendError("Unable to download");
+        }
     }
 
     @Override
     public void deleteFile(String path) {
+        String storagePath = handler.getStoragePath();
+        String clientPath = handler.getClientPath(getClientName());
+        File toDelete = new File(clientPath + path);
+        System.out.println(toDelete);
+        if (toDelete.delete()) {
+            sendMessage("DEL()", "1", "File deleted");
+        } else {
+            sendError("Unable to delete file");
+        }
     }
 
     @Override
     public void createDir(String dirPath) {
-
+        if (!validateClient()) {
+            sendError("Unauthorized");
+        }
+        String storagePath = handler.getStoragePath();
+        File newDir = new File(storagePath + dirPath);
+        if (!newDir.exists()) {
+            newDir.mkdir();
+            sendMessage("DIR()", "1", "Directory created");
+        } else {
+            sendError("Directory already exists");
+        }
     }
 
     @Override
@@ -333,12 +412,13 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     @Override
     public void setMsgNum(int msgNum) {
+        this.msgNum = msgNum;
 
     }
 
     @Override
     public int getMsgNum() {
-        return 0;
+        return msgNum;
     }
 
 
