@@ -58,7 +58,7 @@ public class loginScreen {
                 client.login(username, password);
                 if(client.isAuthenticated()){
                     //setUUID();
-                    handler.setClient(client);
+                    //handler.setClient(client);
                     //App.setRoot("/fxml/file_screen.fxml");
                     gotoFiles();
                 } else {
@@ -111,11 +111,7 @@ public class loginScreen {
 
     @FXML
     private void gotoScreen(String fxml){
-        try {
-            App.setRoot(fxml);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+        App.setRoot(fxml);
     }
 
     public void register(ActionEvent event){

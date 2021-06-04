@@ -57,9 +57,9 @@ public class FileScreen extends loginScreen{
             displayFiles(client.getBaseDir());
             handler.setFirstEntry(false);
             //file_list.requestFocus();
-
         }
     }
+
 
     public ObservableList<String> getFiles(String directory){
         files = client.getFileArray(directory);
