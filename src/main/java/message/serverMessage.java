@@ -5,6 +5,7 @@ public class serverMessage {
     private String requestType = null;
     private String requestStatus = null;
     private String messageContents = null;
+    private int messageNumber;
 
     String sep = ";;";
 
@@ -15,6 +16,12 @@ public class serverMessage {
         this.messageContents = messageContents;
     }
 
+    public serverMessage(int messageNumber, String requestType, String requestStatus, String messageContents){
+        this.messageNumber = messageNumber;
+        this.requestType = requestType;
+        this.requestStatus = requestStatus;
+        this.messageContents = messageContents;
+    }
 
     public serverMessage(){}
 
@@ -53,10 +60,18 @@ public class serverMessage {
         this.messageContents = errorType;
     }
 
+    public void setMessageNumber(int messageNumber) {
+        this.messageNumber = messageNumber;
+    }
+
     public void setRequestStatus(String requestStatus) {
         this.requestStatus = requestStatus;
     }
 
+
+    public int getMessageNumber() {
+        return messageNumber;
+    }
 
     public String getRequestType() {
         return requestType;

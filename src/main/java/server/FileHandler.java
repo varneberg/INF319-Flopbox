@@ -13,10 +13,15 @@ public class FileHandler {
         String[] paths;
         String dir = "./src/main/resources/clientDirs/" + filePath;
         File f = new File(dir);
-        StringBuilder fileString = new StringBuilder();
+        StringBuilder fileString;
         List<String> dirList = new ArrayList<>();
         List<String> fileList = new ArrayList<>();
 
+        if(Objects.requireNonNull(f.listFiles()).length == 0){
+            return "Empty Directory";
+
+        }
+        fileString = new StringBuilder();
         for (File fi : f.listFiles()){
             if (fi.getName().equals(".lookup")){
                 continue;

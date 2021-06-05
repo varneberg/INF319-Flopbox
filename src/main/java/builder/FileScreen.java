@@ -72,7 +72,7 @@ public class FileScreen {
         return null;
     }
 
-    public boolean isError(String message){
+    public boolean isError(){
         String messageType = handler.getClient().getServerMessageType();
         if(messageType.equals("ERROR()")){
           txt_response.setText(handler.getClient().getServerMessageContents());
@@ -83,9 +83,6 @@ public class FileScreen {
     }
 
     public void displayFiles(String directory){
-        if(isError(handler.getClient().getServerMessageType())){
-            return;
-        }
         files = client.getFileArray(directory);
         if (handler.getClient().validRequest()) {
             ObservableList<String> olist = FXCollections.observableArrayList(files);
@@ -242,6 +239,7 @@ public class FileScreen {
     public void printServerResponse(){
         txt_response.setText(handler.getClient().getServerMessageContents());
     }
+
 
     public void menuDownloadFile(ActionEvent actionEvent) {
         String toGet = getSelectedItem();

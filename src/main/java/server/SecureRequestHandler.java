@@ -12,9 +12,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     private Socket s;
@@ -29,10 +27,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     //private String sep = ";;";
     private BufferedReader serverInput;
     private PrintWriter serverOutput;
-    private clientMessage clientMsg;
-    private int msgNum;
-    private ArrayList<serverMessage> msgList;
-    boolean secure = SecureState.getINSTANCE().isSecure();
+    //private clientMessage clientMsg;
+    private int msgNum=0;
+    private LinkedList<serverMessage> sendList = new LinkedList<>();
+    private LinkedList<clientMessage> receiveList = new LinkedList<>();
+    //boolean secure = SecureState.getINSTANCE().isSecure();
     boolean running;
 
     SecureRequestHandler(Socket socket) {
@@ -96,52 +95,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-    public void searchFiles(String searchtoken){
-        List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
-        ServerSSE sse = new ServerSSE();
-        List<File> accepted = new ArrayList<>();
-        for(File file : files){
-            if(file.getName().equals(".lookup")){
-                accepted.add(file);
-                continue;
-            }
-
-            if(sse.checkMatch(file, searchtoken)){
-                accepted.add(file);
-            }
-        }
-        //only .lookup in accepted files = no files with searchword
-        if(accepted.size() == 1){
-            sendError("No match");
-            return;
-        }
-
-        sendMessage("GET()", "1", Integer.toString(accepted.size()));
-        for(File file : accepted){
-            try {
-                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-                File clientFile = file;
-                byte[] buffer = new byte[(int) clientFile.length()];
-                long filesize = clientFile.length();
-                String fileSize = clientFile.length() + "";
-
-                sendMessage("GET()", "1", fileSize + "/" + file.getName());
-                FileInputStream fis = new FileInputStream(clientFile);
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                bis.read(buffer, 0, buffer.length);
-                OutputStream os = s.getOutputStream();
-                os.write(buffer, 0, buffer.length);
-                os.flush();
-
-                //System.out.println("[Server]: done");
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                //sendError("Unable to download");
-            }
-        }
-        sendMessage("GET()", "1", "Successfully downloaded file!");
-    }
 
 
     @Override
@@ -151,11 +104,39 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             serverInput = new BufferedReader(new InputStreamReader(s.getInputStream()));
             msg = new clientMessage();
             msg.receiveMessage(serverInput.readLine());
+            addReceiveList(msg);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return msg;
     }
+
+    public LinkedList<clientMessage> getReceiveList() {
+        return receiveList;
+    }
+
+    public void setReceiveList(LinkedList<clientMessage> receiveList) {
+        this.receiveList = receiveList;
+    }
+
+    public void addReceiveList(clientMessage message) {
+        LinkedList<clientMessage> newList = getReceiveList();
+        if(newList.size()>= 100){
+            newList.removeLast();
+        }
+        newList.addFirst(message);
+        setReceiveList(newList);
+    }
+
+    public void removeReceiveListItem(){
+        getReceiveList().removeLast();
+    }
+
+
+    public clientMessage getReceiveListItem(int messageNum){
+        return getReceiveList().get(messageNum);
+    }
+
 
 
     @Override
@@ -165,9 +146,19 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), requestType, requestStatus, contents); // Change to server message
             serverOutput.println(msg.createMessage());
             serverOutput.flush();
+            addSendList(msg);
+            incrementMsgNum();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public LinkedList<serverMessage> getSendList(){
+        return sendList;
+    }
+
+    public void addSendList(serverMessage message){
+        getSendList().add(message);
     }
 
 
@@ -177,6 +168,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             serverOutput = new PrintWriter(s.getOutputStream(), true);
             serverMessage msg = new serverMessage(s.getInetAddress().toString(), "ERROR()", "0", errorMsg);
             serverOutput.println(msg.createMessage());
+            addSendList(msg);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -272,6 +265,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         return uuid != null;
     }
 
+
     @Override
     public void receiveFile(String contents) {
         if (!validateClient()) {
@@ -311,6 +305,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     }
 
+
     @Override
     public void sendFile(String filePath) {
         String storagePath = handler.getStoragePath();
@@ -342,6 +337,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+
     @Override
     public void deleteFile(String path) {
         String storagePath = handler.getStoragePath();
@@ -354,6 +350,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             sendError("Unable to delete file");
         }
     }
+
 
     @Override
     public void createDir(String dirPath) {
@@ -369,6 +366,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             sendError("Directory already exists");
         }
     }
+
 
     @Override
     public void renameFile(String filePath) {
@@ -387,6 +385,52 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    public void searchFiles(String searchtoken){
+        List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
+        ServerSSE sse = new ServerSSE();
+        List<File> accepted = new ArrayList<>();
+        for(File file : files){
+            if(file.getName().equals(".lookup")){
+                accepted.add(file);
+                continue;
+            }
+
+            if(sse.checkMatch(file, searchtoken)){
+                accepted.add(file);
+            }
+        }
+        //only .lookup in accepted files = no files with searchword
+        if(accepted.size() == 1){
+            sendError("No match");
+            return;
+        }
+
+        sendMessage("GET()", "1", Integer.toString(accepted.size()));
+        for(File file : accepted){
+            try {
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                File clientFile = file;
+                byte[] buffer = new byte[(int) clientFile.length()];
+                long filesize = clientFile.length();
+                String fileSize = clientFile.length() + "";
+
+                sendMessage("GET()", "1", fileSize + "/" + file.getName());
+                FileInputStream fis = new FileInputStream(clientFile);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                bis.read(buffer, 0, buffer.length);
+                OutputStream os = s.getOutputStream();
+                os.write(buffer, 0, buffer.length);
+                os.flush();
+
+                //System.out.println("[Server]: done");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                //sendError("Unable to download");
+            }
+        }
+        sendMessage("GET()", "1", "Successfully downloaded file!");
+    }
     @Override
     public void setClientName(String clientName) {
         this.clientName = clientName;
@@ -402,7 +446,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     @Override
     public void setCurrClientUUID(String currClientUUID) {
         this.currClientUUID = currClientUUID;
-
     }
 
     @Override
@@ -413,12 +456,15 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     @Override
     public void setMsgNum(int msgNum) {
         this.msgNum = msgNum;
-
     }
 
     @Override
     public int getMsgNum() {
         return msgNum;
+    }
+
+    public void incrementMsgNum(){
+        setMsgNum(getMsgNum()+1);
     }
 
 
