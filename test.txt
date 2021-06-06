@@ -1,1 +1,1 @@
-I am aware you can store no more than +127 in a java byte, and the documentation says that a byte is only 8 bits but here I am told that it actually takes up the same amount of memory as an int, and therefore is just a Type that helps in code comprehension and not efficiency.
+ÐÏ}qn£éÆï¾îÌæáÃ/127.0.0.1;;GET();;2;;Successfully downloa

@@ -168,6 +168,23 @@ public class Client {
     public void putFile(String localPath, String serverPath){
         if(secure){
             ClientSSE sse = new ClientSSE(getName());
+            sendMessage("LOOKUP()", getName());
+            receiveMessage();
+            if(getServerMessageContents().equals("true")){
+                try {
+                    System.out.println("exists true");
+                    getFile(getName() +"/.lookup", tmpFolder + ".lookup");
+                    System.out.println(tmpFolder +".lookup");
+                    File tmp = new File(tmpFolder +".lookup");
+                    sse.setLookup(tmp);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+
+
             File encrypted = sse.encryptFile(new File(localPath));
             File lookup = sse.getLookup();
             uploadFile(encrypted.getAbsolutePath(), serverPath);

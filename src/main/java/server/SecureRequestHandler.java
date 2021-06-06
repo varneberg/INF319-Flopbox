@@ -90,10 +90,27 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             case "RENAME()":
                 renameFile(contents);
                 break;
+            case "LOOKUP()":
+                lookupExists(contents);
+                break;
             default:
                 sendError("Unrecognized action");
                 break;
         }
+    }
+
+    private void lookupExists(String contents) {
+        String storagePath = handler.getStoragePath();
+        String filePath = storagePath + contents + "/.lookup";
+        File tmp = new File(filePath );
+        System.out.println(filePath);
+        if (tmp.isFile()){
+            sendMessage("LOOKUP()", "1", "true");
+        }
+        else {
+            sendMessage("LOOKUP()", "1", "false");
+        }
+
     }
 
     public void searchFiles(String searchToken){
@@ -312,6 +329,33 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     @Override
     public void sendFile(String filePath) {
+        String storagePath = handler.getStoragePath();
+        String fileName = storagePath + filePath;
+        if (!validateClient()) {
+            sendError("Unauthorized");
+            return;
+        }
+        try {
+            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+            File clientFile = new File(fileName);
+            byte[] buffer = new byte[(int) clientFile.length()];
+            long filesize = clientFile.length();
+            String fileSize = clientFile.length() + "";
+
+            sendMessage("GET()", "1", fileSize);
+            FileInputStream fis = new FileInputStream(clientFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            bis.read(buffer, 0, buffer.length);
+            OutputStream os = s.getOutputStream();
+            os.write(buffer, 0, buffer.length);
+            //os.flush();
+            sendMessage("GET()", "2", "Successfully downloaded file!");
+            //System.out.println("[Server]: done");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            //sendError("Unable to download");
+        }
     }
 
     @Override
