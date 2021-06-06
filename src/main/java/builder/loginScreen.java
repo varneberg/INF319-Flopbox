@@ -5,6 +5,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class loginScreen {
+    public Text txt_register;
     private Stage stage;
     // Log in screen
     public Text txt_response;
@@ -48,10 +51,12 @@ public class loginScreen {
     public void login(ActionEvent event) {
         try {
             if (field_user.getText().trim().isEmpty()) {
-                txt_response.setText("Please enter a username");
+                //txt_response.setText("Please enter a username");
+                printRed("Please enter a password");
             }
             if (field_passwd.getText().trim().isEmpty()) {
                 txt_response.setText("Please enter a password");
+                printRed("Please enter a password");
             } else {
                 this.username = field_user.getText();
                 this.password = field_passwd.getText();
@@ -62,29 +67,10 @@ public class loginScreen {
                     //App.setRoot("/fxml/file_screen.fxml");
                     gotoFiles();
                 } else {
-                    txt_response.setText(client.getServerMessageContents());
+                    printRed(client.getServerMessageContents());
+                    //printServerResponse();
+                    //txt_response.setText(client.getServerMessageContents());
                 }
-                /*
-                if (client.validRequest()) {
-                    setUsername(username);
-                    if(client.getServerMessageType().equals("LOGIN()")) {
-                        setUUID(client.getServerMessageContents());
-                        ClientHandler.getInstance().setClient(client);
-                        //String[] files = client.getFileNames(username);
-                        //fileList = client.getFileArray(username);
-                        //client.printServerContents();
-                        //switchFileScreen();
-                        gotoFiles();
-                        //fs.initialize(client);
-                        //fileScreen fileScreen = new fileScreen(client);
-                        //switchToFileScreen(event);
-                    }else{
-                        txt_response.setText(client.getServerMessageContents());
-                    }
-                } else {
-                    txt_response.setText(client.getServerMessageContents());
-                }
-                */
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,6 +90,20 @@ public class loginScreen {
 
     }
 
+    public void printRed(String input){
+        txt_response.setText(input);
+        txt_response.setFill(Color.RED);
+        //txt_response.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
+    }
+
+    public void printGreen(String input){
+        txt_response.setText(input);
+        txt_response.setFill(Color.GREEN);
+        txt_response.setStyle("-fx-text-fill: green; -fx-font-size: 12px;");
+    }
+
+
+
     @FXML
     private void gotoLogin() throws IOException {
         App.setRoot("/fxml/login_screen.fxml");
@@ -121,6 +121,39 @@ public class loginScreen {
         //client.printServerContents();
         txt_response.setText(client.getServerMessageContents());
     }
+
+
+    public void register_click(MouseEvent event){
+        String username = getField_user();
+        String password = getField_passwd();
+        client.createUser(username, password);
+        if(client.validRequest()){
+            printGreen(client.getServerMessageContents());
+
+        } else {
+            printRed(client.getServerMessageContents());
+
+        }
+        //txt_response.setText(client.getServerMessageContents());
+
+    }
+
+
+    public String getField_user() {
+        if(field_user.getText().isEmpty()){
+            txt_response.setText("Please provide a username");
+        }
+        return field_user.getText();
+    }
+
+
+    public String getField_passwd(){
+        if(field_user.getText().isEmpty()){
+            txt_response.setText("Please provide a password");
+        }
+        return field_passwd.getText();
+    }
+
 
     public void viewFiles(String dir){
         client.getFileNames(dir);

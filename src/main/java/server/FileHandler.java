@@ -2,44 +2,58 @@ package server;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
 
 public class FileHandler {
     private String sep = ",";
 
     private static String storagePath = "./src/main/resources/clientDirs/";
 
-    public String listFiles(String filePath) throws IOException {
+    public String listFiles(String filePath) throws IOException, NullPointerException {
         String[] paths;
         String dir = "./src/main/resources/clientDirs/" + filePath;
         File f = new File(dir);
-        StringBuilder fileString = new StringBuilder();
+        StringBuilder fileString;
+        List<String> dirList = new ArrayList<>();
+        List<String> fileList = new ArrayList<>();
 
-        try {
-            for (File fi : f.listFiles()){
-                if (fi.getName().equals(".lookup")){
-                    continue;
-                }
-                if (fi.isDirectory()) {
-                    fileString.append(fi.getName()).append("/").append(sep);
-                } else if (fi.isFile()) {
-                    fileString.append(fi.getName()).append(sep);
-                }
-            }
-            if(fileString.length() == 0){
-                fileString.append("Empty Directory");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(Objects.requireNonNull(f.listFiles()).length == 0){
+            return "Empty Directory";
+
         }
-        return fileString.toString();
+        fileString = new StringBuilder();
+        for (File fi : f.listFiles()){
+            if (fi.getName().equals(".lookup")){
+                continue;
+            }
+            if (fi.isDirectory()) {
+                fileString.append(fi.getName()).append("/").append(sep);
+                dirList.add(fi.getName());
+            } else if (fi.isFile()) {
+                fileString.append(fi.getName()).append(sep);
+                fileList.add(fi.getName());
+            }
+        }
+        if(fileString.length() == 0){
+            fileString.append("Empty Directory");
+        }
+        return combineLists(dirList, fileList);
+    }
+
+    public String combineLists(List<String> dirList, List<String> fileList){
+        StringBuilder sb = new StringBuilder();
+        Collections.sort(dirList);
+        for (String s : dirList) {
+            String toAdd = s +"/"+sep;
+            sb.append(toAdd);
+        }
+        Collections.sort(fileList);
+        for (String s : fileList){
+            String toAdd = s + sep;
+            sb.append(toAdd);
+        }
+        return sb.toString();
+
     }
 
     public List<File> listAllFiles(String directoryName) {
