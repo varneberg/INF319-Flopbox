@@ -46,7 +46,6 @@ public class StartServer {
 
         ClientSSE sse = new ClientSSE("123");
         //sse.encryptFile(f1);
-        sse.test("aaaaaaaaaaa");
 
         System.out.println(sse.generateSearchToken("abc").length());
         //client.putFile("./src/test/testFiles/test2.txt", "burp/test2.txt");
