@@ -43,13 +43,6 @@ public class ClientSSE {
         this.key = key;
     }
 
-    public void test(String input){
-        System.out.println(input);
-
-        input = AES.encrypt(input, key);
-        System.out.println(input + " len:" + input.length());
-    }
-
     public String generateSearchToken(String keyword){
         keyword = correctLength(keyword);
         String L = keyword.substring(0,blockSize-m);
@@ -59,7 +52,6 @@ public class ClientSSE {
 
         System.out.println(token.length());
 
-        token = AES.encrypt(token, key);
 
         return token;
     }
@@ -154,7 +146,6 @@ public class ClientSSE {
 
         String X = L + R;
 
-        X = AES.decrypt(X, key);
         System.out.println("x length: "+X.length());
 
         return X;
@@ -245,7 +236,6 @@ public class ClientSSE {
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
 
-        word = AES.encrypt(word, key);
         System.out.println("word length: "+word.length());
 
 
