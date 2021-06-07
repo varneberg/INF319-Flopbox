@@ -75,6 +75,7 @@ public class FileScreen {
         return null;
     }
 
+
     public boolean isError(){
         String messageType = handler.getClient().getServerMessageType();
         if(messageType.equals("ERROR()")){
@@ -93,6 +94,7 @@ public class FileScreen {
             if (!olist.isEmpty()) {
                 file_list.setItems(olist);
                 setCurrentDir(directory);
+
             }
 
                 //setFile_list(file_list);

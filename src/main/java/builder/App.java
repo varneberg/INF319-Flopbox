@@ -49,7 +49,7 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        boolean secure = false;
+        boolean secure = true;
         SecureState.getINSTANCE().setSecure(secure);
         //ClientHandler handler = new ClientHandler();
         Server server = new Server(6666);
