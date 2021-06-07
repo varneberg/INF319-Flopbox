@@ -131,10 +131,19 @@ public class Client {
     }
 
     public void changeUsername(String newUsername){
+        String toSend = "username/"+newUsername;
+        sendMessage("UPDATE()", toSend);
+        receiveMessage();
+        //receiveMessage();
 
     }
 
-    public void changePassword(){
+    public void changePassword(String newPassword){
+        if(secure){
+            newPassword = SHA256.getDigest(newPassword);
+        }
+        String toSend = "password/"+newPassword;
+        sendMessage("UPDATE()", toSend);
 
     }
 
@@ -210,16 +219,17 @@ public class Client {
         int read = 0;
         int bytesRead=0;
 
-        while((read = dis.read(buffer)) >= size){
+        while((read = dis.read(buffer)) > size){
             if(getServerMessageStatus().equals("2")){
                 break;
-            }
+            }else {
                 fos.write(buffer, 0, read);
                 bytesRead = bytesRead + read;
-            //System.out.println(bytesRead+"/"+size);
-            //if(size >= bytesRead){
-            //    continue;
-            //}else {break;}
+                //System.out.println(bytesRead+"/"+size);
+                //if(size >= bytesRead){
+                //    continue;
+                //}else {break;}
+            }
 
         }
         receiveMessage();

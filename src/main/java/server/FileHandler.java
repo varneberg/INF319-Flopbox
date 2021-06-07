@@ -17,27 +17,34 @@ public class FileHandler {
         List<String> dirList = new ArrayList<>();
         List<String> fileList = new ArrayList<>();
 
-        if(Objects.requireNonNull(f.listFiles()).length == 0){
-            return "Empty Directory";
 
-        }
+
         fileString = new StringBuilder();
-        for (File fi : f.listFiles()){
-            if (fi.getName().equals(".lookup")){
-                continue;
+
+        try {
+            for (File fi : f.listFiles()) {
+                if (f.listFiles().length == 0) {
+                    return "Empty Directory";
+                }
+                if (fi.getName().equals(".lookup")) {
+                    continue;
+                }
+                if (fi.isDirectory()) {
+                    fileString.append(fi.getName()).append("/").append(sep);
+                    dirList.add(fi.getName());
+                } else if (fi.isFile()) {
+                    fileString.append(fi.getName()).append(sep);
+                    fileList.add(fi.getName());
+                }
             }
-            if (fi.isDirectory()) {
-                fileString.append(fi.getName()).append("/").append(sep);
-                dirList.add(fi.getName());
-            } else if (fi.isFile()) {
-                fileString.append(fi.getName()).append(sep);
-                fileList.add(fi.getName());
+            if (fileString.length() == 0) {
+                fileString.append("Empty Directory");
             }
+            return combineLists(dirList, fileList);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+            return "Empty directory";
         }
-        if(fileString.length() == 0){
-            fileString.append("Empty Directory");
-        }
-        return combineLists(dirList, fileList);
     }
 
     public String combineLists(List<String> dirList, List<String> fileList){

@@ -4,6 +4,7 @@ import builder.SecureState;
 import message.clientMessage;
 import message.serverMessage;
 import storage.ClientStorage;
+import storage.DB;
 
 import java.io.*;
 import java.net.Socket;
@@ -84,6 +85,7 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
                 closeConnection();
                 break;
             case "CREATEUSER()":
+                //registerClient(contents);
                 registerClient(contents);
                 break;
             case "LOGIN()":
@@ -175,6 +177,7 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         return input.split("/");
     }
 
+    /*
     @Override
     public void registerClient(String input) {
         //String[] creds = input.split("/");
@@ -190,6 +193,26 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+     */
+
+    @Override
+    public void registerClient(String input){
+        String[] creds = splitInput(input);
+        String username = creds[0];
+        String password = creds[1];
+        try {
+            if(DB.clientExists(username)){
+                sendError("Username already registered");
+            }else {
+                DB.addClient(username, password);
+                sendMessage("CREATEUSER()", "1", "User "+username+" created");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            System.out.println("ouf");
         }
     }
 
@@ -212,8 +235,9 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             String clientFiles = handler.listFiles(msgContents);
             if (clientFiles == null) {
                 //System.out.println("null");
-                sendMessage("FILES()", "0", " ");
+                sendMessage("ERROR()", "0", " ");
             }
+            //System.out.println(clientFiles);
             sendMessage("FILES()", "1", clientFiles);
             //sendMessage("LIST()", "1", clientFiles);
         } catch (IOException e) {
@@ -248,6 +272,36 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
 
     @Override
     public void updateCredentials(String contents){
+        if(!validateClient()){
+            sendError("Unauthorized action");
+            return;
+        }
+        String[] fields = contents.split("/");
+        String command = fields[0];
+        try{
+            String newCred = fields[1];
+            switch (command){
+                case "username":
+                    if(DB.updateUsername(newCred, getClientName())){
+                        sendMessage("UPDATE()", "1", "Updated username");
+                    }else {
+                        sendError("Unable to update password");
+                    }
+                    break;
+                case "password":
+                    if(DB.updatePassword(newCred, getClientName())){
+                        System.out.println("yey");
+                    }
+                    break;
+                default:
+                    System.out.println("huh");
+                    break;
+            }
+
+
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
 
     }
     @Override

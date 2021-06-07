@@ -42,24 +42,21 @@ public class App extends Application {
     }
 
 
+    @FXML
     private static Parent loadFXML(String fxml) throws IOException{
-        try {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource(fxml));
-            return loader.load();
-        } catch (IOException e){
-            e.printStackTrace();
-            return null;
-        }
+        FXMLLoader loader = new FXMLLoader(App.class.getResource(fxml));
+        return loader.load();
     }
 
     public static void main(String[] args) {
-        boolean secure = true;
+        boolean secure = false;
         SecureState.getINSTANCE().setSecure(secure);
         //ClientHandler handler = new ClientHandler();
         Server server = new Server(6666);
         server.startServer();
         launch(args);
-    }
+        System.out.println("Problem in main");
+        }
 
 }
 

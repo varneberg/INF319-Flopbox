@@ -252,11 +252,8 @@ public class FileScreen {
                 chooser.setInitialFileName(toGet);
                 File location = chooser.showSaveDialog(App.getPrimaryStage());
                 String saveLoc = location.toString();
-                System.out.println(saveLoc);
                 handler.getClient().getFile(getCurrentDir() + toGet, saveLoc);
-                System.out.println(getCurrentDir());
-                printServerResponse();
-
+                //printServerResponse();
 
             } else if (isDir(toGet)) {
                 txt_response.setText("Please choose a file");
@@ -264,6 +261,7 @@ public class FileScreen {
         } catch(Exception a){
             a.printStackTrace();
         }
+        displayFiles(getCurrentDir());
     }
 
     public void menuUploadFile(ActionEvent actionEvent) {
@@ -360,18 +358,6 @@ public class FileScreen {
         displayFiles(prevDir);
     }
 
-    /*
-    public void returnIsPressed(KeyEvent keyEvent){
-        if(keyEvent.getCode() == KeyCode.ENTER){
-            if(!field_search.getText().isEmpty()){
-                System.out.println("hallo");
-
-            }
-        }
-
-    }
-     */
-
     public void gotoDir(ActionEvent actionEvent) {
         try {
             if(!field_search.getText().equals("")) {
@@ -392,28 +378,56 @@ public class FileScreen {
 
     public void updateUsername(ActionEvent actionEvent) {
         Stage popup = new Stage();
-        popup.initModality(Modality.APPLICATION_MODAL);
+        //popup.initModality(Modality.APPLICATION_MODAL);
         popup.setTitle("Enter new username");
         Label label = new Label("Enter new username");
         TextField new_username = new TextField();
         Button btn_submit = new Button("Submit");
-        btn_submit.setOnAction(e -> {
-                handler.getClient().changeUsername(new_username.getText());
-                popup.close();
-    });
+
         VBox layout = new VBox(10);
         layout.getChildren().addAll(label,new_username, btn_submit);
         layout.setAlignment(Pos.CENTER);
-        Scene scene = new Scene(layout,300,250);
+        Scene scene = new Scene(layout,250,250);
         popup.setScene(scene);
-        popup.showAndWait();
-
-
-
-
+        popup.show();
+        btn_submit.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String newName = new_username.getText();
+                handler.getClient().changeUsername(new_username.getText());
+                if(!isError()) {
+                    popup.close();
+                }
+            }
+        });
     }
 
     public void updatePassword(ActionEvent actionEvent) {
+        Stage popup = new Stage();
+        //popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Enter new password");
+        Label label = new Label("Enter new password");
+        TextField newPassword = new TextField();
+        Button btn_submit = new Button("Submit");
+
+        VBox layout = new VBox(10);
+        layout.getChildren().addAll(label,newPassword, btn_submit);
+        layout.setAlignment(Pos.CENTER);
+        Scene scene = new Scene(layout,250,250);
+        popup.setScene(scene);
+        popup.showAndWait();
+        btn_submit.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String newName = newPassword.getText();
+                if(!newName.isEmpty()){
+                    handler.getClient().changeUsername(newPassword.getText());
+                    if(!isError()) {
+                        popup.close();
+                    }
+                }
+            }
+        });
 
     }
     /*
