@@ -58,6 +58,12 @@
             <MenuItem mnemonicParsing="false" text="Unselect All" />
           </items>
         </Menu>
+            <Menu mnemonicParsing="false" text="Profile">
+              <items>
+                <MenuItem fx:id="menu_updUsername" mnemonicParsing="false" onAction="#updateUsername" text="Update username" />
+                  <MenuItem fx:id="menu_updPassword" mnemonicParsing="false" onAction="#updatePassword" text="Update password" />
+              </items>
+            </Menu>
       </menus>
     </MenuBar>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="857.0" VBox.vgrow="ALWAYS">

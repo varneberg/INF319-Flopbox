@@ -89,6 +89,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             case "RENAME()":
                 renameFile(contents);
                 break;
+            case "UPDATE()":
+                updateCredentials(contents);
+                break;
             default:
                 sendError("Unrecognized action");
                 break;
@@ -265,6 +268,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         return uuid != null;
     }
 
+    @Override
+    public void updateCredentials(String contents){
+
+    }
 
     @Override
     public void receiveFile(String contents) {
