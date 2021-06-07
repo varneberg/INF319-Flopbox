@@ -66,6 +66,7 @@ public class FileHandler {
             if (file.isFile()) {
             } else if (file.isDirectory()) {
                 resultList.addAll(listAllFiles(file.getAbsolutePath()));
+                resultList.remove(file);
             }
         }
         return resultList;
