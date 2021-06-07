@@ -22,7 +22,7 @@ public class StartServer {
         DB.createClientTable();
         DB.createSecureClientTable();
         //DB.secureDeleteAllClients();
-        System.out.println(DB.SecureListClients());
+        //System.out.println(DB.SecureListClients());
         //System.out.println(cs.listAllClients());
         int port = 6666;
         String address = "localhost";
@@ -40,6 +40,11 @@ public class StartServer {
         System.out.println(client.isAuthenticated());
         client.printServerContents();
 
+        //File f1 = new File("./src/main/resources/test/testFiles/test1.txt");
+        client.putFile("./src/test/testFiles/test1.txt", "burp/test1.txt");
+        System.out.println(client.getServerMessageContents());
+
+        //client.putFile("./src/test/testFiles/test2.txt", "burp/test2.txt");
 
 
 
