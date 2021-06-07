@@ -164,6 +164,7 @@ public class DB {
         Connection con = connect();
         try(PreparedStatement ps = con.prepareStatement(query)){
             ps.executeUpdate();
+            deleteAllClientDirectories();
             System.out.println("[Server]: Deleted all clients");
         }catch(SQLException e){
             e.printStackTrace();

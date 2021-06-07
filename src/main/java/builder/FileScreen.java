@@ -1,6 +1,7 @@
 package builder;
 
 import client.Client;
+import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -10,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -48,6 +50,11 @@ public class FileScreen {
     public ContextMenu popup_file;
     public MenuItem menu_updPassword;
     public MenuItem menu_updUsername;
+    private final Image iconFile = new Image("/Images/file_icon.png");
+    private final Image iconDir = new Image("/Images/folder_icon.png");
+    private final Image iconImage = new Image("/Images/image_icon.png");
+    private final Image iconUnknown = new Image("/Images/question_icon.jpg",20,20,false,false);
+    private Image[] imageArray = {iconFile, iconDir, iconImage};
 
     ClientHandler handler = ClientHandler.getInstance();
     Client client = handler.getClient() ;
@@ -88,11 +95,13 @@ public class FileScreen {
 
     public void displayFiles(String directory){
         files = handler.getClient().getFileArray(directory);
+
         if (handler.getClient().validRequest()) {
             ObservableList<String> olist = FXCollections.observableArrayList(files);
             ObservableList<String> test = FXCollections.observableArrayList();
             if (!olist.isEmpty()) {
-                file_list.setItems(olist);
+                addImages(files);
+                //file_list.setItems(olist);
                 setCurrentDir(directory);
 
             }
@@ -100,13 +109,42 @@ public class FileScreen {
             }
     }
 
-    public void addImages(){
-        ListView<String> listView = new ListView<>();
-        ObservableList<String> elements = FXCollections.observableArrayList();
+    public void addImages(List<String> files){
+        //ListView<String> listViewReference = new ListView<String>();
+        ListView<String> listViewReference = file_list;
+        //ObservableList<String> elements = FXCollections.observableArrayList("File", "Dir", "Image");
+        ObservableList<String> elements = FXCollections.observableArrayList(files);
+        //listViewReference.setItems(elements);
+        listViewReference.setItems(elements);
+        listViewReference.setCellFactory(param -> new ListCell<String>(){
+            private ImageView displayImage = new ImageView();
+
+            @Override
+            public void updateItem(String name, boolean empty){
+                displayImage.setPreserveRatio(true);
+                displayImage.setFitHeight(20);
+                displayImage.setFitWidth(20);
+
+                super.updateItem(name, empty);
+                if(empty){
+                    setText(null);
+                    setGraphic(null);
+                }else{
+                    if(isFile(name)) {
+                        displayImage.setImage(iconFile);
+                    }else if(isDir(name)) {
+                        displayImage.setImage(iconDir);
+                    } else if(isImage(name)){
+                        displayImage.setImage(iconImage);
+                    }else {
+                        displayImage.setImage(iconUnknown);
+                    }
+                    setText(name);
+                    setGraphic(displayImage);
+                }
+            }
+        });
     }
-
-
-
 
     public void setFile_list(ListView<String> file_list) {
         this.file_list = file_list;
@@ -149,10 +187,54 @@ public class FileScreen {
         displayFiles(client.getBaseDir());
     }
 
+    public String getSuffix(String fileName){
+        int lastIndex = fileName.lastIndexOf(".");
+        if(lastIndex == -1){
+            return "";
+        }
+        return fileName.substring(lastIndex);
+
+    }
+
     public boolean isDir(String dir){
         char lastChar = dir.charAt(dir.length()-1);
         return dir.endsWith("/");
     }
+
+    public boolean isImage(String fileName){
+        String suffix = getSuffix(fileName);
+        if(suffix.equals("")){
+            return false;
+        }
+        switch(suffix){
+                case ".jpeg":
+                case ".png":
+                case ".jpg":
+                case ".img":
+                case ".dmg":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+
+    public boolean isFile(String filename){
+        String suffix = getSuffix(filename);
+        if(suffix.equals("")){
+            return false;
+        }
+        switch (suffix){
+            case ".txt":
+                case ".md":
+                case ".doc":
+                case ".docx":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
 
     public void search(ActionEvent actionEvent) {
         ClientHandler handler = ClientHandler.getInstance();
@@ -455,6 +537,42 @@ public class FileScreen {
      */
 }
 
-class fileCell {
-    public fileCell(){}
+class AddImagesToList  {
+    private final Image iconFile = new Image("/Images/file_icon.png");
+    private final Image iconDir = new Image("/Images/folder_icon.png");
+    private final Image iconImage = new Image("/Images/image_icon.png");
+    private Image[] imageArray = {iconFile, iconDir, iconImage};
+    public void start(){
+
+    }
+
+
+    public ListView addImages(){
+        ListView<String> listViewReference = new ListView<String>();
+        ObservableList<String> elements = FXCollections.observableArrayList("File", "Dir", "Image");
+        listViewReference.setItems(elements);
+        listViewReference.setCellFactory(param -> new ListCell<String>(){
+            private ImageView diplayImage = new ImageView();
+            @Override
+            public void updateItem(String name, boolean empty){
+                super.updateItem(name, empty);
+                if(empty){
+                    setText(null);
+                    setGraphic(null);
+                }else{
+                    if(name.equals("File")) {
+                        diplayImage.setImage(imageArray[0]);
+                    }else if(name.equals("Dir")){
+                        diplayImage.setImage(imageArray[1]);
+                    } else if(name.equals("Image")){
+                        diplayImage.setImage(imageArray[2]);
+                    }
+                    setText(name);
+                    setGraphic(diplayImage);
+                }
+            }
+        });
+        return listViewReference;
+    }
+
 }
