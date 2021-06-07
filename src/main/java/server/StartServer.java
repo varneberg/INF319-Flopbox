@@ -23,7 +23,7 @@ public class StartServer {
         DB.createClientTable();
         DB.createSecureClientTable();
         DB.deleteAllClientDirectories();
-        //DB.secureDeleteAllClients();
+        DB.secureDeleteAllClients();
         //System.out.println(DB.SecureListClients());
         //System.out.println(cs.listAllClients());
         int port = 6666;
