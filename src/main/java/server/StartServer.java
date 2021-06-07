@@ -41,7 +41,9 @@ public class StartServer {
         client.printServerContents();
 
         //File f1 = new File("./src/main/resources/test/testFiles/test1.txt");
-        client.putFile("./src/test/testFiles/test1.txt", "burp/test1.txt");
+        //client.putFile("./src/test/testFiles/test1.txt", "burp/test1.txt");
+        System.out.println(client.getServerMessageContents());
+        client.getFile("burp/test1.txt", "./src/main/resources/tmp/test1.txt");
         System.out.println(client.getServerMessageContents());
 
         //client.putFile("./src/test/testFiles/test2.txt", "burp/test2.txt");

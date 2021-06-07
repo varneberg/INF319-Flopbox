@@ -172,18 +172,13 @@ public class Client {
             receiveMessage();
             if(getServerMessageContents().equals("true")){
                 try {
-                    System.out.println("exists true");
                     getFile(getName() +"/.lookup", tmpFolder + ".lookup");
-                    System.out.println(tmpFolder +".lookup");
                     File tmp = new File(tmpFolder +".lookup");
                     sse.setLookup(tmp);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
-
-
 
             File encrypted = sse.encryptFile(new File(localPath));
             File lookup = sse.getLookup();
@@ -234,17 +229,13 @@ public class Client {
         int read = 0;
         int bytesRead=0;
 
-        while((read = dis.read(buffer)) >= size){
+        while(bytesRead < size){
+            read = dis.read(buffer);
             if(getServerMessageStatus().equals("2")){
                 break;
             }
-                fos.write(buffer, 0, read);
-                bytesRead = bytesRead + read;
-            //System.out.println(bytesRead+"/"+size);
-            //if(size >= bytesRead){
-            //    continue;
-            //}else {break;}
-
+            fos.write(buffer, 0, read);
+            bytesRead = bytesRead + read;
         }
         receiveMessage();
         //System.out.println("[Client]: done");
@@ -272,15 +263,13 @@ public class Client {
             int read = 0;
             int bytesRead=0;
 
-            while((read = dis.read(buffer)) > 0){
-                //System.out.println("[Client]: Writing");
+            while(bytesRead < size){
+                read = dis.read(buffer);
+                if(getServerMessageStatus().equals("2")){
+                    break;
+                }
                 fos.write(buffer,0,read);
                 bytesRead = bytesRead + read;
-                //System.out.println(bytesRead+"/"+size);
-                //if(size >= bytesRead){
-                //    continue;
-                //}else {break;}
-
             }
 
             if(fileName.equals(".lookup")){

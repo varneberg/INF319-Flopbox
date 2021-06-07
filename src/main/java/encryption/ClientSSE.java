@@ -122,8 +122,6 @@ public class ClientSSE {
 
     public void setLookup(File lookup) {
         try {
-
-            System.out.println("set lookup");
             File toRead = lookup;
             FileInputStream fis = new FileInputStream(toRead);
             ObjectInputStream ois = new ObjectInputStream(fis);
