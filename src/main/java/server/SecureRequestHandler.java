@@ -74,7 +74,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             case "GET()":
                 sendFile(contents);
                 break;
-            case "SEARCH()": // TODO Searchable encryption
+            case "SEARCH()":
                 searchFiles(contents);
                 break;
             case "PUT()":
@@ -92,13 +92,80 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             case "UPDATE()":
                 updateCredentials(contents);
                 break;
+            case "LOOKUP()":
+                lookupExists(contents);
+                break;
             default:
                 sendError("Unrecognized action");
                 break;
         }
     }
 
+    private void lookupExists(String contents) {
+        String storagePath = handler.getStoragePath();
+        String filePath = storagePath + contents + "/.lookup";
+        File tmp = new File(filePath );
+        System.out.println(filePath);
+        if (tmp.isFile()){
+            sendMessage("LOOKUP()", "1", "true");
+        }
+        else {
+            sendMessage("LOOKUP()", "1", "false");
+        }
 
+    }
+
+    public void searchFiles(String searchToken){
+        List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
+        ServerSSE sse = new ServerSSE();
+        List<File> accepted = new ArrayList<>();
+
+        System.out.println(searchToken);
+
+        for(File file : files){
+            System.out.println(file.getAbsolutePath());
+            if(file.getName().equals(".lookup")){
+                accepted.add(file);
+                continue;
+            }
+
+            if(sse.checkMatch(file, searchToken)){
+                accepted.add(file);
+            }
+        }
+        //only .lookup in accepted files = no files with searchword
+        if(accepted.size() == 1){
+            sendError("No match");
+            return;
+        }
+
+
+        sendMessage("GET()", "1", Integer.toString(accepted.size()));
+        for(File file : accepted){
+            System.out.println("accepted: " + file.getAbsolutePath());
+            try {
+                File clientFile = file;
+                byte[] buffer = new byte[(int) clientFile.length()];
+                String fileSize = clientFile.length() + "";
+
+                sendMessage("GET()", "1", fileSize + "/" + file.getName());
+                FileInputStream fis = new FileInputStream(clientFile);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                bis.read(buffer, 0, buffer.length);
+                OutputStream os = s.getOutputStream();
+                os.write(buffer, 0, buffer.length);
+                os.flush();
+
+                Thread.sleep(500);
+                //System.out.println("[Server]: done");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                //sendError("Unable to download");
+            }
+        }
+        sendMessage("GET()", "1", "Successfully downloaded file!");
+    }
 
     @Override
     public clientMessage receiveMessage() {
@@ -318,6 +385,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             String storagePath = handler.getStoragePath();
             String fileName = storagePath + fileInfo[0];
             String fileSize = fileInfo[1];
+
+            if(fileName.equals(".lookup")){
+                storagePath = handler.getClientPath(getClientName());
+            }
             //receiveFile(filename,filesize);
             InputStream dis = new DataInputStream(s.getInputStream());
             OutputStream fos = new FileOutputStream(fileName);
@@ -342,7 +413,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             //sendMessage("ERROR()", "0", "Unable to upload");
             sendError("Unable to upload");
         }
-
     }
 
 
@@ -355,10 +425,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             return;
         }
         try {
-            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
             File clientFile = new File(fileName);
             byte[] buffer = new byte[(int) clientFile.length()];
-            long filesize = clientFile.length();
             String fileSize = clientFile.length() + "";
 
             sendMessage("GET()", "1", fileSize);
@@ -425,52 +493,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-    public void searchFiles(String searchtoken){
-        List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
-        ServerSSE sse = new ServerSSE();
-        List<File> accepted = new ArrayList<>();
-        for(File file : files){
-            if(file.getName().equals(".lookup")){
-                accepted.add(file);
-                continue;
-            }
-
-            if(sse.checkMatch(file, searchtoken)){
-                accepted.add(file);
-            }
-        }
-        //only .lookup in accepted files = no files with searchword
-        if(accepted.size() == 1){
-            sendError("No match");
-            return;
-        }
-
-        sendMessage("GET()", "1", Integer.toString(accepted.size()));
-        for(File file : accepted){
-            try {
-                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-                File clientFile = file;
-                byte[] buffer = new byte[(int) clientFile.length()];
-                long filesize = clientFile.length();
-                String fileSize = clientFile.length() + "";
-
-                sendMessage("GET()", "1", fileSize + "/" + file.getName());
-                FileInputStream fis = new FileInputStream(clientFile);
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                bis.read(buffer, 0, buffer.length);
-                OutputStream os = s.getOutputStream();
-                os.write(buffer, 0, buffer.length);
-                os.flush();
-
-                //System.out.println("[Server]: done");
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                //sendError("Unable to download");
-            }
-        }
-        sendMessage("GET()", "1", "Successfully downloaded file!");
-    }
     @Override
     public void setClientName(String clientName) {
         this.clientName = clientName;
