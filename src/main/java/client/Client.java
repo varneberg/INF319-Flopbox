@@ -249,10 +249,11 @@ public class Client {
         //System.out.println("[Client]: done");
     }
 
-    public void getMultipleFiles(String searchToken) throws IOException {
+    public void getMultipleFiles(String searchWord) throws IOException {
         String downloadPath = "./src/main/resources/tmp/"; //TODO: download path should be set by user
 
         ClientSSE sse = new ClientSSE(getName());
+        String searchToken = sse.generateSearchToken(searchWord);
         File lookup;
         sendMessage("SEARCH()", searchToken);
         receiveMessage();
@@ -261,6 +262,9 @@ public class Client {
         for(int i=0;i<numberOfFiles;i++){
             receiveMessage();
             String response = getServerMessageContents();
+
+            System.out.println(response);
+
             String[] sizeAndName = response.split("/");
             int size = Integer.parseInt(sizeAndName[0]);
             String fileName = sizeAndName[1];
@@ -273,10 +277,7 @@ public class Client {
 
             while(bytesRead < size){
                 read = dis.read(buffer);
-                if(getServerMessageStatus().equals("2")){
-                    break;
-                }
-                fos.write(buffer,0,read);
+                fos.write(buffer, 0, read);
                 bytesRead = bytesRead + read;
             }
 
@@ -290,9 +291,11 @@ public class Client {
             //System.out.println("[Client]: done");
         }
         receiveMessage();
+        System.out.println("sitter fast her");
 
         for(String file : filesToBeDecrypted){
             File current = sse.decryptFile(new File(file));
+            System.out.println(current.getName());
         }
     }
 
@@ -363,10 +366,11 @@ public class Client {
 
     public void search(String search) {
         if(secure){
-            ClientSSE sse = new ClientSSE(getName());
-            String token = sse.generateSearchToken(search);
-
-
+            try {
+                getMultipleFiles(search);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
         else {
