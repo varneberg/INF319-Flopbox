@@ -2,6 +2,7 @@ package server;
 
 import builder.SecureState;
 import client.Client;
+import encryption.ClientSSE;
 import encryption.MD5;
 import encryption.SHA256;
 import malicious.maliciousSQL;
@@ -40,12 +41,14 @@ public class StartServer {
         System.out.println(client.isAuthenticated());
         client.printServerContents();
 
-        //File f1 = new File("./src/main/resources/test/testFiles/test1.txt");
+        //File f1 = new File("./src/test/testFiles/test1.txt");
         //client.putFile("./src/test/testFiles/test1.txt", "burp/test1.txt");
-        System.out.println(client.getServerMessageContents());
-        client.getFile("burp/test1.txt", "./src/main/resources/tmp/test1.txt");
-        System.out.println(client.getServerMessageContents());
 
+        ClientSSE sse = new ClientSSE("123");
+        //sse.encryptFile(f1);
+        sse.test("aaaaaaaaaaa");
+
+        System.out.println(sse.generateSearchToken("abc").length());
         //client.putFile("./src/test/testFiles/test2.txt", "burp/test2.txt");
 
 

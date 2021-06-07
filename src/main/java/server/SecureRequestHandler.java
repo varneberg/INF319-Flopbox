@@ -119,7 +119,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
         ServerSSE sse = new ServerSSE();
         List<File> accepted = new ArrayList<>();
+
+        System.out.println(searchToken);
+
         for(File file : files){
+            System.out.println(file.getAbsolutePath());
             if(file.getName().equals(".lookup")){
                 accepted.add(file);
                 continue;
@@ -135,13 +139,13 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             return;
         }
 
+
         sendMessage("GET()", "1", Integer.toString(accepted.size()));
         for(File file : accepted){
+            System.out.println("accepted: " + file.getAbsolutePath());
             try {
-                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                 File clientFile = file;
                 byte[] buffer = new byte[(int) clientFile.length()];
-                long filesize = clientFile.length();
                 String fileSize = clientFile.length() + "";
 
                 sendMessage("GET()", "1", fileSize + "/" + file.getName());
@@ -152,6 +156,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
                 os.write(buffer, 0, buffer.length);
                 os.flush();
 
+                Thread.sleep(500);
                 //System.out.println("[Server]: done");
 
             } catch (Exception e) {
@@ -387,10 +392,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             return;
         }
         try {
-            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
             File clientFile = new File(fileName);
             byte[] buffer = new byte[(int) clientFile.length()];
-            long filesize = clientFile.length();
             String fileSize = clientFile.length() + "";
 
             sendMessage("GET()", "1", fileSize);

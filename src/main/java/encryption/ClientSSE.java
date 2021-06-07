@@ -7,6 +7,28 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Base64;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 public class ClientSSE {
 
@@ -21,12 +43,24 @@ public class ClientSSE {
         this.key = key;
     }
 
+    public void test(String input){
+        System.out.println(input);
+
+        input = AES.encrypt(input, key);
+        System.out.println(input + " len:" + input.length());
+    }
+
     public String generateSearchToken(String keyword){
         keyword = correctLength(keyword);
         String L = keyword.substring(0,blockSize-m);
         int k = L.hashCode();
 
         String token = keyword + k;
+
+        System.out.println(token.length());
+
+        token = AES.encrypt(token, key);
+
         return token;
     }
 
@@ -79,6 +113,8 @@ public class ClientSSE {
     }
 
     private String decryptBlock(String word, RandomString randomStringGenerator){
+
+
         String C1 = word.substring(0,blockSize-m);
         String C2 = word.substring(m);
 
@@ -117,12 +153,17 @@ public class ClientSSE {
         String R = new String(RBytes, Charset.forName("ISO-8859-1"));
 
         String X = L + R;
+
+        X = AES.decrypt(X, key);
+        System.out.println("x length: "+X.length());
+
         return X;
     }
 
     public void setLookup(File lookup) {
         try {
             File toRead = lookup;
+
             FileInputStream fis = new FileInputStream(toRead);
             ObjectInputStream ois = new ObjectInputStream(fis);
 
@@ -144,6 +185,7 @@ public class ClientSSE {
 
     public File getLookup() {
         File lookupFile = new File(tmpFolder + ".lookup");
+
         try {
             FileOutputStream fos = new FileOutputStream(lookupFile);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -155,6 +197,7 @@ public class ClientSSE {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
         return lookupFile;
     }
 
@@ -201,6 +244,11 @@ public class ClientSSE {
 
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
+
+        word = AES.encrypt(word, key);
+        System.out.println("word length: "+word.length());
+
+
         String L = word.substring(0,blockSize-m);
         String R = word.substring(m);
         int k = L.hashCode();
@@ -236,6 +284,8 @@ public class ClientSSE {
         String C2string = new String(C2, Charset.forName("ISO-8859-1"));
 
         String C = C1string + C2string;
+
+
         return C;
     }
 
@@ -304,4 +354,6 @@ public class ClientSSE {
         }
 
     }
+    
+
 }
