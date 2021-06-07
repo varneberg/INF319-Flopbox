@@ -50,7 +50,7 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File decrypted = new File(tmpFolder + "decrypted.txt");
+        File decrypted = new File(tmpFolder + encrypted.getName());
 
         try {
 
@@ -120,9 +120,9 @@ public class ClientSSE {
         return X;
     }
 
-    public void setLookup(File lookup) throws IOException {
+    public void setLookup(File lookup) {
         try {
-            File toRead = new File(tmpFolder + ".lookup");
+            File toRead = lookup;
             FileInputStream fis = new FileInputStream(toRead);
             ObjectInputStream ois = new ObjectInputStream(fis);
 
@@ -142,7 +142,7 @@ public class ClientSSE {
         }
     }
 
-    public File getLookup() throws IOException {
+    public File getLookup() {
         File lookupFile = new File(tmpFolder + ".lookup");
         try {
             FileOutputStream fos = new FileOutputStream(lookupFile);
@@ -168,7 +168,7 @@ public class ClientSSE {
         Random random = new Random(seed.hashCode());
         RandomString randomStringGenerator = new RandomString(m,random);
 
-        File encrypted = new File(tmpFolder + "encrypted.txt");
+        File encrypted = new File(tmpFolder + clear.getName());
         try {
 
             Scanner fileReader = new Scanner(clear);

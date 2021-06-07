@@ -23,7 +23,7 @@ public class Client {
     Thread t;
     int port;
     Socket s;
-    private static String storagePath = "src/main/resources/clientStorage/";
+    private static String tmpFolder = "./src/main/resources/tmp/";
     private BufferedReader clientInput = null;
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
@@ -174,6 +174,32 @@ public class Client {
     }
 
     public void putFile(String localPath, String serverPath){
+        if(secure){
+            ClientSSE sse = new ClientSSE(getName());
+            sendMessage("LOOKUP()", getName());
+            receiveMessage();
+            if(getServerMessageContents().equals("true")){
+                try {
+                    getFile(getName() +"/.lookup", tmpFolder + ".lookup");
+                    File tmp = new File(tmpFolder +".lookup");
+                    sse.setLookup(tmp);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            File encrypted = sse.encryptFile(new File(localPath));
+            File lookup = sse.getLookup();
+            uploadFile(encrypted.getAbsolutePath(), serverPath);
+            uploadFile(lookup.getAbsolutePath(), getName() + "/" + lookup.getName());
+        }
+        else{
+            uploadFile(localPath, serverPath);
+        }
+
+    }
+
+    private void uploadFile(String localPath, String serverPath){
         try {
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
             File clientFile = new File(localPath);
@@ -194,6 +220,7 @@ public class Client {
             e.printStackTrace();
         }
     }
+
     public void createDir(String folderPath){
         sendMessage("DIR()", folderPath);
         receiveMessage();
@@ -210,17 +237,13 @@ public class Client {
         int read = 0;
         int bytesRead=0;
 
-        while((read = dis.read(buffer)) >= size){
+        while(bytesRead < size){
+            read = dis.read(buffer);
             if(getServerMessageStatus().equals("2")){
                 break;
             }
-                fos.write(buffer, 0, read);
-                bytesRead = bytesRead + read;
-            //System.out.println(bytesRead+"/"+size);
-            //if(size >= bytesRead){
-            //    continue;
-            //}else {break;}
-
+            fos.write(buffer, 0, read);
+            bytesRead = bytesRead + read;
         }
         receiveMessage();
         //System.out.println("[Client]: done");
@@ -248,15 +271,13 @@ public class Client {
             int read = 0;
             int bytesRead=0;
 
-            while((read = dis.read(buffer)) > 0){
-                //System.out.println("[Client]: Writing");
+            while(bytesRead < size){
+                read = dis.read(buffer);
+                if(getServerMessageStatus().equals("2")){
+                    break;
+                }
                 fos.write(buffer,0,read);
                 bytesRead = bytesRead + read;
-                //System.out.println(bytesRead+"/"+size);
-                //if(size >= bytesRead){
-                //    continue;
-                //}else {break;}
-
             }
 
             if(fileName.equals(".lookup")){
