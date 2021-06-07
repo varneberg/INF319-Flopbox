@@ -1,13 +1,11 @@
 package server;
 
-import builder.SecureState;
 import encryption.ServerSSE;
 import message.clientMessage;
 import message.serverMessage;
 import org.sqlite.SQLiteException;
 import storage.ClientStorage;
 import storage.DB;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -16,22 +14,16 @@ import java.util.*;
 
 class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     private Socket s;
-    InputStream dataInput = null;
-    OutputStream dataOutput = null;
     private ClientStorage cs = new ClientStorage();
     private FileHandler handler = new FileHandler();
     private String currClientUUID;
-    private String currClientAddress = null;
     private String clientName;
     private clientMessage prev = null;
-    //private String sep = ";;";
     private BufferedReader serverInput;
     private PrintWriter serverOutput;
-    //private clientMessage clientMsg;
     private int msgNum=0;
     private LinkedList<serverMessage> sendList = new LinkedList<>();
     private LinkedList<clientMessage> receiveList = new LinkedList<>();
-    //boolean secure = SecureState.getINSTANCE().isSecure();
     boolean running;
 
     SecureRequestHandler(Socket socket) {
@@ -55,7 +47,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     @Override
     public void messageHandler() throws IOException{
         clientMessage clientMsg = receiveMessage();
-        //FileHandler handler = new FileHandler();
         String requestType = clientMsg.getRequestType();
         String contents = clientMsg.getMessageContents();
         switch (requestType) {
@@ -105,7 +96,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         String storagePath = handler.getStoragePath();
         String filePath = storagePath + contents + "/.lookup";
         File tmp = new File(filePath );
-        System.out.println(filePath);
         if (tmp.isFile()){
             sendMessage("LOOKUP()", "1", "true");
         }
@@ -120,10 +110,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         ServerSSE sse = new ServerSSE();
         List<File> accepted = new ArrayList<>();
 
-        System.out.println(searchToken);
-
         for(File file : files){
-            System.out.println(file.getAbsolutePath());
             if(file.getName().equals(".lookup")){
                 accepted.add(file);
                 continue;
@@ -142,7 +129,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
         sendMessage("GET()", "1", Integer.toString(accepted.size()));
         for(File file : accepted){
-            System.out.println("accepted: " + file.getAbsolutePath());
             try {
                 File clientFile = file;
                 byte[] buffer = new byte[(int) clientFile.length()];
@@ -157,11 +143,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
                 os.flush();
 
                 Thread.sleep(500);
-                //System.out.println("[Server]: done");
 
             } catch (Exception e) {
                 e.printStackTrace();
-                //sendError("Unable to download");
             }
         }
         sendMessage("GET()", "1", "Successfully downloaded file!");
@@ -281,7 +265,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         } catch (SQLiteException e){
             sendError("User already exists");
         } catch (SQLException e) {
-           //e.printStackTrace();
            sendError("An error occurred");
         }
     }
@@ -328,9 +311,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }else{
             sendError("Login()","Credentials does not match");
         }
-
-        //sendMessage("LOGIN()","1", genUUID());
-
     }
 
     @Override
@@ -382,15 +362,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
         try {
             String[] fileInfo = contents.split(",");
-            //filename = contents;
             String storagePath = handler.getStoragePath();
             String fileName = storagePath + fileInfo[0];
             String fileSize = fileInfo[1];
-
-            if(fileName.equals(".lookup")){
-                storagePath = handler.getClientPath(getClientName());
-            }
-            //receiveFile(filename,filesize);
             InputStream dis = new DataInputStream(s.getInputStream());
             OutputStream fos = new FileOutputStream(fileName);
             int size = Integer.parseInt(fileSize);
@@ -400,18 +374,14 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             int bytesRead = 0;
 
             while ((read = dis.read(buffer)) > 0) {
-                //System.out.println("[Server]: Writing");
                 fos.write(buffer, 0, read);
                 bytesRead = bytesRead + read;
-                //System.out.println(bytesRead+"/"+size);
                 if (size == bytesRead) {
                     break;
                 }
-                //else {break;}
             }
             sendMessage("PUT()", "1", "File uploaded");
         } catch (Exception e) {
-            //sendMessage("ERROR()", "0", "Unable to upload");
             sendError("Unable to upload");
         }
     }
@@ -438,11 +408,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             os.write(buffer, 0, buffer.length);
             os.flush();
             sendMessage("GET()", "2", "Successfully downloaded file!");
-            //System.out.println("[Server]: done");
 
         } catch (Exception e) {
             e.printStackTrace();
-            //sendError("Unable to download");
         }
     }
 
@@ -452,7 +420,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         String storagePath = handler.getStoragePath();
         String clientPath = handler.getClientPath(getClientName());
         File toDelete = new File(clientPath + path);
-        System.out.println(toDelete);
         if (toDelete.delete()) {
             sendMessage("DEL()", "1", "File deleted");
         } else {
@@ -541,8 +508,5 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     public boolean isRunning() {
         return running;
     }
-
-
-
-
+    
 }

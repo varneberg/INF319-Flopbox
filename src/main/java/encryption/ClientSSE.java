@@ -7,28 +7,10 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Base64;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
 
 public class ClientSSE {
 
@@ -49,10 +31,6 @@ public class ClientSSE {
         int k = L.hashCode();
 
         String token = keyword + k;
-
-        System.out.println(token.length());
-
-
         return token;
     }
 
@@ -146,7 +124,6 @@ public class ClientSSE {
 
         String X = L + R;
 
-        System.out.println("x length: "+X.length());
 
         return X;
     }
@@ -165,10 +142,6 @@ public class ClientSSE {
 
             this.lookup = mapInFile;
 
-            //print All data in MAP
-            for(Map.Entry<String,String> m :mapInFile.entrySet()){
-                System.out.println(m.getKey()+" : "+m.getValue());
-            }
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -207,12 +180,10 @@ public class ClientSSE {
 
             Scanner fileReader = new Scanner(clear);
             fileReader.hasNextLine();
-            //System.out.println(fileReader.hasNextLine());
             FileWriter fileWriter = new FileWriter(encrypted);
             while (fileReader.hasNextLine()) {
                 String data = fileReader.nextLine();
                 String[] words = data.split(" ");
-
 
                 for(String word : words){
                     String encryptedWord = encryptWord(word,randomStringGenerator);
@@ -235,9 +206,6 @@ public class ClientSSE {
 
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
-
-        System.out.println("word length: "+word.length());
-
 
         String L = word.substring(0,blockSize-m);
         String R = word.substring(m);
