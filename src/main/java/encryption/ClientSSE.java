@@ -124,7 +124,6 @@ public class ClientSSE {
 
         String X = L + R;
 
-        System.out.println("x length: "+X.length());
 
         return X;
     }

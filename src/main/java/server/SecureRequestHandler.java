@@ -96,7 +96,6 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         String storagePath = handler.getStoragePath();
         String filePath = storagePath + contents + "/.lookup";
         File tmp = new File(filePath );
-        System.out.println(filePath);
         if (tmp.isFile()){
             sendMessage("LOOKUP()", "1", "true");
         }
@@ -509,8 +508,5 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     public boolean isRunning() {
         return running;
     }
-
-
-
-
+    
 }
