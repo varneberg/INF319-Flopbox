@@ -107,7 +107,6 @@ public class ClientStorage {
         if(secure){
             return secureClientQuery(username, password);
         }
-
         String out = "";
         String sql =
                 "SELECT * FROM clients WHERE uname = '"+ username + "'" + " AND password = '" + password + "'";

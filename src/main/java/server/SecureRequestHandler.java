@@ -320,6 +320,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             String uuid = genUUID();
             setClientName(username);
             setCurrClientUUID(uuid);
+            if(!DB.clientDirExists(username)){
+                DB.createClientDir(username);
+            }
             sendMessage("LOGIN()", "1", uuid);
         }else{
             sendError("Login()","Credentials does not match");
@@ -337,8 +340,38 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     @Override
     public void updateCredentials(String contents){
+        if(!validateClient()){
+            sendError("Unauthorized action");
+            return;
+        }
+        String[] fields = contents.split("/");
+        String command = fields[0];
+        String newCred = fields[1];
+        switch (command){
+            case "username":
+                try {
+                    DB.secureUpdateUsername(newCred, getClientName());
+                    sendMessage("UPDATE()", "1", "Updated username");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    sendError("Unable to update username");
+                }
+                break;
+            case "password":
+                try {
+                    DB.secureUpdatePassword(newCred, getClientName());
+                    sendMessage("UPDATE()", "1", "Updated password");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    sendError("Unable to update password");
+                }
+                break;
+            default:
+                sendError("Unrecognized action");
+                break;
+            }
+        }
 
-    }
 
     @Override
     public void receiveFile(String contents) {
@@ -402,7 +435,7 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             bis.read(buffer, 0, buffer.length);
             OutputStream os = s.getOutputStream();
             os.write(buffer, 0, buffer.length);
-            //os.flush();
+            os.flush();
             sendMessage("GET()", "2", "Successfully downloaded file!");
             //System.out.println("[Server]: done");
 
