@@ -96,9 +96,13 @@ public class FileScreen {
                 setCurrentDir(directory);
 
             }
-
                 //setFile_list(file_list);
             }
+    }
+
+    public void addImages(){
+        ListView<String> listView = new ListView<>();
+        ObservableList<String> elements = FXCollections.observableArrayList();
     }
 
 

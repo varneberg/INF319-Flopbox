@@ -168,6 +168,47 @@ public class DB {
         }catch(SQLException e){
             e.printStackTrace();
         }
+    }
+
+    public static void secureDeleteClient(String clientName){
+        String query = "DELETE FROM secureClients WHERE uname = ?";
+        Connection con = connect();
+        try(PreparedStatement ps = con.prepareStatement(query)){
+            ps.setString(1,clientName);
+            ps.executeUpdate();
+            System.out.println("[Server]: Deleted user "+clientName);
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        File userDir = new File(getStoragePath(clientName));
+        deleteClientDirectory(userDir);
+        deleteDir(userDir.getName());
+    }
+
+    public static void deleteClientDirectory(File userDir){
+        //String userPath = getStoragePath(uname);
+        //File userDir = new File(userPath);
+        for(File f: userDir.listFiles()){
+            if(f.isDirectory()){
+                deleteClientDirectory(f);
+            }else{
+                f.delete();
+            }
+        }
+    }
+
+    public static void deleteAllClientDirectories(){
+        File sp = new File(storagePath);
+        deleteClientDirectory(sp);
+        
+    }
+
+    public static void deleteDir(String dir){
+        File f = new File(storagePath + dir);
+        if(f.isDirectory()){
+            f.delete();
+        }
 
     }
 
