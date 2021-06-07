@@ -41,13 +41,6 @@ public class loginScreen {
     private List<String> fileList;
 
 
-    //private static builderGUI instance;
-    /*
-    public static builderGUI getInstance(){
-        return instance;
-    }
-     */
-
     public void login(ActionEvent event) {
         try {
             if (field_user.getText().trim().isEmpty()) {
@@ -136,7 +129,6 @@ public class loginScreen {
             printRed(client.getServerMessageContents());
 
         }
-        //txt_response.setText(client.getServerMessageContents());
 
     }
 
@@ -193,7 +185,6 @@ public class loginScreen {
 
     public void returnIsPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER){
-            //System.out.println("enter");
             btn_login.fire();
         }
     }
