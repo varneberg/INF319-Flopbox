@@ -196,11 +196,15 @@ public class DB {
                 f.delete();
             }
         }
+        userDir.delete();
     }
 
     public static void deleteAllClientDirectories(){
         File sp = new File(storagePath);
-        deleteClientDirectory(sp);
+        for(File f : sp.listFiles()){
+            deleteClientDirectory(f);
+        }
+        System.out.println("Deleted all client directories");
         
     }
 

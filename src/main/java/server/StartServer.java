@@ -22,7 +22,7 @@ public class StartServer {
         DB.initDB();
         DB.createClientTable();
         DB.createSecureClientTable();
-        DB.secureDeleteClient("lol");
+        DB.deleteAllClientDirectories();
         //DB.secureDeleteAllClients();
         //System.out.println(DB.SecureListClients());
         //System.out.println(cs.listAllClients());
