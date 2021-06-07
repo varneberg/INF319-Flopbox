@@ -90,11 +90,13 @@ public class loginScreen {
 
     }
 
+
     public void printRed(String input){
         txt_response.setText(input);
         txt_response.setFill(Color.RED);
         //txt_response.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
     }
+
 
     public void printGreen(String input){
         txt_response.setText(input);
