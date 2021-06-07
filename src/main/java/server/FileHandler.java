@@ -10,18 +10,13 @@ public class FileHandler {
     private static String storagePath = "./src/main/resources/clientDirs/";
 
     public String listFiles(String filePath) throws IOException, NullPointerException {
-        String[] paths;
         String dir = "./src/main/resources/clientDirs/" + filePath;
         File f = new File(dir);
         StringBuilder fileString;
         List<String> dirList = new ArrayList<>();
         List<String> fileList = new ArrayList<>();
-
-
-
         fileString = new StringBuilder();
 
-        try {
             for (File fi : f.listFiles()) {
                 if (f.listFiles().length == 0) {
                     return "Empty Directory";
@@ -41,10 +36,6 @@ public class FileHandler {
                 fileString.append("Empty Directory");
             }
             return combineLists(dirList, fileList);
-        }catch (NullPointerException e){
-            e.printStackTrace();
-            return "Empty directory";
-        }
     }
 
     public String combineLists(List<String> dirList, List<String> fileList){

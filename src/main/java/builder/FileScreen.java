@@ -86,9 +86,10 @@ public class FileScreen {
     }
 
     public void displayFiles(String directory){
-        files = client.getFileArray(directory);
+        files = handler.getClient().getFileArray(directory);
         if (handler.getClient().validRequest()) {
             ObservableList<String> olist = FXCollections.observableArrayList(files);
+            ObservableList<String> test = FXCollections.observableArrayList();
             if (!olist.isEmpty()) {
                 file_list.setItems(olist);
                 setCurrentDir(directory);
@@ -446,4 +447,8 @@ public class FileScreen {
     }
 
      */
+}
+
+class fileCell {
+    public fileCell(){}
 }

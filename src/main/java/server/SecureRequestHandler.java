@@ -253,6 +253,9 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             String uuid = genUUID();
             setClientName(username);
             setCurrClientUUID(uuid);
+            if(!DB.clientDirExists(username)){
+                DB.createClientDir(username);
+            }
             sendMessage("LOGIN()", "1", uuid);
         }else{
             sendError("Login()","Credentials does not match");

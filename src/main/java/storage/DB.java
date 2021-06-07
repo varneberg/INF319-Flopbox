@@ -135,14 +135,19 @@ public class DB {
             System.out.println("[Server]: Created user " + uname);
     }
 
-    private static void createClientDir(String uname) {
+    public static void createClientDir(String uname) {
         File f = new File(getStoragePath(uname));
         if(!f.exists()){
             f.mkdir();
         }
     }
 
-    private static void renameDirectory(String clientName, String newName){
+    public static boolean clientDirExists(String dir){
+        File f = new File(getStoragePath(dir));
+        return f.exists();
+    }
+
+    public static void renameDirectory(String clientName, String newName){
         String oldDir = getStoragePath(clientName);
         String newDir = storagePath+newName;
         File od = new File(oldDir);

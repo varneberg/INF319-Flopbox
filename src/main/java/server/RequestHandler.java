@@ -242,6 +242,8 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             //sendMessage("LIST()", "1", clientFiles);
         } catch (IOException e) {
             e.printStackTrace();
+        }catch (NullPointerException a){
+            sendError("Directory does not exist");
         }
     }
 
@@ -263,6 +265,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
                 String uuid = genUUID();
                 setClientName(username);
                 setCurrClientUUID(uuid);
+                if(!DB.clientDirExists(username)){
+                    DB.createClientDir(username);
+                    System.out.println("Directory does not exist");
+                }
                 sendMessage("LOGIN()", "1", uuid);
             }
         } catch (Exception e) {

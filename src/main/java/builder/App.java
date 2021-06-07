@@ -55,8 +55,7 @@ public class App extends Application {
         Server server = new Server(6666);
         server.startServer();
         launch(args);
-        System.out.println("Problem in main");
-        }
+    }
 
 }
 
