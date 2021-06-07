@@ -97,6 +97,8 @@
                   </ContextMenu>
                </contextMenu>
             </ScrollPane>
+            <Button layoutX="628.0" layoutY="12.0" mnemonicParsing="false" text="Button" />
+            <Button layoutX="709.0" layoutY="12.0" mnemonicParsing="false" text="Button" />
          </children>
     </AnchorPane>
   </children>
