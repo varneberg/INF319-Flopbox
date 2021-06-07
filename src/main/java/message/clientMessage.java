@@ -31,7 +31,6 @@ public class clientMessage {
         setRequestType(msg[2]);
         setMessageContents(msg[3]);
 
-
     }
 
     public void setLocaladdress(String localaddress) {

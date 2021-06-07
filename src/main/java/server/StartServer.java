@@ -22,7 +22,8 @@ public class StartServer {
         DB.initDB();
         DB.createClientTable();
         DB.createSecureClientTable();
-        //DB.secureDeleteAllClients();
+        DB.deleteAllClientDirectories();
+        DB.secureDeleteAllClients();
         //System.out.println(DB.SecureListClients());
         //System.out.println(cs.listAllClients());
         int port = 6666;
@@ -36,18 +37,19 @@ public class StartServer {
         Client client = new Client(address, port);
         String username = "burp";
         String password = "123";
-        client.login(username, password);
+        //client.login(username, password);
 
-        System.out.println(client.isAuthenticated());
-        client.printServerContents();
+        //System.out.println(client.isAuthenticated());
+        //client.printServerContents();
+
 
         //File f1 = new File("./src/test/testFiles/test1.txt");
         //client.putFile("./src/test/testFiles/test1.txt", "burp/test1.txt");
 
-        ClientSSE sse = new ClientSSE("123");
+        //ClientSSE sse = new ClientSSE("123");
         //sse.encryptFile(f1);
 
-        System.out.println(sse.generateSearchToken("abc").length());
+        //System.out.println(sse.generateSearchToken("abc").length());
         //client.putFile("./src/test/testFiles/test2.txt", "burp/test2.txt");
 
 
