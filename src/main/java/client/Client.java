@@ -4,19 +4,14 @@ package client;
 import builder.SecureState;
 import message.clientMessage;
 import message.serverMessage;
-import org.apache.commons.io.IOUtils;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import encryption.*;
-import server.FileHandler;
-
 
 public class Client {
-    //public class Client implements Runnable{
 
     private String name; // TODO setName on validated login
     String uuid = null;
@@ -28,11 +23,6 @@ public class Client {
     private PrintWriter clientOutput = null;
     private serverMessage serverMsg = null;
     boolean secure = SecureState.getINSTANCE().isSecure();
-   // private DataOutput dataOutput=null;
-
-
-    //private DataInputStream dataInput=null;
-
 
     public Client(int port) {
         this.port = port;
@@ -62,13 +52,10 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //serverMsg = msg;
-        //return msg;
     }
 
     public void sendMessage(String requestType, String contents) {
         try {
-            //ObjectOutputStream objOut = new ObjectOutputStream(s.getOutputStream());
             clientOutput = new PrintWriter(s.getOutputStream(), true);
             clientMessage message = new clientMessage(s.getInetAddress().toString(), getUuid(), requestType, contents);
             clientOutput.println(message.createMessage());
@@ -82,16 +69,10 @@ public class Client {
 
 
     public void createUser(String username, String password) {
-        //sendServer("CREATEUSER()");
         if(secure){password = SHA256.getDigest(password);}
         String credentials = username + "/" + password;
-        //sendServer("CREATEUSER()",credentials);
         sendMessage("CREATEUSER()", credentials);
-        //serverMessage servermsg = receiveMessage();
         receiveMessage();
-        //return servermsg.getRequestStatus();
-
-        //return serverResponse;
     }
 
 
@@ -111,30 +92,22 @@ public class Client {
     }
 
     public void login(String username, String password) {
-        //sendAuthentication(username, password);
-        //String input = receiveServer();
         if(secure){ password = SHA256.getDigest(password); }
         sendMessage("LOGIN()", username + "/" + password);
-        //serverMessage servermsg = receiveMessage();
         receiveMessage();
-        //String status = servermsg.getRequestStatus();
         String status = getServerMessageStatus();
-        //String contents = servermsg.getMessageContents();
         String contents = getServerMessageContents();
 
         if (status.equals("1")) {
             setUuid(contents);
             setName(username);
         }
-        //System.out.println(status + " " + contents);
-        //return status;
     }
 
     public void changeUsername(String newUsername){
         String toSend = "username/"+newUsername;
         sendMessage("UPDATE()", toSend);
         receiveMessage();
-        //receiveMessage();
 
     }
 
@@ -151,11 +124,9 @@ public class Client {
     public String[] getFileNames(String folderPath) {
         sendMessage("LIST()", folderPath);
         String[] filenames= null;
-        //serverMessage msg = receiveMessage();
         try {
             receiveMessage();
 
-            //String rawFilenames = msg.getMessageContents();
             String rawFilenames = getServerMessageContents();
             filenames = rawFilenames.split(",");
             return filenames;
@@ -222,8 +193,7 @@ public class Client {
             OutputStream os = s.getOutputStream();
             os.write(buffer,0,buffer.length);
             os.flush();
-            receiveMessage();
-            //System.out.println("[Client]: done");
+            receiveMessage();;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -255,11 +225,10 @@ public class Client {
             bytesRead = bytesRead + read;
         }
         receiveMessage();
-        //System.out.println("[Client]: done");
     }
 
     public void getMultipleFiles(String searchWord) throws IOException {
-        String downloadPath = "./src/main/resources/tmp/"; //TODO: download path should be set by user
+        String downloadPath = "./src/main/resources/tmp/";
 
         ClientSSE sse = new ClientSSE(getName());
         String searchToken = sse.generateSearchToken(searchWord);
@@ -271,9 +240,6 @@ public class Client {
         for(int i=0;i<numberOfFiles;i++){
             receiveMessage();
             String response = getServerMessageContents();
-
-            System.out.println(response);
-
             String[] sizeAndName = response.split("/");
             int size = Integer.parseInt(sizeAndName[0]);
             String fileName = sizeAndName[1];
@@ -290,6 +256,8 @@ public class Client {
                 bytesRead = bytesRead + read;
             }
 
+            System.out.println("Downloaded file: " + fileName);
+
             if(fileName.equals(".lookup")){
                 lookup = new File(downloadPath + fileName);
                 sse.setLookup(lookup);
@@ -297,14 +265,11 @@ public class Client {
             else{
                 filesToBeDecrypted.add(downloadPath + fileName);
             }
-            //System.out.println("[Client]: done");
         }
         receiveMessage();
-        System.out.println("sitter fast her");
 
         for(String file : filesToBeDecrypted){
             File current = sse.decryptFile(new File(file));
-            System.out.println(current.getName());
         }
     }
 

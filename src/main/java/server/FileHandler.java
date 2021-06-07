@@ -64,12 +64,10 @@ public class FileHandler {
         resultList.addAll(Arrays.asList(fList));
         for (File file : fList) {
             if (file.isFile()) {
-                System.out.println(file.getAbsolutePath());
             } else if (file.isDirectory()) {
                 resultList.addAll(listAllFiles(file.getAbsolutePath()));
             }
         }
-        //System.out.println(fList);
         return resultList;
     }
 
@@ -87,7 +85,6 @@ public class FileHandler {
     public File getFile(String clientName, String filePath){
         String clientPath = getClientPath(clientName);
         String pathToFile = clientPath+filePath;
-        //System.out.println(pathToFile);
         return new File(pathToFile);
 
     }
