@@ -107,6 +107,9 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             case "RENAME()":
                 renameFile(contents);
                 break;
+            case "UPDATE()":
+                updateCredentials(contents);
+                break;
             default:
                 sendError("Unrecognized action");
                 break;
@@ -190,6 +193,7 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+
     // Closes current connection to client
     @Override
     public void closeConnection() throws IOException, SocketException {
@@ -242,6 +246,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    @Override
+    public void updateCredentials(String contents){
+
+    }
     @Override
     public boolean validateClient() {
         String uuid = getCurrClientUUID();

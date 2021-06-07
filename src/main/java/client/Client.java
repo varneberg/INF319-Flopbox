@@ -130,6 +130,14 @@ public class Client {
         //return status;
     }
 
+    public void changeUsername(String newUsername){
+
+    }
+
+    public void changePassword(){
+
+    }
+
     // Receive names for files stored on server
     public String[] getFileNames(String folderPath) {
         sendMessage("LIST()", folderPath);

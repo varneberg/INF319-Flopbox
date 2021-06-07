@@ -37,6 +37,8 @@ public interface RequestHandlerInterface extends Runnable {
 
     void loginClient(String input);
 
+    void updateCredentials(String input);
+
     boolean validateClient();
 
     //private void receiveFile(String fileName, String fileSize) throws Exception {

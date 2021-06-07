@@ -19,6 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -45,6 +46,8 @@ public class FileScreen {
     public ImageView img_home;
     public ImageView img_back;
     public ContextMenu popup_file;
+    public MenuItem menu_updPassword;
+    public MenuItem menu_updUsername;
 
     ClientHandler handler = ClientHandler.getInstance();
     Client client = handler.getClient() ;
@@ -383,6 +386,34 @@ public class FileScreen {
             displayFiles(getCurrentDir());
         }
 
+
+    }
+
+
+    public void updateUsername(ActionEvent actionEvent) {
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Enter new username");
+        Label label = new Label("Enter new username");
+        TextField new_username = new TextField();
+        Button btn_submit = new Button("Submit");
+        btn_submit.setOnAction(e -> {
+                handler.getClient().changeUsername(new_username.getText());
+                popup.close();
+    });
+        VBox layout = new VBox(10);
+        layout.getChildren().addAll(label,new_username, btn_submit);
+        layout.setAlignment(Pos.CENTER);
+        Scene scene = new Scene(layout,300,250);
+        popup.setScene(scene);
+        popup.showAndWait();
+
+
+
+
+    }
+
+    public void updatePassword(ActionEvent actionEvent) {
 
     }
     /*
