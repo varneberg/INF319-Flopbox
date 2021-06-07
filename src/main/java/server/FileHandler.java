@@ -16,11 +16,11 @@ public class FileHandler {
         List<String> dirList = new ArrayList<>();
         List<String> fileList = new ArrayList<>();
         fileString = new StringBuilder();
+        if (f.listFiles().length == 0) {
+            return "Empty Directory";
+        }
 
-            for (File fi : f.listFiles()) {
-                if (f.listFiles().length == 0) {
-                    return "Empty Directory";
-                }
+        for (File fi : f.listFiles()) {
                 if (fi.getName().equals(".lookup")) {
                     continue;
                 }

@@ -299,7 +299,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         try {
             String clientFiles = handler.listFiles(msgContents);
             if(clientFiles == null){
-                sendMessage("ERROR()", "0", " ");
+                sendMessage("ERROR()", "0", "Empty directory");
+                return;
             }
             sendMessage("FILES()", "1", clientFiles);
 
