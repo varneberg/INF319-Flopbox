@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.UUID;
 
 class RequestHandler extends Thread implements RequestHandlerInterface {
@@ -247,6 +248,13 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    public String genCookie(){
+        int min = 10000;
+        int max = 99999;
+        int random = (int)(Math.random()*(max-min+1)+min);
+        return String.valueOf(random);
+
+    }
 
     public void loginClient(String input) {
         String[] creds = input.split("/");
@@ -263,7 +271,8 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
             else if(!DB.verifyPassword(username, password)){
                 sendError("0", "Incorrect password");
             } else {
-                String uuid = genUUID();
+                //String uuid = genUUID();
+                String uuid = genCookie();
                 setClientName(username);
                 setCurrClientUUID(uuid);
                 if(!DB.clientDirExists(username)){
