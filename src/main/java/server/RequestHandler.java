@@ -254,20 +254,21 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         String password = creds[1];
         //cs.clientLogin(username, password);
         try {
-            String s = cs.clientQuery(username, password);
+            //String s = cs.clientQuery(username, password);
+            String s = DB.clientQuery(username, password);
             if (s.equals("")) {
-                sendError("-1", "No user was found");
+                sendError("0", "No user was found");
 
-            } else if (!cs.verifyPassword(password)) {
+            } //else if (!cs.verifyPassword(password)) {
+            else if(!DB.verifyPassword(username, password)){
                 sendError("0", "Incorrect password");
-
             } else {
                 String uuid = genUUID();
                 setClientName(username);
                 setCurrClientUUID(uuid);
                 if(!DB.clientDirExists(username)){
                     DB.createClientDir(username);
-                    System.out.println("Directory does not exist");
+                    //System.out.println("Directory does not exist");
                 }
                 sendMessage("LOGIN()", "1", uuid);
             }
