@@ -1,5 +1,3 @@
-package server;
-
 import builder.SecureState;
 import client.Client;
 import encryption.ClientSSE;
@@ -37,11 +35,9 @@ public class StartServer {
         server.startServer();
         String testString = "123";
 
-
-
-        Client client = new Client(address, port);
-        String username = "burp";
-        String password = "123";
+        //Client client = new Client(address, port);
+        //String username = "burp";
+        //String password = "123";
         //client.login(username, password);
 
         //System.out.println(client.isAuthenticated());

@@ -53,12 +53,12 @@ public class App extends Application {
     public static void main(String[] args) throws SQLException {
         boolean secure = false;
         SecureState.getINSTANCE().setSecure(secure);
-        //ClientHandler handler = new ClientHandler();
-        DB.initDB();
-        DB.createClientTable();
-        DB.createSecureClientTable();
-        Server server = new Server(6666);
-        server.startServer();
+        ClientHandler handler = new ClientHandler();
+        //DB.initDB();
+        //DB.createClientTable();
+        //DB.createSecureClientTable();
+        //Server server = new Server(6666);
+        //server.startServer();
         launch(args);
     }
 
