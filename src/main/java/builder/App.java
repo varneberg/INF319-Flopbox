@@ -8,8 +8,10 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import server.Server;
+import storage.DB;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class App extends Application {
     private static Scene scene;
@@ -48,10 +50,13 @@ public class App extends Application {
         return loader.load();
     }
 
-    public static void main(String[] args) {
-        boolean secure = true;
+    public static void main(String[] args) throws SQLException {
+        boolean secure = false;
         SecureState.getINSTANCE().setSecure(secure);
         //ClientHandler handler = new ClientHandler();
+        DB.initDB();
+        DB.createClientTable();
+        DB.createSecureClientTable();
         Server server = new Server(6666);
         server.startServer();
         launch(args);

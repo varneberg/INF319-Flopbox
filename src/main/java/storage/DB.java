@@ -13,10 +13,12 @@ public class DB {
     static String storagePath = "./src/main/resources/clientDirs/";
 
     public static void initDB(){
-        try (Connection con = DriverManager.getConnection(url)) {
+        //try (Connection con = DriverManager.getConnection(url)) {
+        try (Connection con = connect()) {
             if (con != null) {
                 DatabaseMetaData meta = con.getMetaData();
                 System.out.println("Database created " +"(" + meta.getDriverName() + ")");
+                con.close();
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -34,7 +36,7 @@ public class DB {
         return con;
     }
 
-    public static void createClientTable(){
+    public static void createClientTable() throws SQLException {
         String output = null;
         String sql = "CREATE TABLE IF NOT EXISTS clients (\n"
                 + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
@@ -43,17 +45,16 @@ public class DB {
                 + "     directory varchar(100)\n"
                 + ");";
 
-        try (Connection con = DriverManager.getConnection(url);
-            Statement stmt = con.createStatement()) {
-                stmt.execute(sql);
-            System.out.println("[Server]: Clients table created");
+        //try (Connection con = DriverManager.getConnection(url);
+        Connection con = connect();
+        Statement stmt = con.createStatement();
+        stmt.execute(sql);
+        con.close();
+        System.out.println("[Server]: Clients table created");
 
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
-    public static void createSecureClientTable(){
+    public static void createSecureClientTable() throws SQLException {
         String sql =
                 "CREATE TABLE IF NOT EXISTS secureClients (\n"
                 + "     id integer PRIMARY KEY AUTOINCREMENT, \n"
@@ -61,15 +62,14 @@ public class DB {
                 + "     password varchar(256),\n"
                 + "     directory varchar(100)\n"
                 + ");";
-        try(Connection con = DriverManager.getConnection(url);
-            Statement stmt = con.createStatement()){
-            stmt.execute(sql);
-            System.out.println("[Server]: SecureClients table created");
+        //try(Connection con = DriverManager.getConnection(url);
+        Connection con = connect();
+        Statement stmt = con.createStatement();
+        stmt.execute(sql);
+        System.out.println("[Server]: SecureClients table created");
+        con.close();
 
-        }
-        catch(SQLException e){
-            e.printStackTrace();
-        }
+
     }
 
     public static String SecureListClients() {
@@ -105,6 +105,7 @@ public class DB {
         Connection con = connect();
         Statement stmt = con.createStatement();
         ResultSet rs = stmt.executeQuery(query);
+        con.close();
         return rs.next();
     }
 
@@ -119,6 +120,7 @@ public class DB {
             ps.setString(3,dir);
             ps.executeUpdate();
             createClientDir(username);
+            con.close();
 
     }
 
@@ -133,6 +135,7 @@ public class DB {
             pstmt.executeUpdate();
             createClientDir(uname);
             System.out.println("[Server]: Created user " + uname);
+            con.close();
     }
 
     public static void createClientDir(String uname) {
@@ -166,12 +169,25 @@ public class DB {
             ps.executeUpdate();
             deleteAllClientDirectories();
             System.out.println("[Server]: Deleted all clients");
+            con.close();
         }catch(SQLException e){
             e.printStackTrace();
         }
     }
 
-    public static void secureDeleteClient(String clientName){
+    public static void deleteClient(String username) throws SQLException {
+        String query = "DELETE FROM clients WHERE uname = ?";
+        Connection con = connect();
+        try(PreparedStatement ps = con.prepareStatement(query)){
+            ps.setString(1,username);
+            ps.executeUpdate();
+        }
+        File userDir = new File(getStoragePath(username));
+        deleteClientDirectory(userDir);
+        con.close();
+    }
+
+    public static void secureDeleteClient(String clientName) throws SQLException {
         String query = "DELETE FROM secureClients WHERE uname = ?";
         Connection con = connect();
         try(PreparedStatement ps = con.prepareStatement(query)){
@@ -179,9 +195,11 @@ public class DB {
             ps.executeUpdate();
             System.out.println("[Server]: Deleted user "+clientName);
 
+
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+        con.close();
         File userDir = new File(getStoragePath(clientName));
         deleteClientDirectory(userDir);
         deleteDir(userDir.getName());
@@ -227,6 +245,7 @@ public class DB {
            ps.setString(1,uname);
            ps.setString(2,password);
            ResultSet rs = ps.executeQuery();
+           con.close();
            return rs.next();
 
         } catch (SQLException throwables) {
@@ -286,4 +305,37 @@ public class DB {
         return "secureClients";
     }
 
+    public static String clientQuery(String username, String password) throws SQLException {
+        String out = "";
+        String sql =
+                "SELECT * FROM clients " +
+                        "WHERE uname = '"+ username + "'" +
+                        " AND password = '" + password + "'";
+        //"SELECT *" + "FROM clients " + "WHERE uname = '" + username + "'";
+        Connection con = connect();
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            out += rs.getInt("id") + "\t"
+                    + rs.getString("uname") + "\t"
+                    + rs.getString("password") + "\t"
+                    + rs.getString("directory");
+            }
+        con.close();
+        return out;
+    }
+
+    public static boolean verifyPassword(String username, String password) throws SQLException {
+        String sql = "SELECT *"
+                + "FROM clients "
+                + "WHERE uname = '" + username + "'"
+                +"AND password = '" + password + "'";
+        Connection con = connect();
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        con.close();
+        return rs.next();
+
+
+    }
 }

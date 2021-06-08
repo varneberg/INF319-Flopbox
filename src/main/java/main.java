@@ -1,6 +1,8 @@
 import server.Server;
 import storage.DB;
 
+import java.sql.SQLException;
+
 
 public class main {
     private static int port = 5555;
@@ -9,7 +11,11 @@ public class main {
 
     public static void main(String[] args) {
         DB.initDB();
-        DB.createClientTable();
+        try {
+            DB.createClientTable();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
         Server server = new Server(port);
         server.startServer();
 
