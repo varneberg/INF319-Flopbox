@@ -12,6 +12,7 @@ import storage.DB;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class StartServer {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -20,8 +21,12 @@ public class StartServer {
         maliciousSQL msql = new maliciousSQL();
         ClientStorage cs = new ClientStorage();
         DB.initDB();
-        DB.createClientTable();
-        DB.createSecureClientTable();
+        try {
+            DB.createClientTable();
+            DB.createSecureClientTable();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
         //DB.deleteAllClientDirectories();
         //DB.secureDeleteAllClients();
         //System.out.println(DB.SecureListClients());

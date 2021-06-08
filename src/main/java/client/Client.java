@@ -38,6 +38,16 @@ public class Client {
             System.out.println(e.getMessage());
         }
     }
+    public Client(String address, int port, String name, String uuid){
+        try{
+            this.port = port;
+            s = new Socket(address, port);
+            this.name = name;
+            this.uuid = uuid;
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
 
     public void receiveMessage() {
         serverMessage msg = null;
@@ -65,7 +75,6 @@ public class Client {
             e.printStackTrace();
         }
     }
-
 
 
     public void createUser(String username, String password) {
@@ -102,6 +111,10 @@ public class Client {
             setUuid(contents);
             setName(username);
         }
+    }
+
+    public void logout(){
+        setUuid(null);
     }
 
     public void changeUsername(String newUsername){
@@ -336,6 +349,10 @@ public class Client {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public Socket getS() {
+        return s;
     }
 
     public void search(String search) {
