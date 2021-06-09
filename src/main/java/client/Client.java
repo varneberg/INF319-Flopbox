@@ -248,7 +248,12 @@ public class Client {
         File lookup;
         sendMessage("SEARCH()", searchToken);
         receiveMessage();
-        int numberOfFiles = Integer.parseInt(getServerMessageContents());
+        String res = getServerMessageContents();
+        if(res.equals("No match")){
+            System.out.println("No Match");
+            return;
+        }
+        int numberOfFiles = Integer.parseInt(res);
         List<String> filesToBeDecrypted = new ArrayList<>();
         for(int i=0;i<numberOfFiles;i++){
             receiveMessage();
