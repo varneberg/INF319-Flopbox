@@ -54,11 +54,11 @@ public class App extends Application {
         boolean secure = true;
         SecureState.getINSTANCE().setSecure(secure);
         ClientHandler handler = new ClientHandler();
-        //DB.initDB();
-        //DB.createClientTable();
-        //DB.createSecureClientTable();
-        //Server server = new Server(6666);
-        //server.startServer();
+        DB.initDB();
+        DB.createClientTable();
+        DB.createSecureClientTable();
+        Server server = new Server(6666);
+        server.startServer();
         launch(args);
     }
 

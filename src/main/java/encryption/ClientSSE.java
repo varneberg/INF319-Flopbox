@@ -32,15 +32,20 @@ public class ClientSSE {
     private HashMap<String, String> lookup;
     private static char filler = '*';
     private static String tmpFolder = "./src/main/resources/tmp/";
+    private GFG gfg;
 
     public ClientSSE(String key){
         this.key = key;
+        gfg = new GFG(blockSize, key.hashCode());
     }
 
     public String generateSearchToken(String keyword){
         keyword = correctLength(keyword);
+
+        keyword = gfg.permute(false, keyword);
         String L = keyword.substring(0,blockSize-m);
         int k = L.hashCode();
+
 
         String token = keyword + k;
         return token;
@@ -136,8 +141,9 @@ public class ClientSSE {
 
         String X = L + R;
 
+        String W = gfg.permute(true, X);
 
-        return X;
+        return W;
     }
 
     public void setLookup(File lookup) {
@@ -233,6 +239,8 @@ public class ClientSSE {
 
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
+
+        word = gfg.permute(false, word);
 
         String L = word.substring(0,blockSize-m);
         String R = word.substring(m);
@@ -474,3 +482,93 @@ public class ClientSSE {
     
 
 }
+
+class GFG {
+    ArrayList<Integer> p;
+    ArrayList<Integer> ip;
+    Random rand;
+
+    public GFG(int length, int key) {
+        rand = new Random(key);
+        p = generateRandom(length);
+        ip = inversePermutation(p);
+    }
+
+
+    public String permute(boolean inverse, String inn) {
+        char[] chars = inn.toCharArray();
+
+        char[] newChar = new char[chars.length];
+
+        for (int i = 0; i <= chars.length - 1; i++) {
+            if (inverse) {
+                newChar[ip.get(i)] = chars[i];
+            } else {
+                newChar[p.get(i)] = chars[i];
+            }
+        }
+        return new String(newChar);
+    }
+
+
+    private int getNum(ArrayList<Integer> v) {
+        // Size of the vector
+        int n = v.size();
+
+        // Make sure the number is within
+        // the index range
+        int index = rand.nextInt(n);
+
+        // Get random number from the vector
+        int num = v.get(index);
+
+        // Remove the number from the vector
+        v.set(index, v.get(n - 1));
+        v.remove(n - 1);
+
+        // Return the removed number
+        return num;
+    }
+
+    private ArrayList<Integer> generateRandom(int n) {
+        ArrayList<Integer> v = new ArrayList<>(n);
+
+        // Fill the vector with the values
+        // 1, 2, 3, ..., n
+        for (int i = 0; i < n; i++)
+            v.add(i + 1);
+
+        // While vector has elements
+        // get a random number from the vector and print it
+        ArrayList<Integer> p = new ArrayList<>();
+        while (v.size() > 0) {
+            p.add(getNum(v) - 1);
+        }
+
+        return p;
+        // While vector has elements
+        // get a random number from the vector and print it
+
+    }
+
+    // function to find inverse permutations
+    private ArrayList<Integer> inversePermutation(ArrayList<Integer> arr) {
+
+        // to store element to index mappings
+        //ArrayList<Integer> arr2 = new ArrayList<>(arr.size());
+        int arr2[] = new int[arr.size()];
+
+        // Inserting position at their
+        // respective element in second array
+        for (int i = 0; i < arr.size(); i++)
+            arr2[arr.get(i)] = i;
+
+        ArrayList<Integer> arr3 = new ArrayList<>();
+        for (int i : arr2) {
+            arr3.add(i);
+        }
+
+        return arr3;
+    }
+}
+
