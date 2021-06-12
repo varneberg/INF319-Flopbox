@@ -36,6 +36,15 @@ public class DB {
         return con;
     }
 
+    // Adds SQL default credentials. Only for demonstrative purposes
+    public static void addDefaultCredentials() throws SQLException{
+            if(clientExists("admin")) {
+                deleteClient("admin");
+            }
+        addClient("admin", "admin");
+    }
+
+    // Creates the client table for the SQL database
     public static void createClientTable() throws SQLException {
         String output = null;
         String sql = "CREATE TABLE IF NOT EXISTS clients (\n"
@@ -51,9 +60,10 @@ public class DB {
         stmt.execute(sql);
         con.close();
         System.out.println("[Server]: Clients table created");
-
+        addDefaultCredentials();
     }
 
+    // Creates a secure client table for SQL database
     public static void createSecureClientTable() throws SQLException {
         String sql =
                 "CREATE TABLE IF NOT EXISTS secureClients (\n"
@@ -72,6 +82,8 @@ public class DB {
 
     }
 
+    // List clients from secure client table
+    // Output: A string with client entries from the secure database
     public static String SecureListClients() {
         Connection con = connect();
         //String query = "select * from "+secureClientTable;

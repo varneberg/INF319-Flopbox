@@ -451,10 +451,6 @@ public class FileScreen {
         try {
             if(!field_search.getText().equals("")) {
                 displayFiles(field_search.getText());
-                System.out.println("yey");
-            }
-            else{
-                System.out.println("ney");
             }
 
         } catch (NullPointerException e){
@@ -519,22 +515,7 @@ public class FileScreen {
         });
 
     }
-    /*
 
-    public void gotoDirEnter(KeyEvent keyEvent) {
-        if(keyEvent.getCode() == KeyCode.ENTER){
-            if(!field_search.getText().isEmpty()){
-                try{
-                    displayFiles(field_search.getText());
-                } catch(NullPointerException e){
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
-
-     */
 }
 
 class AddImagesToList  {

@@ -7,6 +7,7 @@ public class clientMessage {
     private String messageContents=null;
     private String sep = ";;";
 
+    // Messages sent by the client to the server
     public clientMessage(String localaddress, String uuid, String requestType, String messageContent){
         this.localaddress = localaddress;
         this.uuid = uuid;

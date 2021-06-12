@@ -24,7 +24,6 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
     private String currClientAddress = null;
     private String clientName;
     private clientMessage prev = null;
-    //private String sep = ";;";
     private BufferedReader serverInput;
     private PrintWriter serverOutput;
     private clientMessage clientMsg;
@@ -33,45 +32,48 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
     boolean secure = SecureState.getINSTANCE().isSecure();
     boolean running;
 
-
+    /*
+    starts a request handler on given socket
+     */
     RequestHandler(Socket socket) {
         this.s = socket;
     }
 
+    /*
+    sets the running status of the request handler
+     */
     @Override
     public void setRunning(boolean running) {
         this.running = running;
     }
 
+    /*
+    returns true if the request handler is runnin, false if not
+     */
     @Override
     public boolean isRunning() {
         return running;
     }
 
+    /*
+    starts the request handler main loop
+     */
     @Override
     public void run() {
         setRunning(true);
-        /*
-        if (secure) {
-            while (isRunning()) {
-                try {
-                    secureMessageHandler();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            */
-            while (isRunning()) {
-                try {
-                    messageHandler();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        while (isRunning()) {
+            try {
+                messageHandler();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
+        }
 
-
+    /*
+    Is called during the main loop if the request handler,
+    interprets the message from client and starts the correct response function
+     */
     @Override
     public void messageHandler() throws IOException {
         //System.out.println(msgNum);
@@ -119,6 +121,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    receives messages from the client.
+    returns the message received as a clientMessage object.
+     */
     @Override
     public clientMessage receiveMessage() {
         clientMessage msg = null;
@@ -132,6 +138,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         return msg;
     }
 
+    /*
+    Sends a message to the client
+    input: request type: specifies the request type of the message, request status = specifies the status of the message, contents = contents of the message.
+     */
     @Override
     public void sendMessage(String requestType, String requestStatus, String contents) {
         try {
@@ -145,6 +155,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    sends a message to the client of the type: "ERROR"
+    input: errorMsg = contents of the error message
+     */
     @Override
     public void sendError(String errorMsg) {
         try {
@@ -156,6 +170,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    sends a message to the client of the type: "ERROR", with specified status number
+    input: errorMsg = contents of the error message, errortype = status of the error message
+     */
     @Override
     public void sendError(String errorType, String errorMsg) {
         try {
@@ -167,38 +185,28 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    return the users UUID as a string
+     */
     @Override
     public String genUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
 
+    /*
+    splits the input into sublists on the character "/"
+     */
     @Override
     public String[] splitInput(String input){
         return input.split("/");
     }
 
     /*
-    @Override
-    public void registerClient(String input) {
-        //String[] creds = input.split("/");
-        String[] creds = splitInput(input);
-        String uname = creds[0];
-        String passwd = creds[1];
-        try {
-            if (cs.clientExists(uname)) {
-                sendMessage("CREATEUSER()", "-1", "Client with username " + uname + " already exists");
-            } else {
-                cs.addClient(uname, passwd);
-                sendMessage("CREATEUSER()", "1", "User " + uname + " successfully added");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-     */
-
+     Registers a new client in the database
+     input: string with username and password of the new client
+     sends a message to the client if the action succeeded or not
+      */
     @Override
     public void registerClient(String input){
         String[] creds = splitInput(input);
@@ -217,14 +225,19 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
-
-    // Closes current connection to client
+    /*
+       closes the connection to the client
+        */
     @Override
     public void closeConnection() throws IOException, SocketException {
         System.out.println("[Server]: Connection to client closed");
         s.close();
     }
 
+    /*
+    sends a message to the client with all the file names and directories for that client
+    input: msgContents = username of the client
+     */
     @Override
     public void listClientFiles(String msgContents) {
         if (!validateClient()) {
@@ -248,6 +261,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    generates a session cookie
+    returns the random value as a string
+     */
     public String genCookie(){
         int min = 10000;
         int max = 99999;
@@ -256,6 +273,11 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
 
     }
 
+    /*
+    checks credentials of a client and logs in if credentials match those in the database.
+    input: input = username/password
+    sends back a message with the uuid if login successfully, or error if not
+     */
     public void loginClient(String input) {
         String[] creds = input.split("/");
         String username = creds[0];
@@ -286,6 +308,11 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    updates one of the credentials(username or password) of a user.
+    input: contents = specifies which of the credentials to update and the new value(username/newName)
+    sends a message to the client specifying the outcome of the action
+     */
     @Override
     public void updateCredentials(String contents){
         if(!validateClient()){
@@ -320,6 +347,11 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
 
     }
+
+    /*
+    checks if the current client has an uuid.
+    return true if client has uuid, false if not
+     */
     @Override
     public boolean validateClient() {
         String uuid = getCurrClientUUID();
@@ -327,7 +359,11 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
     }
 
 
-    //private void receiveFile(String fileName, String fileSize) throws Exception {
+    /*
+    reads a file from the client and stores it at a specified location in the users directory.
+    input: contents = local path,size of the file
+    sends a message to the client specifying the outcome of the action
+     */
     @Override
     public void receiveFile(String contents) {
         if (!validateClient()) {
@@ -366,6 +402,11 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    sends a specified file to the user.
+    input: filepath = path to file to send
+    sends a message to the user when the file is done sending
+     */
     @Override
     public void sendFile(String filePath) {
         String storagePath = handler.getStoragePath();
@@ -397,6 +438,11 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    deletes a specified file on the server
+    input: path = path o the file
+    sends a message to the client if the deletion was a success or not
+     */
     @Override
     public void deleteFile(String path) {
         String storagePath = handler.getStoragePath();
@@ -408,6 +454,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
         }
     }
 
+    /*
+    creates a new directory in the clients repository.
+    input: dirPath = path to the ne directory
+     */
     @Override
     public void createDir(String dirPath) {
         if (!validateClient()) {
@@ -424,6 +474,10 @@ class RequestHandler extends Thread implements RequestHandlerInterface {
     }
 
 
+    /*
+    renames a specified file on the server
+    input: filePath = path to the file and path to new file with the new filename
+     */
     @Override
     public void renameFile(String filePath) {
         if (!validateClient()) {

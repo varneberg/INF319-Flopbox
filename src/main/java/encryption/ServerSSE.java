@@ -19,15 +19,29 @@ public class ServerSSE {
 
     }
 
+    /*
+    adds the values of 2 bytes together to an int, and converts back to a byte
+    works like the modulo operation
+     */
     private byte f2plus(byte a, byte b){
         Integer c = a + b;
         return c.byteValue();
     }
+
+    /*
+    subtracts the values of 2 bytes from each other to an int, and converts back to a byte
+    works like the modulo operation
+     */
     private byte f2minus(byte a, byte b){
         Integer c = a - b;
         return c.byteValue();
     }
 
+    /*
+    checks if the given file contains the encrypted search word from the given search token.
+    input encrypted = the encrypted file to be searched, searchToken = the searchtoken with the encrypted searchword
+    returns true if file contains searchword, false if not
+     */
     public boolean checkMatch(File encrypted, String searchToken) {
         String keyword = searchToken.substring(0, blockSize);
         String k = searchToken.substring(blockSize);
@@ -89,7 +103,9 @@ public class ServerSSE {
         return false;
     }
 
-
+    /*
+       class to generates a random string with a given seed, used to generate fk
+     */
     public static class RandomString {
 
         /**

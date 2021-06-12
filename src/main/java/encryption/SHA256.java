@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/*
+secure hashing algorithm
+ */
 public class SHA256 {
     public static String getDigest(String input){
         StringBuilder sb = new StringBuilder();

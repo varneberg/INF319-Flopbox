@@ -10,11 +10,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import javax.crypto.Cipher;
@@ -34,11 +30,19 @@ public class ClientSSE {
     private static String tmpFolder = "./src/main/resources/tmp/";
     private GFG gfg;
 
+    /*
+    initializes the sse with a secret key
+     */
     public ClientSSE(String key){
         this.key = key;
         gfg = new GFG(blockSize, key.hashCode());
     }
 
+    /*
+    generates a search token to be sent to the server. includes encrypted search word and key k
+    input: keyword to be encrypted and made into a search token
+    returns the token as a string
+     */
     public String generateSearchToken(String keyword){
         keyword = correctLength(keyword);
 
@@ -51,16 +55,29 @@ public class ClientSSE {
         return token;
     }
 
+    /*
+    adds the values of 2 bytes together to an int, and converts back to a byte
+    works like the modulo operation
+     */
     private byte f2plus(byte a, byte b){
         Integer c = a + b;
         return c.byteValue();
     }
 
+    /*
+    subtracts the values of 2 bytes from each other to an int, and converts back to a byte
+    works like the modulo operation
+     */
     private byte f2minus(byte a, byte b){
         Integer c = a - b;
         return c.byteValue();
     }
 
+    /*
+    decrypts a file encrypted by the same user, uses the lookup table
+    input: encrypted = file to be decrypted
+    returns decrypted file
+     */
     public File decryptFile(File encrypted){
         String hashed = Integer.toString(encrypted.hashCode());
         if (!lookup.containsKey(hashed)){
@@ -99,6 +116,10 @@ public class ClientSSE {
         return decrypted;
     }
 
+    /*
+    decrypts block,used during decrypting
+    input: word= block to be decrypted, randomStringGenerator = generator which generates s
+     */
     private String decryptBlock(String word, RandomString randomStringGenerator){
 
 
@@ -146,6 +167,10 @@ public class ClientSSE {
         return W;
     }
 
+    /*
+    updates the lookup table with the given lookup file
+    input: lookup = lookup file
+     */
     public void setLookup(File lookup) {
         try {
             File toFile = new File(tmpFolder + ".lookupDecrypted");
@@ -170,6 +195,9 @@ public class ClientSSE {
         }
     }
 
+    /*
+    returns the lookup table as a file
+     */
     public File getLookup() {
         File lookupFile = new File(tmpFolder + ".lookupClear");
 
@@ -198,6 +226,11 @@ public class ClientSSE {
         return toFile;
     }
 
+    /*
+    encrypts a file with the sse algorithm.
+    input: clear = file to be encrypted
+    returns the encrypted file
+     */
     public File encryptFile(File clear) {
         if(lookup == null){
             lookup = new HashMap<String,String>();
@@ -237,6 +270,10 @@ public class ClientSSE {
         return encrypted;
     }
 
+    /*
+    encrypts a block, used during encryption of file.
+    input: word = block to be encrypted, randomStringGenerator = generator that produces s
+     */
     private String encryptWord(String word, RandomString randomStringGenerator) {
         word = correctLength(word);
 
@@ -282,6 +319,11 @@ public class ClientSSE {
         return C;
     }
 
+    /*
+    converts a word to the length of the block size. uses * as filler characters
+    input: keyword = string to convert
+    returns string of correct length
+     */
     private String correctLength(String keyword) {
         while(keyword.length() < blockSize){
             keyword += filler;
@@ -293,6 +335,9 @@ public class ClientSSE {
         return keyword;
     }
 
+    /*
+    class to generate random strings, used to generate s
+     */
     public static class RandomString {
         /**
          * Generate a random string.
@@ -348,6 +393,9 @@ public class ClientSSE {
 
     }
 
+    /*
+    class to encrypt a file with a password
+     */
     public static class FileEncryptor {
 
         //Arbitrarily selected 8-byte salt sequence:
@@ -483,18 +531,29 @@ public class ClientSSE {
 
 }
 
+/*
+class used to permute initial block before encrypting
+ */
 class GFG {
     ArrayList<Integer> p;
     ArrayList<Integer> ip;
     Random rand;
 
+    /*
+    creates a gfg object with given length and a secret key
+     */
     public GFG(int length, int key) {
         rand = new Random(key);
         p = generateRandom(length);
         ip = inversePermutation(p);
     }
 
-
+    /*
+    permutes a string with the key provided during initialization
+    input: inverse = tru or false depending on if the function should permute or return the string to the original form.
+    inn = the string to be permuted.
+    returns string after permutation
+     */
     public String permute(boolean inverse, String inn) {
         char[] chars = inn.toCharArray();
 
@@ -510,7 +569,9 @@ class GFG {
         return new String(newChar);
     }
 
-
+    /*
+    gets the next number during permutation
+     */
     private int getNum(ArrayList<Integer> v) {
         // Size of the vector
         int n = v.size();
@@ -530,6 +591,9 @@ class GFG {
         return num;
     }
 
+    /*
+    generates a random string on length n
+     */
     private ArrayList<Integer> generateRandom(int n) {
         ArrayList<Integer> v = new ArrayList<>(n);
 

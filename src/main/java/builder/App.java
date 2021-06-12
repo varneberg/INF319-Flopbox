@@ -6,7 +6,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import server.Server;
 import storage.DB;
 
@@ -19,6 +18,9 @@ public class App extends Application {
     Client client;
 
 
+    /*
+    starts the gui
+     */
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -43,13 +45,18 @@ public class App extends Application {
         }
     }
 
-
+    /*
+    loads the gui from the fmx file created with scene builder
+     */
     @FXML
     private static Parent loadFXML(String fxml) throws IOException{
         FXMLLoader loader = new FXMLLoader(App.class.getResource(fxml));
         return loader.load();
     }
 
+    /*
+    creates the database, starts the server and launches the gui
+     */
     public static void main(String[] args) throws SQLException {
         boolean secure = true;
         SecureState.getINSTANCE().setSecure(secure);

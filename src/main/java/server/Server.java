@@ -20,11 +20,16 @@ public class Server extends Thread {
     private boolean running = false;
     SecureState secure = SecureState.getINSTANCE();
 
-
+    /*
+    initializes a server instance on a given port
+     */
     public Server(int port) {
         this.port = port;
     }
 
+    /*
+    starts the server
+     */
     public void startServer() {
         try {
             ss = new ServerSocket(port);
@@ -34,11 +39,17 @@ public class Server extends Thread {
         }
     }
 
+    /*
+    stops the server and sets its status to not running
+     */
     public void stopServer() {
         running = false;
         this.interrupt();
     }
 
+    /*
+    starts the server, waits for clients to connect
+     */
     @Override
     public void run() {
         running = true;
