@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/*
+unsecure hashing algorithm
+ */
 public class MD5 {
 
     public static String getDigest(String input){
