@@ -11,6 +11,9 @@ import storage.DB;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 public class StartServer {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -34,6 +37,7 @@ public class StartServer {
         Server server = new Server(port);
         server.startServer();
         String testString = "123";
+
 
         //Client client = new Client(address, port);
         //String username = "burp";
@@ -74,4 +78,12 @@ public class StartServer {
 
         //client.putDir(username+"/durr");
     }
+
+
+
+
 }
+
+
+
+
