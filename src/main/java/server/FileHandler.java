@@ -38,6 +38,18 @@ public class FileHandler {
             return combineLists(dirList, fileList);
     }
 
+    public boolean validateDirRequest(String reqDir, String username){
+        if(!reqDir.contains(username)){
+            return false;
+        }
+        for(String s:reqDir.split("/")){
+            if(s.equals("..")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public String combineLists(List<String> dirList, List<String> fileList){
         StringBuilder sb = new StringBuilder();
         Collections.sort(dirList);

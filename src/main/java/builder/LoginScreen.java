@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class loginScreen {
+public class LoginScreen {
     public Text txt_register;
     private Stage stage;
     // Log in screen

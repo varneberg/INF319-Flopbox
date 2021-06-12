@@ -280,6 +280,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             sendError("Unauthorized action");
             return; }
         try {
+            if(!handler.validateDirRequest(msgContents, clientName)){
+                sendError("Unauthorized access");
+                return;
+            }
             String clientFiles = handler.listFiles(msgContents);
             if(clientFiles == null){
                 sendMessage("ERROR()", "0", "Empty directory");
