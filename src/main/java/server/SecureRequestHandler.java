@@ -30,6 +30,8 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         this.s = socket;
     }
 
+
+    //Start the secure request handler loop
     @Override
     public void run() {
         setRunning(true);
@@ -44,6 +46,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    /*
+    Is called during the main loop if the secure request handler,
+    interprets the message from client and starts the correct response function
+     */
     @Override
     public void messageHandler() throws IOException{
         clientMessage clientMsg = receiveMessage();
@@ -53,13 +59,13 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             case "EXIT()":
                 closeConnection();
                 break;
-            case "CREATEUSER()": // TODO
+            case "CREATEUSER()":
                 registerClient(contents);
                 break;
             case "LOGIN()":
                 loginClient(contents);
                 break;
-            case "LIST()": // TODO
+            case "LIST()":
                 listClientFiles(contents);
                 break;
             case "GET()":
@@ -92,10 +98,15 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    /*
+    Checks if the lookup file exists for the current user.
+    input: contents = message from client, format: username
+    responds the user with true or false depending on the existence of the lookup file
+     */
     private void lookupExists(String contents) {
         String storagePath = handler.getStoragePath();
         String filePath = storagePath + contents + "/.lookup";
-        File tmp = new File(filePath );
+        File tmp = new File(filePath);
         if (tmp.isFile()){
             sendMessage("LOOKUP()", "1", "true");
         }
@@ -105,6 +116,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     }
 
+    /*
+    Searches through all files of the current user and checks if any of them contains the given search word.
+    input: searchtoken = token for searching, format: encrypted search word + key for checking correctness.
+    sends all documents that contains searchword back to user.
+     */
     public void searchFiles(String searchToken){
         List<File> files = handler.listAllFiles(handler.getClientPath(getClientName()));
         ServerSSE sse = new ServerSSE();
@@ -151,6 +167,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         sendMessage("GET()", "1", "Successfully downloaded file!");
     }
 
+    /*
+    receives messages from the client.
+    returns the message received as a clientMessage object.
+     */
     @Override
     public clientMessage receiveMessage() {
         clientMessage msg = null;
@@ -165,14 +185,23 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         return msg;
     }
 
+   /*
+   returns the list of received messages from client
+    */
     public LinkedList<clientMessage> getReceiveList() {
         return receiveList;
     }
 
+    /*
+    updates the list of messages from client
+     */
     public void setReceiveList(LinkedList<clientMessage> receiveList) {
         this.receiveList = receiveList;
     }
 
+    /*
+    adds a new list of received messages from client
+     */
     public void addReceiveList(clientMessage message) {
         LinkedList<clientMessage> newList = getReceiveList();
         if(newList.size()>= 100){
@@ -182,17 +211,26 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         setReceiveList(newList);
     }
 
+    /*
+    removes the current list of received messages from client
+     */
     public void removeReceiveListItem(){
         getReceiveList().removeLast();
     }
 
-
+    /*
+    input: the message number for the wanted message
+    returns a message from the list of received messages from client
+     */
     public clientMessage getReceiveListItem(int messageNum){
         return getReceiveList().get(messageNum);
     }
 
 
-
+    /*
+    Sends a message to the client
+    input: request type: specifies the request type of the message, request status = specifies the status of the message, contents = contents of the message.
+     */
     @Override
     public void sendMessage(String requestType, String requestStatus, String contents) {
         try {
@@ -207,15 +245,24 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    /*
+    returns the list of messages sent to the client
+     */
     public LinkedList<serverMessage> getSendList(){
         return sendList;
     }
 
+    /*
+    adds a new list of messages sent to the client
+     */
     public void addSendList(serverMessage message){
         getSendList().add(message);
     }
 
-
+    /*
+    sends a message to the client of the type: "ERROR"
+    input: errorMsg = contents of the error message
+     */
     @Override
     public void sendError(String errorMsg) {
         try {
@@ -229,7 +276,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-
+    /*
+    sends a message to the client of the type: "ERROR", with specified status number
+    input: errorMsg = contents of the error message, errortype = status of the error message
+     */
     @Override
     public void sendError(String errorType, String errorMsg) {
         try {
@@ -241,19 +291,28 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-
+    /*
+    return the users UUID as a string
+     */
     @Override
     public String genUUID() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
 
-
+    /*
+    splits the input into sublists on the character "/"
+     */
     @Override
     public String[] splitInput(String input) {
         return input.split("/");
     }
 
+    /*
+    Registers a new client in the database
+    input: string with username and password of the new client
+    sends a message to the client if the action succeeded or not
+     */
     @Override
     public void registerClient(String input) {
         String[] creds = splitInput(input);
@@ -269,11 +328,18 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    /*
+    closes the connection to the client
+     */
     @Override
     public void closeConnection() throws IOException, SocketException {
         s.close();
     }
 
+    /*
+    sends a message to the client with all the file names and directories for that client
+    input: msgContents = username of the client
+     */
     @Override
     public void listClientFiles(String msgContents) {
         if(!validateClient()){
@@ -295,6 +361,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
 
     }
 
+    /*
+    checks credentials of a client and logs in if credentials match those in the database.
+    input: input = username/password
+    sends back a message with the uuid if login successfully, or error if not
+     */
     @Override
     public void loginClient(String input) {
         String[] creds = splitInput(input);
@@ -313,12 +384,21 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    /*
+    checks if the current client has an uuid.
+    return true if client has uuid, false if not
+     */
     @Override
     public boolean validateClient() {
         String uuid = getCurrClientUUID();
         return uuid != null;
     }
 
+    /*
+    updates one of the credentials(username or password) of a user.
+    input: contents = specifies which of the credentials to update and the new value(username/newName)
+    sends a message to the client specifying the outcome of the action
+     */
     @Override
     public void updateCredentials(String contents){
         if(!validateClient()){
@@ -353,7 +433,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
             }
         }
 
-
+    /*
+    reads a file from the client and stores it at a specified location in the users directory.
+    input: contents = local path,size of the file
+    sends a message to the client specifying the outcome of the action
+     */
     @Override
     public void receiveFile(String contents) {
         if (!validateClient()) {
@@ -386,7 +470,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-
+    /*
+    sends a specified file to the user.
+    input: filepath = path to file to send
+    sends a message to the user when the file is done sending
+     */
     @Override
     public void sendFile(String filePath) {
         String storagePath = handler.getStoragePath();
@@ -415,6 +503,11 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
     }
 
 
+    /*
+    deletes a specified file on the server
+    input: path = path o the file
+    sends a message to the client if the deletion was a success or not
+     */
     @Override
     public void deleteFile(String path) {
         String storagePath = handler.getStoragePath();
@@ -427,7 +520,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-
+    /*
+    creates a new directory in the clients repository.
+    input: dirPath = path to the ne directory
+     */
     @Override
     public void createDir(String dirPath) {
         if (!validateClient()) {
@@ -443,7 +539,10 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
-
+    /*
+    renames a specified file on the server
+    input: filePath = path to the file and path to new file with the new filename
+     */
     @Override
     public void renameFile(String filePath) {
         if (!validateClient()) {
@@ -461,49 +560,74 @@ class SecureRequestHandler extends Thread implements RequestHandlerInterface{
         }
     }
 
+    /*
+    sets client name
+     */
     @Override
     public void setClientName(String clientName) {
         this.clientName = clientName;
 
     }
 
+    /*
+    gets client name
+     */
     @Override
     public String getClientName() {
         return clientName;
     }
 
-
+    /*
+    sets the currents clients uuid
+     */
     @Override
     public void setCurrClientUUID(String currClientUUID) {
         this.currClientUUID = currClientUUID;
     }
 
+    /*
+    gets the current client uuid
+     */
     @Override
     public String getCurrClientUUID() {
         return currClientUUID;
     }
 
+    /*
+    sets the number of the current message
+     */
     @Override
     public void setMsgNum(int msgNum) {
         this.msgNum = msgNum;
     }
 
+    /*
+    gets the message number of the current message
+     */
     @Override
     public int getMsgNum() {
         return msgNum;
     }
 
+    /*
+    increments the current message number
+     */
     public void incrementMsgNum(){
         setMsgNum(getMsgNum()+1);
     }
 
-
+    /*
+    sets the running status of the server
+     */
     @Override
     public void setRunning(boolean running) {
         this.running = running;
 
     }
 
+    /*
+    checks if the server is running or not
+     */
     @Override
     public boolean isRunning() {
         return running;

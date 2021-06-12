@@ -10,11 +10,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import javax.crypto.Cipher;
@@ -34,11 +30,17 @@ public class ClientSSE {
     private static String tmpFolder = "./src/main/resources/tmp/";
     private GFG gfg;
 
+    /*
+    initializes the sse with a secret key
+     */
     public ClientSSE(String key){
         this.key = key;
         gfg = new GFG(blockSize, key.hashCode());
     }
 
+    /*
+    generates a 
+     */
     public String generateSearchToken(String keyword){
         keyword = correctLength(keyword);
 
