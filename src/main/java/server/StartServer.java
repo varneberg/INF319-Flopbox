@@ -1,3 +1,5 @@
+package server;
+
 import builder.SecureState;
 import client.Client;
 import encryption.ClientSSE;
